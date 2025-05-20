@@ -1,3 +1,9 @@
 Local docker:
 
-docker run --name wallet_project -e POSTGRES_USER=siso -e POSTGRES_PASSWORD=siso -p 6789:5432 -v pgdata:/var/lib/postgresql/data -d postgres:latest
+docker run --name wallet_project \
+  -e POSTGRES_USER=siso \
+  -e POSTGRES_PASSWORD=siso \
+  -p 6789:5432 \
+  -v siso_wallet_db:/var/lib/postgresql/data \
+  --restart unless-stopped \
+  -d postgres:latest
