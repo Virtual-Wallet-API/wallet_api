@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Enum, Float
 from sqlalchemy.orm import relationship, validates
 
 from app.infrestructure import Base
@@ -11,8 +11,11 @@ class Card(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     number = Column(Integer, nullable=False)
     expiration_date = Column(DateTime, nullable=False)
+    balance = Column(Float, nullable=False, default=0)
     cardholder = Column(String, nullable=False)
     cvv = Column(Integer, nullable=False)
+    type = Column(Enum("credit", "debit", name="card_type"), nullable=False)
+    design = Column(String, nullable=False, default='{"color": "purple"}')
 
     user = relationship("User", back_populates="cards")
 

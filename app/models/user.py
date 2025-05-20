@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import Integer, Column, String, Boolean, Enum
+from sqlalchemy import Integer, Column, String, Boolean, Enum, Float
 from sqlalchemy.orm import validates, relationship
 
 from app.infrestructure import Base
@@ -12,6 +12,7 @@ class User(Base):
     hashed_password: str = Column(String, nullable=False)
     email: str = Column(String, nullable=False, index=True, unique=True)
     phone_number: int = Column(Integer, nullable=False, unique=True)
+    balance: int = Column(Float, nullable=False, default=0)
     admin: bool = Column(Boolean, nullable=False, default=False)
     avatar: str = Column(String, nullable=True)
     status: int = Column(Enum("blocked",
