@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from sqlalchemy import Integer, Column, String, Boolean, Enum, Float
 from sqlalchemy.orm import validates, relationship
 
