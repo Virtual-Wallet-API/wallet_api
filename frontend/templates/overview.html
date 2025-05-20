@@ -1,514 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Account Overview - Virtual Wallet</title>
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Bootstrap Icons -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-        <!-- Google Fonts (Poppins) -->
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-        <style>
-            /* Theme Variables */
-            [data-bs-theme="light"] {
-                --hero-gradient: linear-gradient(135deg, #6f42c1, #533c9f);
-                --background-color: linear-gradient(135deg, #f5f5f5, #ffffff);
-                --text-color: #000000;
-                --accent-color: #6f42c1;
-                --accent-color-rgb: 111, 66, 193;
-                --accent-color-hover: #533c9f;
-                --balance-bg: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                --shadow-color: rgba(var(--accent-color-rgb), 0.25);
-                --balance-outer-shadow: 0 5px 10px var(--shadow-color);
-                --balance-inner-shadow: inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
-                --transaction-shadow: 0 3px 6px var(--shadow-color);
-            }
+{% extends "base.html" %}
 
-            [data-bs-theme="dark"] {
-                --hero-gradient: linear-gradient(135deg, #3700b3, #121212);
-                --background-color: #121212;
-                --text-color: #ffffff;
-                --accent-color: #bb86fc;
-                --accent-color-rgb: 187, 134, 252;
-                --accent-color-hover: #3700b3;
-                --balance-bg: linear-gradient(135deg, #333, #222);
-                --shadow-color: rgba(42, 0, 95, 0.6);
-                --balance-outer-shadow: 0 5px 10px var(--shadow-color);
-                --balance-inner-shadow: inset 0 1px 2px rgba(42, 0, 95, 0.4);
-                --transaction-shadow: none;
-            }
+{% block content %}
+<div class="container page-title">
+    <h3>Account Overview</h3>
+</div>
 
-            /* Sidebar Styles */
-            .sidebar {
-                background: var(--hero-gradient);
-                color: white;
-                height: 100vh;
-                position: fixed;
-                top: 0;
-                width: 25%; /* Matches col-md-3 width */
-                transition: background 0.3s ease;
-            }
-
-            .sidebar .nav-link {
-                font-size: 1.5rem;
-                padding: 1.5rem;
-                color: white;
-                position: relative;
-                transition: background-color 0.3s ease;
-            }
-
-            .sidebar .nav-link.active {
-                background-color: rgba(255, 255, 255, 0.2);
-            }
-
-            .sidebar .nav-link:hover {
-                background-color: rgba(255, 255, 255, 0.2);
-            }
-
-            .menu-text {
-                transition: margin-left 0.3s ease;
-            }
-
-            .sidebar .nav-link:hover .menu-text {
-                margin-left: 5px;
-            }
-
-            .sidebar .theme-toggle {
-                margin-bottom: 1.5rem;
-                border-radius: 12px;
-            }
-
-            /* Menu Icon Styles */
-            .menu-icon {
-                position: absolute;
-                right: -40px;
-                top: 50%;
-                transform: translateY(-50%);
-                opacity: 0;
-                transition: right 0.3s ease, opacity 0.3s ease;
-                color: white;
-                font-size: 1.5rem;
-            }
-
-            .sidebar .nav-link:hover .menu-icon {
-                right: 10px;
-                opacity: 1;
-            }
-
-            /* Transaction List Styles */
-            .transaction-list {
-                margin-bottom: 1rem;
-            }
-
-            .transaction-item {
-                position: relative;
-                display: flex;
-                justify-content: space-between;
-                padding: 2rem;
-                cursor: pointer;
-                transition: background-color 0.2s ease, box-shadow 0.3s ease;
-                border-bottom: 1px solid #ddd;
-                border-radius: 10px;
-                margin-bottom: 1rem;
-                font-size: 1.2rem;
-                box-shadow: var(--transaction-shadow);
-            }
-
-            .transaction-item:hover {
-                background-color: rgba(0, 0, 0, 0.05);
-                box-shadow: 0 5px 10px var(--shadow-color);
-            }
-
-            .amount {
-                transition: margin-right 0.3s ease;
-            }
-
-            .info-icon {
-                position: absolute;
-                right: -40px;
-                top: 50%;
-                transform: translateY(-50%);
-                font-size: 1.5rem;
-                color: var(--accent-color);
-                opacity: 0;
-                transition: right 0.3s ease, opacity 0.3s ease;
-            }
-
-            .transaction-item:hover .amount {
-                margin-right: 40px;
-            }
-
-            .transaction-item:hover .info-icon {
-                right: 10px;
-                opacity: 1;
-            }
-
-            .additional-transactions {
-                display: none;
-            }
-
-            /* Main Content Styles */
-            body {
-                background: var(--background-color);
-                color: var(--text-color);
-                transition: background 0.3s ease, color 0.3s ease;
-            }
-
-            .btn {
-                transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-            }
-
-            .btn-primary {
-                background-color: var(--accent-color);
-                border-color: var(--accent-color);
-                color: white;
-            }
-
-            .btn-primary:hover {
-                background-color: var(--accent-color-hover);
-                border-color: var(--accent-color-hover);
-            }
-
-            .btn-xl {
-                padding: 1rem 1.5rem;
-                font-size: 1.25rem;
-            }
-
-            [data-bs-theme="dark"] .btn-primary {
-                background-color: #7b5abf;
-                border-color: #7b5abf;
-                color: white;
-            }
-
-            [data-bs-theme="dark"] .btn-primary:hover {
-                background-color: #6a4aa8;
-                border-color: #6a4aa8;
-            }
-
-            [data-bs-theme="dark"] .btn-success {
-                background-color: #2a9d8f;
-                border-color: #2a9d8f;
-                color: white;
-            }
-
-            [data-bs-theme="dark"] .btn-success:hover {
-                background-color: #247b71;
-                border-color: #247b71;
-            }
-
-            [data-bs-theme="light"] .transaction-item {
-                background-color: #e9ecef;
-                color: #333;
-            }
-
-            [data-bs-theme="light"] .transaction-item span {
-                color: #333;
-            }
-
-            [data-bs-theme="light"] .transaction-item:hover {
-                background-color: #dee2e6;
-            }
-
-            [data-bs-theme="dark"] .transaction-item {
-                background-color: #333;
-                border-bottom: 1px solid var(--shadow-color);
-            }
-
-            [data-bs-theme="dark"] .transaction-item:hover {
-                background-color: #444;
-            }
-
-            /* Account Balance Box Styles */
-            .balance-box {
-                background: var(--balance-bg);
-                border-radius: 15px;
-                padding: 3rem;
-                box-shadow: var(--balance-outer-shadow), var(--balance-inner-shadow);
-                transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-                font-family: 'Poppins', sans-serif;
-            }
-
-            .balance-box:hover {
-                transform: scale(1.02);
-            }
-
-            .balance-box .balance-title {
-                font-size: 1.5rem;
-                font-weight: 400;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-                margin-bottom: 1rem;
-            }
-
-            .balance-box .balance-amount {
-                font-size: 3.5rem;
-                font-weight: 400;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-            }
-
-            /* Wallet Icon Style */
-            .balance-icon {
-                font-size: 4rem;
-            }
-
-            /* Fancy Divider */
-            .divider {
-                height: 2px;
-                background: linear-gradient(to right, transparent, var(--accent-color), transparent);
-                margin: 2rem 0;
-            }
-
-            /* Sidebar Logo */
-            .sidebar-logo {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                height: 120px; /* Increased height to accommodate text */
-                background: var(--accent-color);
-                margin-bottom: 2rem;
-                margin-top: 3rem;
-            }
-
-            [data-bs-theme="dark"] .sidebar-logo {
-                background: transparent;
-            }
-
-            .sidebar-logo i {
-                font-size: 4rem;
-                color: white;
-                margin-bottom: 0.5rem;
-            }
-
-            .sidebar-logo .logo-text {
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: white;
-                font-family: 'Poppins', sans-serif;
-            }
-
-            .navbar-brand .sidebar-logo {
-                background: none;
-            }
-
-            /* Fix for main content overlap */
-            .main-content {
-                margin-left: 25%; /* Matches sidebar width (col-md-3) */
-            }
-        </style>
-        <script>
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        </script>
-    </head>
-    <body>
-        <div class="container-fluid">
-            <div class="row">
-                <!-- Sidebar Menu -->
-                <div class="col-md-3 sidebar vh-100 d-flex flex-column">
-                    <!-- Wallet Logo -->
-                    <a class="navbar-brand" href="#">
-                        <div class="sidebar-logo text-center">
-                            <i class="bi bi-wallet2"></i>
-                            <span class="logo-text">VWallet</span>
-                        </div>
-                    </a>
-                    <nav class="nav flex-column nav-pills mt-auto mb-auto">
-                        <a class="nav-link active" href="#">
-                            <i class="bi bi-house-door"></i>
-                            <span class="menu-text">Dashboard</span>
-                            <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-list-ul"></i>
-                            <span class="menu-text">Transactions</span>
-                            <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-gear"></i>
-                            <span class="menu-text">Settings</span>
-                            <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="bi bi-box-arrow-right"></i>
-                            <span class="menu-text">Logout</span>
-                            <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
-                        </a>
-                    </nav>
-                    <a class="nav-link mt-auto theme-toggle" id="theme-toggle" href="#">
-                        <i class="bi bi-moon"></i>
-                        <span class="menu-text">Toggle Theme</span>
-                    </a>
-                </div>
-                <!-- Main Content -->
-                <div class="col-md-9 main-content p-5">
-                    <!-- Account Balance and Buttons -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="balance-box">
-                                <h5 class="balance-title">Account Balance</h5>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <i class="bi bi-wallet2 balance-icon"></i>
-                                    <p class="balance-amount mb-0">$1,234.56</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 d-flex justify-content-end align-items-center">
-                            <button class="btn btn-primary btn-lg btn-xl me-2">
-                                <i class="bi bi-bell"></i> Notifications
-                            </button>
-                            <button class="btn btn-success btn-lg btn-xl">
-                                <i class="bi bi-plus-circle"></i> Create Payment
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Fancy Divider -->
-                    <div class="divider"></div>
-                    <!-- Recent Transactions -->
-                    <div class="mb-4">
-                        <h3>Recent Transactions</h3>
-                        <div class="transaction-list">
-                            <div class="initial-transactions">
-                                <div class="transaction-item" data-date="2023-05-01" data-description="Grocery Store"
-                                     data-amount="-$50.00" data-category="Food">
-                                    <span class="date">2023-05-01</span>
-                                    <span class="description">Grocery Store</span>
-                                    <span class="amount">-$50.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                                <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
-                                     data-amount="+$2,000.00" data-category="Income">
-                                    <span class="date">2023-05-02</span>
-                                    <span class="description">Salary</span>
-                                    <span class="amount">+$2,000.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                                <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
-                                     data-amount="-$30.00" data-category="Food">
-                                    <span class="date">2023-05-03</span>
-                                    <span class="description">Restaurant</span>
-                                    <span class="amount">-$30.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                            </div>
-                            <div class="additional-transactions">
-                                <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
-                                     data-amount="+$2,000.00" data-category="Income">
-                                    <span class="date">2023-05-02</span>
-                                    <span class="description">Salary</span>
-                                    <span class="amount">+$2,000.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                                <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
-                                     data-amount="-$30.00" data-category="Food">
-                                    <span class="date">2023-05-03</span>
-                                    <span class="description">Restaurant</span>
-                                    <span class="amount">-$30.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                            </div>
-                            <div class="additional-transactions">
-                                <div class="transaction-item" data-date="2023-05-04" data-description="Gas Station"
-                                     data-amount="-$30.00" data-category="Transportation">
-                                    <span class="date">2023-05-04</span>
-                                    <span class="description">Gas Station</span>
-                                    <span class="amount">-$30.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                                <div class="transaction-item" data-date="2023-05-05" data-description="Online Shopping"
-                                     data-amount="-$100.00" data-category="Shopping">
-                                    <span class="date">2023-05-05</span>
-                                    <span class="description">Online Shopping</span>
-                                    <span class="amount">-$100.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                                <div class="transaction-item" data-date="2023-05-06" data-description="Utility Bill"
-                                     data-amount="-$75.00" data-category="Bills">
-                                    <span class="date">2023-05-06</span>
-                                    <span class="description">Utility Bill</span>
-                                    <span class="amount">-$75.00</span>
-                                    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                        <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>
-                    </div>
-                </div>
+<!-- Account Balance and Buttons -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="balance-box">
+            <h5 class="balance-title">Account Balance</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <i class="bi bi-wallet2 balance-icon"></i>
+                <p class="balance-amount mb-0">$1,234.56</p>
             </div>
         </div>
-
-        <!-- Transaction Modal -->
-        <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p><strong>Date:</strong> <span id="modal-date"></span></p>
-                        <p><strong>Description:</strong> <span id="modal-description"></span></p>
-                        <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
-                        <p><strong>Category:</strong> <span id="modal-category"></span></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
+    </div>
+    <div class="col-md-6 d-flex justify-content-end align-items-center">
+        <button class="btn btn-primary btn-lg btn-xl me-2">
+            <i class="bi bi-bell"></i> Notifications
+        </button>
+        <button class="btn btn-success btn-lg btn-xl">
+            <i class="bi bi-plus-circle"></i> Create Payment
+        </button>
+    </div>
+</div>
+<!-- Fancy Divider -->
+<hr style="margin: 2rem 0; opacity: 0;"/>
+<!-- Recent Transactions -->
+<div class="mb-4">
+    <h3>Recent Transactions</h3>
+    <div class="transaction-list">
+        <div class="initial-transactions">
+            <div class="transaction-item" data-date="2023-05-01" data-description="Grocery Store"
+                 data-amount="-$50.00" data-category="Food">
+                <span class="date">2023-05-01</span>
+                <span class="description">Grocery Store</span>
+                <span class="amount">-$50.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
+                 data-amount="+$2,000.00" data-category="Income">
+                <span class="date">2023-05-02</span>
+                <span class="description">Salary</span>
+                <span class="amount">+$2,000.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
+                 data-amount="-$30.00" data-category="Food">
+                <span class="date">2023-05-03</span>
+                <span class="description">Restaurant</span>
+                <span class="amount">-$30.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
         </div>
+        <div class="additional-transactions">
+            <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
+                 data-amount="+$2,000.00" data-category="Income">
+                <span class="date">2023-05-02</span>
+                <span class="description">Salary</span>
+                <span class="amount">+$2,000.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
+                 data-amount="-$30.00" data-category="Food">
+                <span class="date">2023-05-03</span>
+                <span class="description">Restaurant</span>
+                <span class="amount">-$30.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+        </div>
+        <div class="additional-transactions">
+            <div class="transaction-item" data-date="2023-05-04" data-description="Gas Station"
+                 data-amount="-$30.00" data-category="Transportation">
+                <span class="date">2023-05-04</span>
+                <span class="description">Gas Station</span>
+                <span class="amount">-$30.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-05" data-description="Online Shopping"
+                 data-amount="-$100.00" data-category="Shopping">
+                <span class="date">2023-05-05</span>
+                <span class="description">Online Shopping</span>
+                <span class="amount">-$100.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-06" data-description="Utility Bill"
+                 data-amount="-$75.00" data-category="Bills">
+                <span class="date">2023-05-06</span>
+                <span class="description">Utility Bill</span>
+                <span class="amount">-$75.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+        </div>
+    </div>
+    <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>
+</div>
+{% endblock %}
 
-        <!-- JavaScript Dependencies -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-            // Update toggle icon on load
-            document.addEventListener('DOMContentLoaded', () => {
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                updateToggleIcon(savedTheme);
-            });
+{% block modals %}
+<!-- Transaction Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Description:</strong> <span id="modal-description"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Category:</strong> <span id="modal-category"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-            // Theme Toggle
-            document.getElementById('theme-toggle').addEventListener('click', (e) => {
-                e.preventDefault();
-                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-bs-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateToggleIcon(newTheme);
-            });
+{% block scripts %}
+<script>
+    // "View More" Button
+    $('#view-transactions-btn').on('click', function (e) {
+        e.preventDefault();
+        $('.additional-transactions').slideDown(500);
+        $(this).text('View All').attr('href', '#transactions-page');
+    });
 
-            function updateToggleIcon(theme) {
-                const icon = document.querySelector('#theme-toggle i');
-                if (theme === 'dark') {
-                    icon.classList.remove('bi-moon');
-                    icon.classList.add('bi-sun');
-                } else {
-                    icon.classList.remove('bi-sun');
-                    icon.classList.add('bi-moon');
-                }
-            }
-
-            // "View More" Button
-            $('#view-transactions-btn').on('click', function (e) {
-                e.preventDefault();
-                $('.additional-transactions').slideDown(500);
-                $(this).text('View All').attr('href', '#transactions-page');
-            });
-
-            // Transaction Modal
-            $('.transaction-item').on('click', function () {
-                const date = $(this).data('date');
-                const description = $(this).data('description');
-                const amount = $(this).data('amount');
-                const category = $(this).data('category');
-                $('#modal-date').text(date);
-                $('#modal-description').text(description);
-                $('#modal-amount').text(amount);
-                $('#modal-category').text(category);
-                $('#transactionModal').modal('show');
-            });
-        </script>
-    </body>
-</html>
+    // Transaction Modal
+    $('.transaction-item').on('click', function () {
+        const date = $(this).data('date');
+        const description = $(this).data('description');
+        const amount = $(this).data('amount');
+        const category = $(this).data('category');
+        $('#modal-date').text(date);
+        $('#modal-description').text(description);
+        $('#modal-amount').text(amount);
+        $('#modal-category').text(category);
+        $('#transactionModal').modal('show');
+    });
+</script>
+{% endblock %}

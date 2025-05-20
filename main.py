@@ -7,12 +7,10 @@ import frontend.frontend
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
-api = APIRouter(tags=["API"])
 
 # Router insertion
-api.include_router(users_router, prefix="/users")
-app.include_router(api, prefix="/api/v1")
-
+prefix = "/api/v1"
+app.include_router(users_router, prefix=prefix + "/users")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
