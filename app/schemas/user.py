@@ -14,6 +14,9 @@ class UserCreate(UserBase):
     email: str
     phone: Optional[str] = None
 
+    class Config:
+        orm_mode = True
+
 
 class UserResponse(UserBase):
     id: int

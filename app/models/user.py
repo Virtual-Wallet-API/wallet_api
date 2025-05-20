@@ -1,11 +1,8 @@
-from datetime import datetime
-
 from fastapi import HTTPException
-from sqlalchemy import String, Column, DateTime, Integer, Boolean
-from sqlalchemy.orm import validates
+from sqlalchemy import Integer, Column, String, Boolean, Enum
+from sqlalchemy.orm import validates, relationship
 
-from app.infrestructure.auth import pwd_context
-from app.infrestructure.database import Base
+from app.infrestructure import Base
 
 
 class User(Base):
@@ -14,30 +11,32 @@ class User(Base):
     username: str = Column(String, nullable=False, index=True, unique=True)
     hashed_password: str = Column(String, nullable=False)
     email: str = Column(String, nullable=False, index=True, unique=True)
+    phone_number: int = Column(Integer, nullable=False, unique=True)
+    admin: bool = Column(Boolean, nullable=False, default=False)
+    avatar: str = Column(String, nullable=True)
+    status: int = Column(Enum("blocked",
+                              "deactivated",
+                              "pending",
+                              "active",
+                              name="status"), nullable=False, default="pending")
 
-    phone: str = Column(String, nullable=True)
-    nickname: str = Column(String, nullable=True)
-    role: str = Column(String, default="user", nullable=False)
-    created_at: str = Column(DateTime, default=datetime.now, nullable=False)
-    last_login: str = Column(DateTime, default=datetime.now, nullable=False)
+    cards = relationship("Card", back_populates="user")
 
     @validates("username")
     def validate_username(self, key, v: str):
-        if len(v) < 3 or len(v) > 20:
+        if len(v) < 2 or len(v) > 20:
             raise HTTPException(status_code=400,
                                 detail="Username must be between 3 and 20 characters long")
-        if not v.isalnum():
-            raise HTTPException(status_code=400, detail="Username must contain only letters and numbers")
         return v
 
-    @validates("email")
-    def validate_email(self, key, v: str):
-        if "@" not in v or "." not in v:
-            raise HTTPException(status_code=400, detail="Email must be valid")
-        return v
-
-    def set_password(self, password: str):
-        self.hashed_password = pwd_context.hash(password)
-
-    def verify_password(self, password: str):
-        return pwd_context.verify(password, self.hashed_password)
+    @validates("password")
+    def validate_password(self, key, v: str):
+        if len(v) < 8:
+            raise HTTPException(status_code=400,
+                                detail="Password must be at least 8 characters long")
+        if not any(char.isdigit() for char in v) \
+                or not any(char.isupper() for char in v) \
+                or not all(char.isalnum() for char in v):
+            raise HTTPException(status_code=400,
+                                detail="""Password must contain at least one digit, 
+                                one uppercase letter and one alphanumeric character""")
