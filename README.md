@@ -1,2 +1,2 @@
-# wallelt_api_testing
-Testing wallet app
+# mobile_wallet_api
+mobile_wallet_api

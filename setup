@@ -1,0 +1,4 @@
+Local docker:
+
+docker run --name sqlalchemy -e POSTGRES_USER=siso -e POSTGRES_PASSWORD=siso -p 6789:5432 -v pgdata:/var/lib/postgresql/data -d postgres:latest
+
