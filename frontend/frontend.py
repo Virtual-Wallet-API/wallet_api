@@ -1,5 +1,6 @@
-from fastapi import Request, APIRouter
+from fastapi import Request
 from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 
 from main import app
 
@@ -23,3 +24,7 @@ def read_transactions(request: Request):
     data = {"request": request,
             "page": "transactions"}
     return templates.TemplateResponse("payments/transactions.html", data)
+
+@app.get("/logout")
+def read_logout(request: Request):
+    return RedirectResponse("/")
