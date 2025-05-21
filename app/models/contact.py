@@ -29,5 +29,5 @@ class Contact(Base):
                                 detail="User ID is required")
         return user_id
 
-#TODO - Check with Siso
-#TODO - Add to the __init__.py
+# TODO - Check with Siso
+# TODO - Add to the __init__.py

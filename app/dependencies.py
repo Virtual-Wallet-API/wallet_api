@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access
 from app.models import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/users/token")
 
 
 def get_db():

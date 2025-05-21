@@ -16,11 +16,12 @@ class User(Base):
     admin = Column(Boolean, nullable=False, default=False)
     avatar = Column(String, nullable=True)
     status = Column(Enum("blocked", "deactivated", "pending", "active", name="status"),
-                         nullable=False, default="pending")
+                    nullable=False, default="pending")
 
     cards = relationship("Card", back_populates="user")
     contacts = relationship("Contact", foreign_keys="[Contact.user_id]", back_populates="user")
     deposits = relationship("Deposit", back_populates="user")
+
     @validates("username")
     def validate_username(self, key, v: str):
         return validate_username(v)

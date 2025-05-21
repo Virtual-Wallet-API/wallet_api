@@ -16,6 +16,7 @@ class Transaction(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
 
     category = relationship("Category", back_populates="transactions")
+    recurring_transaction = relationship("RecurringTransaction", back_populates="transaction")
 
     @validates("amount")
     def validate_amount(self, key, v: float):

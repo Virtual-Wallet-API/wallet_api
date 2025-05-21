@@ -1,51 +1,68 @@
-from typing import Optional
-from pydantic import BaseModel, field_validator, EmailStr
+from enum import Enum
+from typing import Optional, List, ForwardRef
+from pydantic import BaseModel, EmailStr
 
-from app.infrestructure import validate_username, validate_password, validate_phone_number
+from app.schemas.contact import ContactResponse
+
+ContactPublicResponse = ForwardRef("ContactPublicResponse")
+CardPublicResponse = ForwardRef("CardPublicResponse")
+
+
+class Status(str, Enum):
+    blocked = "blocked"
+    deactivated = "deactivated"
+    pending = "pending"
+    active = "active"
 
 
 class UserBase(BaseModel):
     username: str
+    email: EmailStr
+    phone_number: str
+    balance: float = 0
+    admin: bool = False
+    avatar: Optional[str] = None
+    status: Status = Status.pending
+
+
+class UserPublicBase(BaseModel):
+    username: str
+    email: EmailStr
+    phone_number: str
     avatar: Optional[str] = None
 
 
-class UserCreate(BaseModel):
-    username: str
-    hashed_password: str
-    email: EmailStr
-    phone_number: str
+class UserCreate(UserBase):
+    password: str
 
-    @field_validator("username")
-    def validate_username(cls, v: str) -> str:
-        return validate_username(v)
 
-    @field_validator("hashed_password")
-    def validate_password(cls, v: str):
-        return validate_password(v)
+class UserUpdate(UserBase):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    email: Optional[str] = None
+    balance: Optional[float] = None
+    avatar: Optional[str] = None
+    status: Optional[Status] = None
+    admin: Optional[bool] = None
 
-    @field_validator("phone_number")
-    def validate_phone_number(cls, v: int):
-        return validate_phone_number(v)
+
+class UserPublicResponse(UserPublicBase):
+    id: int
+    status: Status = Status.pending
+
 
     class Config:
         from_attributes = True
 
 
-class UserPublicResponse(UserBase):
+class UserResponse(UserBase):
     id: int
-    admin: bool
-    status: str
+    contacts: List["ContactResponse"] = []
+    cards: List["CardPublicResponse"] = []
+    status: Status = Status.pending
+    admin: bool = False
+
+    class Config:
+        from_attributes = True
 
 
-class UserPrivateResponse(UserBase):
-    id: int
-    email: EmailStr
-    phone_number: str
-    balance: float
-    status: str
-    admin: bool
-
-
-class UserUpdate(UserBase):
-    # Include updatable fields here
-    pass

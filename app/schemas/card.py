@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional
+from enum import Enum
+from typing import Optional, List, ForwardRef
 
 from pydantic import BaseModel, field_validator
 
-from app.schemas import UserPrivateResponse
-
+UserResponse = ForwardRef("UserResponse")
 
 class CardBase(BaseModel):
     number: str
@@ -17,19 +17,33 @@ class CardBase(BaseModel):
             raise ValueError('Number must be 16 digits long')
         return v[-4:]
 
-class CardCreate(CardBase):
+
+class CardType(Enum):
+    DEBIT = "debit"
+    CREDIT = "credit"
+
+
+class CardCreate(BaseModel):
     design: str
     cardholder: str
+    type: CardType
+
+
+class CardPrivateResponse(CardBase):
+    id: int
+    user: UserResponse
+
+class CardPublicResponse(CardBase):
+    id: int
+    cardholder: str
+    type: CardType
+    design: str
 
     class Config:
         from_attributes = True
 
-class CardPrivateResponse(CardBase):
-    id: int
-    user: ['UserPrivateResponse']
-    balance: float
 
 class CardUpdate(CardBase):
     design: Optional[str] = None
 
-
+CardPublicResponse.model_rebuild()
