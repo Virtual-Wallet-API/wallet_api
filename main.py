@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from app.infrestructure.database import Base, engine
 from app.api.v1.users import router as users_router
 import frontend.frontend

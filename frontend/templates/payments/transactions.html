@@ -69,6 +69,40 @@
     .bottom-padding {
         padding-bottom: 4rem;
     }
+
+    #nothingFound {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+        margin-top: 2.5rem;
+        padding: 1.25rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #nothingFound.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .transaction-item.hidden {
+
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        opacity: 0;
+        pointer-events: none; /* Prevents clicks on the hidden element */
+        visibility: hidden; /* Ensures the element is not visible */
+        transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .alert-info {
+        background-color: #bc9fef;
+        border-color: #8864c4;
+        color: #000;
+    }
 </style>
 {% endblock %}
 
@@ -81,7 +115,7 @@
 <div class="mb-4">
     <div class="search-container input-group">
         <input type="text" class="form-control search-input" placeholder="Search transactions..."
-               aria-label="Search transactions">
+               aria-label="Search transactions" id="search-input">
         <input type="date" class="form-control date-picker search-date-picker" aria-label="Select date">
         <button class="btn btn-outline-primary search-button" type="button" aria-label="Search">
             <i class="bi bi-search"></i>
@@ -99,9 +133,55 @@
                 <span class="amount">-$50.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
+            <div class="transaction-item" data-date="2023-01-15" data-description="Coffee Shop" data-amount="-$12.50" data-category="Food">
+                <span class="date">2023-01-15</span>
+                <span class="description">Coffee Shop</span>
+                <span class="amount">-$12.50</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-02-03" data-description="Salary Deposit" data-amount="$2500.00" data-category="Income">
+                <span class="date">2023-02-03</span>
+                <span class="description">Salary Deposit</span>
+                <span class="amount">$2500.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-03-10" data-description="Electric Bill" data-amount="-$85.00" data-category="Utilities">
+                <span class="date">2023-03-10</span>
+                <span class="description">Electric Bill</span>
+                <span class="amount">-$85.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-04-22" data-description="Online Subscription" data-amount="-$9.99" data-category="Entertainment">
+                <span class="date">2023-04-22</span>
+                <span class="description">Online Subscription</span>
+                <span class="amount">-$9.99</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-05-05" data-description="Gas Station" data-amount="-$40.00" data-category="Transportation">
+                <span class="date">2023-05-05</span>
+                <span class="description">Gas Station</span>
+                <span class="amount">-$40.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-06-12" data-description="Freelance Payment" data-amount="$800.00" data-category="Income">
+                <span class="date">2023-06-12</span>
+                <span class="description">Freelance Payment</span>
+                <span class="amount">$800.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="transaction-item" data-date="2023-07-19" data-description="Restaurant Dinner" data-amount="-$65.00" data-category="Food">
+                <span class="date">2023-07-19</span>
+                <span class="description">Restaurant Dinner</span>
+                <span class="amount">-$65.00</span>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
         </div>
     </div>
     <!--    <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>-->
+</div>
+
+<div class="alert alert-danger text-center mt-3" id="nothingFound">
+    <i class="bi bi-info-circle me-2" style="font-size: 1.5rem;"></i> No matching category found.
 </div>
 <div class="bottom-padding"></div>
 {% endblock %}
@@ -143,6 +223,38 @@
         $('#modal-amount').text(amount);
         $('#modal-category').text(category);
         $('#transactionModal').modal('show');
+    });
+
+    const searchInput = document.getElementById('search-input');
+    const categoryItems = document.querySelectorAll(".transaction-item");
+    const nothingFound = document.getElementById("nothingFound");
+
+    searchInput.addEventListener("input", function () {
+        const term = this.value.toLowerCase();
+        let visibleCount = 0;
+
+        categoryItems.forEach(item => {
+            const nameEl = item.querySelector(".description");
+            const descEl = item.querySelector(".amount");
+            if (!nameEl || !descEl) return;
+
+            const name = nameEl.textContent.toLowerCase();
+            const description = descEl.textContent.toLowerCase();
+            const match = name.includes(term) || description.includes(term);
+
+            if (match) {
+                item.classList.remove("hidden");
+                visibleCount++;
+            } else {
+                item.classList.add("hidden");
+            }
+        });
+
+        if (visibleCount === 0) {
+            nothingFound.classList.add("show");
+        } else {
+            nothingFound.classList.remove("show");
+        }
     });
 </script>
 {% endblock %}
