@@ -1,29 +1,35 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<style>
+<style type="text/css">
     /* Search Bar Container */
     .search-container {
         position: relative;
         padding: 0;
-        border: 1px solid var(--accent-color);
-        border-radius: 10px;
-        font-size: 1.2rem;
-        box-shadow: var(--transaction-shadow);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
         transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
         overflow: hidden;
+        font-family: 'Poppins', sans-serif;
     }
 
-    /* Hover Effect (Menu Consistency) */
+    [data-bs-theme="light"] .search-container {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .search-container {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
     .search-container:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        box-shadow: 0 5px 10px var(--shadow-color);
-        transform: scale(1.01);
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5);
     }
 
-    /* Active/Focus Shadow Effect */
     .search-container:has(.search-input:focus, .date-picker:focus, .search-button:focus) {
-        box-shadow: -8px 0 12px 4px var(--shadow-color), inset -8px 0 12px 4px var(--shadow-color);
+        box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);
         border-color: var(--accent-color);
     }
 
@@ -33,14 +39,14 @@
         background-color: transparent;
         color: var(--text-color);
         border: none;
-        padding: 2rem 1rem;
-        font-size: 1.2rem;
+        padding: 1.5rem 1rem;
+        font-size: 1.3rem;
     }
 
     .search-input {
-        border-top-left-radius: 10px;
-        border-bottom-left-radius: 10px;
-        border-right: 1px solid var(--accent-color); /* Border between search input and date picker */
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        border-right: 1px solid var(--accent-color);
     }
 
     .date-picker {
@@ -49,13 +55,20 @@
         border-radius: 0;
         text-align: center;
         border-left: 1px solid var(--accent-color);
-        box-shadow: -3px 0 6px rgba(var(--accent-color), 0.7); /* Left shadow with accent color */
-        background: #f8f9fa; /* Light background for light mode */
+        box-shadow: -3px 0 6px rgba(var(--accent-color-rgb), 0.7);
+    }
+
+    [data-bs-theme="light"] .date-picker {
+        background: #f8f9fa;
+    }
+
+    [data-bs-theme="dark"] .date-picker {
+        background: #322636;
     }
 
     .date-picker:focus {
-        box-shadow: -6px 0 12px 2px rgba(var(--accent-color), 0.9); /* More powerful left shadow on focus */
-        transform: scale(1.02); /* Pop-up effect */
+        box-shadow: -6px 0 12px 2px rgba(var(--accent-color-rgb), 0.9);
+        transform: scale(1.02);
         outline: none;
     }
 
@@ -69,70 +82,52 @@
         justify-content: center;
         padding: 1.3rem 3.5rem;
         font-size: 2rem;
-        border-top-right-radius: 10px;
-        border-bottom-right-radius: 10px;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
         transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
     }
 
-    .search-button:hover {
+    [data-bs-theme="light"] .search-button:hover {
         background-color: var(--accent-color-hover);
-        box-shadow: -4px 0 8px rgba(var(--accent-color), 0.7); /* Left shadow with accent color on hover */
-        transform: scale(1.02); /* Pop-up effect */
+        box-shadow: -4px 0 8px rgba(var(--accent-color-rgb), 0.7);
+        transform: translateY(-1px);
     }
 
-    /* Dark Mode Adjustments */
-    [data-bs-theme="dark"] .search-container {
-        background-color: #2a252a;
-        border-color: #444;
+    [data-bs-theme="dark"] .search-button:hover {
+        background-color: var(--accent-color-hover);
+        box-shadow: -4px 0 8px rgba(var(--accent-color-rgb), 0.7);
+        transform: translateY(-2px);
     }
 
-    [data-bs-theme="dark"] .search-input,
-    [data-bs-theme="dark"] .date-picker {
-        background-color: #2a252a;
-        color: #fff;
+    /* Transaction List */
+    .transaction-list {
+        margin-top: 2rem;
     }
 
-    [data-bs-theme="dark"] .date-picker {
-        background-color: #322636 !important; /* Dark purple tint for dark mode */
-        box-shadow: -3px 0 6px rgba(var(--accent-color), 0.7) !important;
-        border-left: 1px solid var(--accent-color) !important;
+    .transaction-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        margin-bottom: 1.2rem;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
     }
 
-    [data-bs-theme="dark"] .date-picker:focus {
-        box-shadow: -6px 0 12px 2px rgba(var(--accent-color), 0.9) !important;
-        transform: scale(1.02);
+    [data-bs-theme="light"] .transaction-item {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
     }
 
-    [data-bs-theme="dark"] .date-picker:active {
-        box-shadow: -8px 0 12px 4px rgba(var(--accent-color), 0.9) !important;
-        border-left: 1px solid var(--accent-color) !important;
+    [data-bs-theme="dark"] .transaction-item {
+        background-color: #2a2a2a;
     }
 
-    /* Focus Styles */
-    .search-container .form-control:focus,
-    .search-container .btn:focus {
-        box-shadow: none;
-        outline: none;
-    }
-
-    /* Additional Styles (Retained) */
-    .bottom-padding {
-        padding-bottom: 4rem;
-    }
-
-    #nothingFound {
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.4s ease, visibility 0.4s ease;
-        margin-top: 2.5rem;
-        padding: 1.25rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    #nothingFound.show {
-        opacity: 1;
-        visibility: visible;
+    .transaction-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);
     }
 
     .transaction-item.hidden {
@@ -147,10 +142,187 @@
         transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    .alert-info {
-        background-color: #bc9fef;
-        border-color: #8864c4;
-        color: #000;
+    .transaction-item .date,
+    .transaction-item .description {
+        font-size: 1.4rem;
+        color: var(--text-color);
+    }
+
+    .transaction-item .amount {
+        font-size: 1.4rem;
+        font-weight: 500;
+    }
+
+    .transaction-item .amount.positive {
+        color: #28a745;
+    }
+
+    .transaction-item .amount.negative {
+        color: #dc3545;
+    }
+
+    .transaction-item .info-icon {
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        transition: color 0.3s ease;
+    }
+
+    .transaction-item .info-icon:hover {
+        color: var(--accent-color-hover);
+    }
+
+    /* Nothing Found Alert */
+    #nothingFound {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+        margin-top: 2.5rem;
+        padding: 1.25rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(94, 65, 149, 0.3);
+        background: #4A0000; /* Deep, dark crimson red for light theme */
+        border: 1px solid #FF0000; /* Bright red border */
+        color: #FF3333; /* Bright red font color */
+        font-size: 1.2rem !important;
+        /*padding: 2rem !important;*/
+    }
+
+    [data-bs-theme="dark"] #nothingFound {
+        background: #1A0000; /* Slightly darker crimson for dark theme */
+        border: 1px solid #FF0000;
+        color: #FF3333;
+    }
+
+    #nothingFound.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    [data-bs-theme="light"] #nothingFound {
+        background: #FFF5F5; /* Very soft pale red for light theme */
+        border: 1px solid #FF0000; /* Bright red border */
+        color: #FF3333; /* Bright red text */
+    }
+
+    [data-bs-theme="light"] .alert.alert-info#nothingFound {
+        background: #FFF5F5 !important;
+        border: 1px solid #FF0000 !important;
+        color: #FF3333 !important;
+    }
+
+    /*[data-bs-theme="dark"] .alert-info#nothingFound {*/
+    /*    background: #2a2a2a; !* Dark theme *!*/
+    /*    border-color: var(--accent-color-hover);*/
+    /*    color: var(--text-color);*/
+    /*}*/
+
+    /* Modal */
+    .modal-content {
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    [data-bs-theme="light"] .modal-content {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #2a2a2a;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .modal-body p {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .modal-body p strong {
+        color: #6f42c1;
+        [data-bs-theme="dark"] & {
+            color: var(--accent-color);
+        }
+    }
+
+    .modal-footer .btn-primary {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.2rem;
+        [data-bs-theme="light"] &:hover {
+            transform: translateY(-1px);
+        }
+        [data-bs-theme="dark"] &:hover {
+            transform: translateY(-2px);
+        }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .search-container {
+            flex-direction: column;
+        }
+
+        .search-input,
+        .date-picker,
+        .search-button {
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            width: 100%;
+        }
+
+        .search-input {
+            border-right: none;
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        .date-picker {
+            max-width: 100%;
+            border-left: none;
+            border-top: 1px solid var(--accent-color);
+        }
+
+        .search-button {
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .transaction-item {
+            padding: 1rem;
+        }
+
+        .transaction-item .date,
+        .transaction-item .description,
+        .transaction-item .amount {
+            font-size: 1.2rem;
+        }
+
+        .transaction-item .info-icon {
+            font-size: 1.3rem;
+        }
+
+        #nothingFound {
+            margin-top: 1.5rem;
+            padding: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+        }
+
+        .modal-body p {
+            font-size: 1rem;
+        }
     }
 </style>
 {% endblock %}
@@ -160,12 +332,9 @@
     <h2>Transactions</h2>
 </div>
 
-<!-- Flatpickr CSS (default) -->
+<!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<!-- Flatpickr Dark Theme CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-<!-- Flatpickr JS -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <!-- Search Bar -->
 <div class="mb-5">
@@ -179,14 +348,6 @@
         </button>
     </div>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        flatpickr(".date-picker", {
-            dateFormat: "Y-m-d",
-            theme: "dark" // Matches dark mode
-        });
-    });
-</script>
 
 <span># Transactions made last 30 days</span>
 <!-- Transaction List -->
@@ -200,48 +361,6 @@
                 <span class="amount">-$50.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-01-15" data-description="Coffee Shop" data-amount="-$12.50"
-                 data-category="Food">
-                <span class="date">2023-01-15</span>
-                <span class="description">Coffee Shop</span>
-                <span class="amount">-$12.50</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-02-03" data-description="Salary Deposit"
-                 data-amount="$2500.00" data-category="Income">
-                <span class="date">2023-02-03</span>
-                <span class="description">Salary Deposit</span>
-                <span class="amount">$2500.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-03-10" data-description="Electric Bill" data-amount="-$85.00"
-                 data-category="Utilities">
-                <span class="date">2023-03-10</span>
-                <span class="description">Electric Bill</span>
-                <span class="amount">-$85.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-04-22" data-description="Online Subscription"
-                 data-amount="-$9.99" data-category="Entertainment">
-                <span class="date">2023-04-22</span>
-                <span class="description">Online Subscription</span>
-                <span class="amount">-$9.99</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-05" data-description="Gas Station" data-amount="-$40.00"
-                 data-category="Transportation">
-                <span class="date">2023-05-05</span>
-                <span class="description">Gas Station</span>
-                <span class="amount">-$40.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-06-12" data-description="Freelance Payment"
-                 data-amount="$800.00" data-category="Income">
-                <span class="date">2023-06-12</span>
-                <span class="description">Freelance Payment</span>
-                <span class="amount">$800.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
             <div class="transaction-item" data-date="2023-07-19" data-description="Restaurant Dinner"
                  data-amount="-$65.00" data-category="Food">
                 <span class="date">2023-07-19</span>
@@ -251,10 +370,9 @@
             </div>
         </div>
     </div>
-    <!--    <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>-->
 </div>
 
-<div class="alert alert-danger text-center mt-3" id="nothingFound">
+<div class="alert alert-info text-center mt-3" id="nothingFound">
     <i class="bi bi-info-circle me-2" style="font-size: 1.5rem;"></i> No matching category found.
 </div>
 <div class="bottom-padding"></div>
@@ -283,22 +401,32 @@
 </div>
 {% endblock %}
 
-
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    // Transaction Modal
-    $('.transaction-item').on('click', function () {
-        const date = $(this).data('date');
-        const description = $(this).data('description');
-        const amount = $(this).data('amount');
-        const category = $(this).data('category');
-        $('#modal-date').text(date);
-        $('#modal-description').text(description);
-        $('#modal-amount').text(amount);
-        $('#modal-category').text(category);
-        $('#transactionModal').modal('show');
+    // Initialize Flatpickr
+    document.addEventListener('DOMContentLoaded', function () {
+        flatpickr(".date-picker", {
+            dateFormat: "Y-m-d",
+            theme: "dark"
+        });
     });
 
+    // Color Transaction Amounts
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.transaction-item .amount').forEach(function(amountElement) {
+            const amountText = amountElement.textContent;
+            const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
+            if (amountValue < 0) {
+                amountElement.classList.add('negative');
+            } else {
+                amountElement.classList.add('positive');
+            }
+        });
+    });
+
+
+    // Search Functionality
     const searchInput = document.getElementById('search-input');
     const categoryItems = document.querySelectorAll(".transaction-item");
     const nothingFound = document.getElementById("nothingFound");
@@ -329,6 +457,21 @@
         } else {
             nothingFound.classList.remove("show");
         }
+    });
+
+    // Transaction Modal
+    $(document).ready(function () {
+        $('.transaction-item').on('click', function () {
+            const date = $(this).data('date');
+            const description = $(this).data('description');
+            const amount = $(this).data('amount');
+            const category = $(this).data('category');
+            $('#modal-date').text(date);
+            $('#modal-description').text(description);
+            $('#modal-amount').text(amount);
+            $('#modal-category').text(category);
+            $('#transactionModal').modal('show');
+        });
     });
 </script>
 {% endblock %}

@@ -1,5 +1,271 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<style type="text/css">
+    /* Balance Box */
+    .balance-box {
+        padding: 2rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
+        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    [data-bs-theme="light"] .balance-box {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .balance-box {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .balance-box:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5);
+    }
+
+    .balance-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .balance-icon {
+        font-size: 2.5rem;
+        color: var(--accent-color);
+    }
+
+    .balance-amount {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #6f42c1;
+        [data-bs-theme="dark"] & {
+            color: var(--accent-color);
+        }
+    }
+
+    /* Action Buttons */
+    .btn-xl {
+        padding: 1rem 2rem;
+        font-size: 1.3rem;
+        border-radius: 10px;
+        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+
+    [data-bs-theme="light"] .btn-primary:hover {
+        background-color: var(--accent-color-hover);
+        border-color: var(--accent-color-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    [data-bs-theme="dark"] .btn-primary:hover {
+        background-color: var(--accent-color-hover);
+        border-color: var(--accent-color-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    }
+
+    /* Transaction List */
+    .transaction-list {
+        margin-top: 1.5rem;
+    }
+
+    .transaction-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem; /* Increased padding */
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px; /* Slightly larger radius */
+        margin-bottom: 1.2rem;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    [data-bs-theme="light"] .transaction-item {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .transaction-item {
+        background-color: #2a2a2a;
+    }
+
+    .transaction-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);
+    }
+
+    .transaction-item .date,
+    .transaction-item .description {
+        font-size: 1.4rem; /* Increased font size */
+        color: var(--text-color);
+    }
+
+    .transaction-item .amount {
+        font-size: 1.4rem; /* Increased font size */
+        font-weight: 500;
+    }
+
+    .transaction-item .amount.positive {
+        color: #28a745; /* Green for positive */
+    }
+
+    .transaction-item .amount.negative {
+        color: #dc3545; /* Red for negative */
+    }
+
+    .transaction-item .info-icon {
+        font-size: 1.5rem; /* Increased icon size */
+        color: var(--accent-color);
+        transition: color 0.3s ease;
+    }
+
+    .transaction-item .info-icon:hover {
+        color: var(--accent-color-hover);
+    }
+
+    /* View More Button */
+    .btn-outline-primary {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+
+    [data-bs-theme="light"] .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
+    }
+
+    [data-bs-theme="dark"] .btn-outline-primary:hover {
+        background-color: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    [data-bs-theme="light"] .modal-content {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #2a2a2a;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .modal-body p {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .modal-body p strong {
+        color: #6f42c1;
+        [data-bs-theme="dark"] & {
+            color: var(--accent-color);
+        }
+    }
+
+    .modal-footer .btn-primary {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.2rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .balance-box {
+            padding: 1.5rem;
+        }
+
+        .balance-title {
+            font-size: 1.3rem;
+        }
+
+        .balance-icon {
+            font-size: 2rem;
+        }
+
+        .balance-amount {
+            font-size: 2rem;
+        }
+
+        .btn-xl {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .transaction-item {
+            padding: 1rem;
+        }
+
+        .transaction-item .date,
+        .transaction-item .description,
+        .transaction-item .amount {
+            font-size: 1.2rem;
+        }
+
+        .transaction-item .info-icon {
+            font-size: 1.3rem;
+        }
+
+        .btn-outline-primary {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+        }
+
+        .modal-body p {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container page-title">
     <h2>Account Overview</h2>
@@ -54,7 +320,7 @@
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
         </div>
-        <div class="additional-transactions">
+        <div class="additional-transactions" style="display: none;">
             <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
                  data-amount="+$2,000.00" data-category="Income">
                 <span class="date">2023-05-02</span>
@@ -70,7 +336,7 @@
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
         </div>
-        <div class="additional-transactions">
+        <div class="additional-transactions" style="display: none;">
             <div class="transaction-item" data-date="2023-05-04" data-description="Gas Station"
                  data-amount="-$30.00" data-category="Transportation">
                 <span class="date">2023-05-04</span>
@@ -96,6 +362,9 @@
     </div>
     <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>
 </div>
+
+<!-- Add padding to clear fixed footer -->
+<div style="padding-bottom: 80px;"></div>
 {% endblock %}
 
 {% block modals %}
@@ -123,12 +392,22 @@
 
 {% block scripts %}
 <script>
+    // Color Transaction Amounts
+    document.querySelectorAll('.transaction-item .amount').forEach(function(amountElement) {
+        const amountText = amountElement.textContent;
+        const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
+        if (amountValue < 0) {
+            amountElement.classList.add('negative');
+        } else {
+            amountElement.classList.add('positive');
+        }
+    });
+
     // "View More" Button
     $('#view-transactions-btn').on('click', function (e) {
         e.preventDefault();
         if ($(this).text() === 'View All') {
-
-            $(this).onclick(window.location.href = '/fe/transactions')
+            window.location.href = '/fe/transactions';
         } else {
             $('.additional-transactions').slideDown(500);
             $(this).text('View All').attr('href', '/fe/transactions');
