@@ -49,12 +49,12 @@
         }
 
         .page-title {
-            font-size: 2rem;
+            font-size: 3.5rem !important;
             font-weight: 600;
             text-align: center; /* Centers the text horizontally */
             padding-top: 0rem;
             padding-bottom: 0rem;
-            margin-bottom: 3rem; /* Increases margin to push content below further */
+            margin-bottom: 2.5rem; /* Increases margin to push content below further */
         }
 
         /* Sidebar Styles */
@@ -347,7 +347,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 120px;
+            height: 190px;
             background: var(--accent-color);
             margin-bottom: 2rem;
             margin-top: 3rem;
@@ -358,13 +358,13 @@
         }
 
         .sidebar-logo i {
-            font-size: 4rem;
+            font-size: 5.5rem;
             color: white;
             margin-bottom: 0.5rem;
         }
 
         .sidebar-logo .logo-text {
-            font-size: 1.5rem;
+            font-size: 3rem;
             font-weight: 600;
             color: white;
             font-family: 'Poppins', sans-serif;
@@ -417,9 +417,9 @@
                     <span class="menu-text">Transactions</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
-                <a class="nav-link{% if page == 'settings' %} active{% endif %}" href="#">
-                    <i class="bi bi-gear"></i>
-                    <span class="menu-text">Settings</span>
+                <a class="nav-link{% if page == 'cards' %} active{% endif %}" href="/fe/cards">
+                    <i class="bi bi-credit-card"></i>
+                    <span class="menu-text">Cards</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
                 <a class="nav-link" href="#">

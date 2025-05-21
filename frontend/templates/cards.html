@@ -14,38 +14,66 @@
         border-bottom: 1px solid #ddd;
         border-radius: 10px;
         margin-bottom: 1rem;
-        font-size: 1.3rem; /* Increased font size slightly */
+        font-size: 1.3rem;
         box-shadow: var(--transaction-shadow);
     }
 
     /* Light mode: Darker white background */
     [data-bs-theme="light"] .card-row {
-        background-color: #e0e3e6; /* Darker than #e9ecef in base.html */
+        background-color: #e0e3e6;
     }
 
     [data-bs-theme="light"] .card-row:hover {
-        background-color: #d5d9dd; /* Slightly darker hover */
+        background-color: #d5d9dd;
         box-shadow: 0 5px 10px var(--shadow-color);
     }
 
     /* Dark mode: Lighter dark background */
     [data-bs-theme="dark"] .card-row {
-        background-color: #2a2a2a; /* Lighter than #333 in base.html */
+        background-color: #2a2a2a;
         border-bottom: 1px solid var(--shadow-color);
     }
 
     [data-bs-theme="dark"] .card-row:hover {
-        background-color: #3a3a3a; /* Lighter hover */
+        background-color: #3a3a3a;
         box-shadow: 0 5px 10px var(--shadow-color);
+    }
+
+    /* Terminated card styles */
+    [data-bs-theme="light"] .card-terminated {
+        color: white;
+        background-color: #8f4040; /* Deep dark red */
+        box-shadow: 0 3px 6px rgba(139, 0, 0, 0.3), inset 0 0 4px rgba(139, 0, 0, 0.2); /* Red outer and inner shadow */
+    }
+
+    [data-bs-theme="light"] .card-terminated .text-muted {
+        color: white !important;
+    }
+
+    [data-bs-theme="light"] .card-terminated:hover {
+        color: white;
+        background-color: #7b3535; /* Deeper dark red on hover */
+        box-shadow: 0 5px 10px rgba(139, 0, 0, 0.4), inset 0 0 6px rgba(139, 0, 0, 0.3);
+    }
+
+    [data-bs-theme="dark"] .card-terminated {
+        background-color: #3b1717; /* Very deep dark red */
+        box-shadow: 0 3px 6px rgba(139, 0, 0, 0.3), inset 0 0 4px rgba(139, 0, 0, 0.2);
+    }
+
+    [data-bs-theme="dark"] .card-terminated:hover {
+        background-color: #2e1111; /* Even deeper dark red on hover */
+        box-shadow: 0 5px 10px rgba(139, 0, 0, 0.4), inset 0 0 6px rgba(139, 0, 0, 0.3);
     }
 
     .card-details {
         flex-grow: 1;
+        transition: transform 0.3s ease;
     }
 
     .card-balance {
         text-align: right;
-        transition: margin-right 0.3s ease;
+        transition: transform 0.3s ease;
     }
 
     .info-icon {
@@ -53,23 +81,57 @@
         right: 15px;
         top: 50%;
         transform: translateY(-50%);
-        font-size: 1.6rem; /* Increased slightly */
+        font-size: 1.6rem;
         color: var(--accent-color);
         opacity: 0;
         transition: opacity 0.3s ease;
+        z-index: 10;
+    }
+
+    [data-bs-theme="light"] .info-icon {
+        color: #7f1148;
+    }
+
+    [data-bs-theme="dark"] .info-icon {
+        color: #ffffff;
+    }
+
+    .card-row:hover .card-details {
+        transform: translateX(1rem);
     }
 
     .card-row:hover .card-balance {
-        margin-right: 30px;
+        transform: translateX(-1.8rem); /* Move balance left on hover */
     }
 
     .card-row:hover .info-icon {
         opacity: 1;
     }
 
-    /* Card Icon Styling */
+    .card-row:hover .card-icon {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        transition: 0.3s ease;
+        font-size: 2.6rem;
+    }
+
+    .card-row:hover .card-debit-red .bi-credit-card {
+        box-shadow: 0 2px 4px rgba(255, 87, 51, 0.3);
+    }
+
+    .card-row:hover .card-debit-green .bi-credit-card {
+        box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    }
+
+    .card-row:hover .card-credit-blue .bi-credit-card {
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    }
+
+    .card-row:hover .card-credit-purple .bi-credit-card {
+        box-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+    }
+
     .card-icon {
-        font-size: 2.5rem; /* Increased from 2rem */
+        font-size: 2.5rem;
         margin-right: 1rem;
         background: none;
     }
@@ -77,15 +139,16 @@
     .card-debit-red { color: #ff5733; }
     .card-debit-green { color: #28a745; }
     .card-credit-blue { color: #007bff; }
+    .card-credit-purple { color: #6F42C1; }
 
-    /* Add Card Button Styling */
     .add-card-btn {
         background-color: var(--accent-color);
         border-color: var(--accent-color);
         color: white;
         padding: 0.5rem 1rem;
-        font-size: 1rem;
+        font-size: 1.5rem;
         border-radius: 8px;
+        text-decoration: none;
         transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         box-shadow: 0 2px 5px var(--shadow-color);
     }
@@ -93,11 +156,10 @@
     .add-card-btn:hover {
         background-color: var(--accent-color-hover);
         border-color: var(--accent-color-hover);
-        transform: translateY(-2px); /* Pop-up effect */
-        box-shadow: 0 5px 10px rgba(var(--accent-color-rgb), 0.4); /* Stronger purple shadow */
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(var(--accent-color-rgb), 0.4);
     }
 
-    /* Header with Button */
     .card-header {
         display: flex;
         justify-content: space-between;
@@ -105,17 +167,65 @@
         margin-bottom: 1rem;
     }
 
-    /* Responsive Adjustments */
+    /* Modal Styles */
+    .modal-content {
+        background-color: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 10px;
+        box-shadow: var(--transaction-shadow);
+        transition: background-color 0.2s ease, box-shadow 0.3s ease;
+        padding: 1rem;
+    }
+
+    [data-bs-theme="light"] .modal-content {
+        background-color: #e0e3e6; /* Match card-row */
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .modal-header,
+    .modal-footer {
+        border-color: var(--bs-border-color);
+        background-color: transparent;
+        padding: 1rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        font-size: 1.2rem;
+    }
+
+    .modal-body p {
+        margin-bottom: 0.75rem;
+        transition: transform 0.3s ease;
+    }
+
+    .modal-body p:hover {
+        transform: translateX(3px); /* Subtle hover effect like card-row */
+    }
+
+    .dropdown-item i {
+        margin-right: 8px;
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--accent-color-hover);
+        color: white;
+    }
+
     @media (max-width: 768px) {
         .card-row {
             flex-direction: column;
             align-items: flex-start;
             padding: 1rem;
-            font-size: 1.1rem; /* Adjusted for responsiveness */
+            font-size: 1.1rem;
         }
 
         .card-icon {
-            font-size: 1.8rem; /* Adjusted for smaller screens */
+            font-size: 2rem;
             margin-bottom: 0.5rem;
         }
 
@@ -127,15 +237,28 @@
         .info-icon {
             right: 10px;
             font-size: 1.3rem;
+            z-index: 10;
+        }
+
+        .card-row:hover .card-details {
+            transform: translateX(3px);
         }
 
         .card-row:hover .card-balance {
-            margin-right: 0;
+            transform: translateX(-3px);
+        }
+
+        .card-row:hover .card-icon {
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
         }
 
         .add-card-btn {
             padding: 0.4rem 0.8rem;
             font-size: 0.9rem;
+        }
+
+        .modal-body {
+            font-size: 1rem;
         }
     }
 </style>
@@ -152,7 +275,7 @@
     <a href="/fe/add-debit-card" class="add-card-btn">Add Debit Card</a>
 </div>
 {% for card in debit_cards %}
-<div class="card-row">
+<div class="card-row {% if card.status == 'terminated' %}card-terminated{% endif %}" data-bs-toggle="modal" data-bs-target="#cardModal-{{ card.id }}">
     <div class="card-icon card-debit-{{ card.color }}">
         <i class="bi bi-credit-card"></i>
     </div>
@@ -165,6 +288,37 @@
     </div>
     <span class="info-icon"><i class="bi bi-info-circle"></i></span>
 </div>
+
+<div class="modal fade" id="cardModal-{{ card.id }}" tabindex="-1" aria-labelledby="cardModalLabel-{{ card.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cardModalLabel-{{ card.id }}">Debit Card Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Card Number:</strong> **** **** **** {{ card.last_four }}</p>
+                <p><strong>Expiry:</strong> {{ card.expiry }}</p>
+                <p><strong>Balance:</strong> {{ card.balance }} $</p>
+                <p><strong>Status:</strong> {{ card.status | capitalize }}</p>
+            </div>
+            <div class="modal-footer">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {% if card.status == 'terminated' %}disabled{% endif %}>
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('freeze', {{ card.id }}); return false;"><i class="bi bi-pause-circle"></i> Freeze Card</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('terminate', {{ card.id }}); return false;"><i class="bi bi-x-circle"></i> Terminate Card</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('reset_cvv', {{ card.id }}); return false;"><i class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('report', {{ card.id }}); return false;"><i class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endfor %}
 
 <div class="divider"></div>
@@ -174,8 +328,8 @@
     <a href="/fe/add-credit-card" class="add-card-btn">Add Credit Card</a>
 </div>
 {% for card in credit_cards %}
-<div class="card-row">
-    <div class="card-icon card-credit-blue">
+<div class="card-row {% if card.status == 'terminated' %}card-terminated{% endif %}" data-bs-toggle="modal" data-bs-target="#cardModal-{{ card.id }}">
+    <div class="card-icon card-credit-{{ card.color | default('blue') }}">
         <i class="bi bi-credit-card"></i>
     </div>
     <div class="card-details">
@@ -187,8 +341,48 @@
     </div>
     <span class="info-icon"><i class="bi bi-info-circle"></i></span>
 </div>
+
+<div class="modal fade" id="cardModal-{{ card.id }}" tabindex="-1" aria-labelledby="cardModalLabel-{{ card.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cardModalLabel-{{ card.id }}">Credit Card Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Card Number:</strong> **** **** **** {{ card.last_four }}</p>
+                <p><strong>Expiry:</strong> {{ card.expiry }}</p>
+                <p><strong>Balance:</strong> {{ card.balance }} $</p>
+                <p><strong>Status:</strong> {{ card.status | capitalize }}</p>
+            </div>
+            <div class="modal-footer">
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {% if card.status == 'terminated' %}disabled{% endif %}>
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('freeze', {{ card.id }}); return false;"><i class="bi bi-pause-circle"></i> Freeze Card</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('terminate', {{ card.id }}); return false;"><i class="bi bi-x-circle"></i> Terminate Card</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('reset_cvv', {{ card.id }}); return false;"><i class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('report', {{ card.id }}); return false;"><i class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endfor %}
 
 <!-- Add padding to clear fixed footer -->
 <div style="padding-bottom: 80px;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function handleCardAction(action, cardId) {
+    console.log(`Action: ${action}, Card ID: ${cardId}`);
+    // Implement API calls, e.g., fetch(`/api/card/${cardId}/${action}`, { method: 'POST' })
+}
+</script>
 {% endblock %}
