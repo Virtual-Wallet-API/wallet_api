@@ -25,10 +25,10 @@ def validate_password(v: str):
                             detail="Password must contain at least one digit, one uppercase letter and one special character")
     return v
 
-def validate_phone_number(v: int):
+def validate_phone_number(v: str):
     """
         Validate a phone number
     """
-    if len(str(v)) != 10:
+    if len(v) != 10:
         raise HTTPException(status_code=400, detail="Phone number must be valid")
     return v

@@ -11,7 +11,7 @@ class User(Base):
     username = Column(String, nullable=False, index=True, unique=True)
     hashed_password = Column(String, nullable=False)
     email = Column(String, nullable=False, index=True, unique=True)
-    phone_number = Column(Integer, nullable=False, unique=True)
+    phone_number = Column(String, nullable=False, unique=True)
     balance = Column(Float, nullable=False, default=0)
     admin = Column(Boolean, nullable=False, default=False)
     avatar = Column(String, nullable=True)
@@ -30,5 +30,5 @@ class User(Base):
         return validate_password(v)
 
     @validates("phone_number")
-    def validate_phone_number(self, key, v: int):
+    def validate_phone_number(self, key, v: str):
         return validate_phone_number(v)

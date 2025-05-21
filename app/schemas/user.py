@@ -13,7 +13,7 @@ class UserCreate(BaseModel):
     username: str
     hashed_password: str
     email: EmailStr
-    phone_number: int
+    phone_number: str
 
     @field_validator("username")
     def validate_username(cls, v: str) -> str:
@@ -40,7 +40,7 @@ class UserPublicResponse(UserBase):
 class UserPrivateResponse(UserBase):
     id: int
     email: EmailStr
-    phone_number: int
+    phone_number: str
     balance: float
     status: str
     admin: bool
