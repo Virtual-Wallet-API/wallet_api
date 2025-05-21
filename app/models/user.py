@@ -20,7 +20,7 @@ class User(Base):
 
     cards = relationship("Card", back_populates="user")
     contacts = relationship("Contact", foreign_keys="[Contact.user_id]", back_populates="user")
-
+    deposits = relationship("Deposit", back_populates="user")
     @validates("username")
     def validate_username(self, key, v: str):
         return validate_username(v)
