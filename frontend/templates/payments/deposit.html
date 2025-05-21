@@ -2,23 +2,34 @@
 
 {% block styles %}
 <style type="text/css">
+    /* Main Content Centering */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 120px); /* Account for footer and page-title */
+        padding: 0; /* Remove default padding for precise centering */
+    }
+
     /* Deposit Box Styles */
     .deposit-box {
         position: relative;
-        max-width: 600px;
-        margin: 3rem auto;
-        padding: 2rem;
+        width: 90%; /* Wider box */
+        max-width: 900px; /* Increased max-width */
+        margin: 2rem auto; /* Balanced margin */
+        padding: 3.5rem; /* Increased padding for taller box */
         background: var(--balance-bg);
         border: 1px solid var(--bs-border-color);
-        border-radius: 15px;
-        box-shadow: var(--balance-outer-shadow), var(--balance-inner-shadow);
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(var(--accent-color-rgb), 0.5), inset 0 1px 4px rgba(var(--accent-color-rgb), 0.4); /* Vibrant shadows */
         transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.3rem;
+        font-size: 1.4rem;
     }
 
     [data-bs-theme="light"] .deposit-box {
-        background-color: #e0e3e6; /* Match card-row */
+        background-color: #e0e3e6;
     }
 
     [data-bs-theme="dark"] .deposit-box {
@@ -28,41 +39,118 @@
 
     .deposit-box:hover {
         transform: scale(1.02);
-        box-shadow: 0 5px 15px var(--shadow-color), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.2);
+        box-shadow: 0 10px 25px rgba(var(--accent-color-rgb), 0.6), inset 0 1px 5px rgba(var(--accent-color-rgb), 0.5);
     }
 
     .deposit-box h3 {
-        font-size: 2rem;
+        font-size: 2.5rem;
         font-weight: 600;
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         text-align: center;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     /* Form Elements */
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
     }
 
-    .form-control, .form-select {
+    .form-control {
         background-color: transparent;
         border: 1px solid var(--accent-color);
         border-radius: 8px;
-        padding: 0.75rem;
-        font-size: 1.2rem;
+        padding: 1rem;
+        font-size: 1.3rem;
         color: var(--text-color);
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 4px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
     }
 
-    [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select {
+    [data-bs-theme="dark"] .form-control {
         background-color: #333;
         color: #fff;
     }
 
-    .form-control:focus, .form-select:focus {
+    .form-control:focus {
         border-color: var(--accent-color-hover);
-        box-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.3);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
+        transform: scale(1.01);
         outline: none;
+    }
+
+    /* Dropdown Styles */
+    .dropdown-toggle {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.3rem;
+        transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .dropdown-toggle:hover {
+        background-color: var(--accent-color-hover);
+        border-color: var(--accent-color-hover);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
+        transform: translateY(-2px);
+    }
+
+    .dropdown-menu {
+        background-color: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        box-shadow: 0 3px 6px var(--shadow-color);
+        font-size: 1.3rem;
+    }
+
+    [data-bs-theme="light"] .dropdown-menu {
+        background-color: #e0e3e6;
+    }
+
+    [data-bs-theme="dark"] .dropdown-menu {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1.5rem;
+        color: var(--text-color);
+        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--accent-color-hover);
+        color: white;
+        transform: translateX(3px);
+    }
+
+    .dropdown-item i {
+        margin-right: 8px;
+    }
+
+    /* Currency Button */
+    .currency-btn {
+        padding: 1rem 0.8rem; /* Match input height */
+        font-size: 1.3rem; /* Match input font size */
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-right: -1px; /* Glue to amount input */
+        height: 100%; /* Ensure full height match */
+    }
+
+    /* Amount Input Group */
+    .amount-group {
+        display: flex;
+        align-items: stretch; /* Ensure equal height */
+    }
+
+    .amount-group .form-control {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left: none;
+        flex-grow: 1;
     }
 
     /* Confirm Button */
@@ -70,41 +158,55 @@
         background-color: var(--accent-color);
         border-color: var(--accent-color);
         color: white;
-        padding: 1rem 2rem;
-        font-size: 1.5rem;
-        border-radius: 10px;
+        padding: 1.25rem 2.5rem;
+        font-size: 1.8rem;
+        border-radius: 12px;
         width: 100%;
         transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-        box-shadow: 0 3px 6px var(--shadow-color);
+        box-shadow: 0 4px 8px var(--shadow-color);
     }
 
     .confirm-btn:hover {
         background-color: var(--accent-color-hover);
         border-color: var(--accent-color-hover);
         transform: translateY(-2px);
-        box-shadow: 0 5px 10px rgba(var(--accent-color-rgb), 0.4);
+        box-shadow: 0 6px 12px rgba(var(--accent-color-rgb), 0.4);
     }
 
     /* Responsive Adjustments */
     @media (max-width: 768px) {
         .deposit-box {
-            margin: 2rem 1rem;
-            padding: 1.5rem;
-            font-size: 1.1rem;
+            width: 95%;
+            padding: 2rem;
+            font-size: 1.2rem;
         }
 
         .deposit-box h3 {
-            font-size: 1.5rem;
+            font-size: 2rem;
         }
 
-        .form-control, .form-select {
-            font-size: 1rem;
-            padding: 0.6rem;
+        .form-control {
+            font-size: 1.1rem;
+            padding: 0.8rem;
+        }
+
+        .dropdown-toggle {
+            font-size: 1.1rem;
+            padding: 0.6rem 1.2rem;
+        }
+
+        .currency-btn {
+            font-size: 1.1rem;
+            padding: 0.8rem 0.6rem;
+        }
+
+        .dropdown-menu {
+            font-size: 1.1rem;
         }
 
         .confirm-btn {
-            font-size: 1.2rem;
-            padding: 0.75rem 1.5rem;
+            font-size: 1.4rem;
+            padding: 1rem 2rem;
         }
     }
 </style>
@@ -121,25 +223,34 @@
     <form>
         <div class="form-group">
             <label for="payment-method">Payment Method</label>
-            <select class="form-select" id="payment-method" aria-label="Select payment method">
-                <option value="debit-card">Debit Card</option>
-                <option value="credit-card">Credit Card</option>
-                <option value="bank-transfer">Bank Transfer</option>
-                <option value="crypto">Cryptocurrency</option>
-            </select>
+            <div class="dropdown">
+                <button class="btn dropdown-toggle" type="button" id="payment-method" data-bs-toggle="dropdown" aria-expanded="false">
+                    Select Payment Method
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="payment-method">
+                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Debit Card'); return false;"><i class="bi bi-credit-card"></i> Debit Card</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Credit Card'); return false;"><i class="bi bi-credit-card-2-front"></i> Credit Card</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Bank Transfer'); return false;"><i class="bi bi-bank"></i> Bank Transfer</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Cryptocurrency'); return false;"><i class="bi bi-currency-bitcoin"></i> Cryptocurrency</a></li>
+                </ul>
+            </div>
         </div>
         <div class="form-group">
             <label for="amount">Amount</label>
-            <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" min="0" required>
-        </div>
-        <div class="form-group">
-            <label for="currency">Currency</label>
-            <select class="form-select" id="currency" aria-label="Select currency">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="BTC">BTC (₿)</option>
-            </select>
+            <div class="amount-group">
+                <div class="dropdown">
+                    <button class="btn currency-btn dropdown-toggle" type="button" id="currency" data-bs-toggle="dropdown" aria-expanded="false">
+                        USD
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="currency">
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('USD'); return false;"><i class="bi bi-currency-dollar"></i> USD ($)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('EUR'); return false;"><i class="bi bi-currency-euro"></i> EUR (€)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('GBP'); return false;"><i class="bi bi-currency-pound"></i> GBP (£)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('BTC'); return false;"><i class="bi bi-currency-bitcoin"></i> BTC (₿)</a></li>
+                    </ul>
+                </div>
+                <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" min="0" required>
+            </div>
         </div>
         <button type="submit" class="confirm-btn">Confirm Deposit</button>
     </form>
@@ -147,4 +258,18 @@
 
 <!-- Add padding to clear fixed footer -->
 <div style="padding-bottom: 80px;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectPaymentMethod(method) {
+    document.getElementById('payment-method').textContent = method;
+    console.log(`Selected payment method: ${method}`);
+}
+
+function selectCurrency(currency) {
+    document.getElementById('currency').textContent = currency;
+    console.log(`Selected currency: ${currency}`);
+}
+</script>
 {% endblock %}
