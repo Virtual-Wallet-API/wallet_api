@@ -6,11 +6,11 @@
     .main-content {
         display: flex;
         flex-direction: column;
-        justify-content: flex-end; /* Move content toward bottom */
+        justify-content: flex-end;
         align-items: center;
-        min-height: calc(100vh - 120px); /* Account for footer */
+        min-height: calc(100vh - 120px);
         padding: 0;
-        padding-bottom: 4rem; /* Add space to push box up slightly from bottom */
+        padding-bottom: 4rem;
     }
 
     /* Deposit Title */
@@ -34,7 +34,7 @@
         background: var(--balance-bg);
         border: 1px solid var(--bs-border-color);
         border-radius: 20px;
-        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4); /* Intermediate purple */
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
         transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
         font-family: 'Poppins', sans-serif;
         font-size: 1.4rem;
@@ -51,13 +51,18 @@
 
     .deposit-box:hover {
         transform: scale(1.02);
-        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5); /* Same intermediate purple */
+        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5);
     }
 
     /* Form Elements */
     .form-group {
-        margin-bottom: 2.5rem; /* Increased vertical spacing */
-        padding: 0 2rem; /* Increased horizontal padding */
+        margin-bottom: 2.5rem;
+        padding: 0 2rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 1rem; /* Increased vertical spacing for labels */
     }
 
     .form-control {
@@ -104,11 +109,11 @@
     }
 
     [data-bs-theme="light"] .payment-method-btn {
-        color: #a18dd6; /* Lighter purple in light mode */
+        color: #a18dd6;
     }
 
     [data-bs-theme="dark"] .payment-method-btn {
-        color: var(--accent-color); /* Lighter purple in dark mode */
+        color: var(--accent-color);
     }
 
     .payment-method-btn i {
@@ -126,15 +131,15 @@
     }
 
     [data-bs-theme="light"] .payment-method-btn:hover {
-        color: #6f42c1; /* Dark purple in light mode */
-        border: 2px solid var(--accent-color-hover); /* Dark purple border */
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4); /* Dark purple shadow */
+        color: #6f42c1;
+        border: 2px solid var(--accent-color-hover);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
     }
 
     [data-bs-theme="dark"] .payment-method-btn:hover {
         color: white;
-        border: 2px solid var(--accent-color); /* Lighter purple border */
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4); /* Dark purple shadow */
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
     }
 
     .payment-method-btn.active {
@@ -142,14 +147,14 @@
     }
 
     [data-bs-theme="light"] .payment-method-btn.active {
-        color: #6f42c1; /* Dark purple in light mode */
-        border: 2px solid var(--accent-color); /* Dark purple border */
+        color: #6f42c1;
+        border: 2px solid var(--accent-color);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
     }
 
     [data-bs-theme="dark"] .payment-method-btn.active {
         color: white;
-        border: 2px solid var(--accent-color); /* Lighter purple border */
+        border: 2px solid var(--accent-color);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
     }
 
@@ -158,8 +163,8 @@
         background-color: var(--accent-color);
         border-color: var(--accent-color);
         color: white;
-        padding: 1rem 0.8rem;
-        font-size: 1.3rem;
+        padding: 1rem 1rem; /* Slightly larger padding */
+        font-size: 1.4rem; /* Slightly larger font */
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
         margin-right: -1px;
@@ -208,6 +213,11 @@
         transform: translateX(3px);
     }
 
+    .dropdown-item:last-child:hover {
+        border-bottom-left-radius: 8px; /* Match dropdown-menu */
+        border-bottom-right-radius: 8px;
+    }
+
     .dropdown-item i {
         margin-right: 8px;
     }
@@ -234,7 +244,7 @@
         font-size: 1.8rem;
         border-radius: 12px;
         width: 100%;
-        margin-top: 3rem; /* Increased distance from amount input */
+        margin-top: 2rem; /* Slightly reduced distance */
         transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         box-shadow: 0 4px 8px var(--shadow-color);
     }
@@ -267,6 +277,10 @@
             padding: 0 1rem;
         }
 
+        .form-group label {
+            margin-bottom: 0.75rem;
+        }
+
         .form-control {
             font-size: 1.1rem;
             padding: 0.8rem;
@@ -285,8 +299,8 @@
         }
 
         .currency-btn {
-            font-size: 1.1rem;
-            padding: 0.8rem 0.6rem;
+            font-size: 1.2rem;
+            padding: 0.8rem 0.8rem;
         }
 
         .dropdown-menu {
@@ -296,7 +310,7 @@
         .confirm-btn {
             font-size: 1.4rem;
             padding: 1rem 2rem;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .payment-method-group {
@@ -351,6 +365,21 @@
                         <li><a class="dropdown-item" href="#" onclick="selectCurrency('USD'); return false;"><i class="bi bi-currency-dollar"></i> USD ($)</a></li>
                         <li><a class="dropdown-item" href="#" onclick="selectCurrency('EUR'); return false;"><i class="bi bi-currency-euro"></i> EUR (€)</a></li>
                         <li><a class="dropdown-item" href="#" onclick="selectCurrency('GBP'); return false;"><i class="bi bi-currency-pound"></i> GBP (£)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('JPY'); return false;"><i class="bi bi-currency-yen"></i> JPY (¥)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('AUD'); return false;"><i class="bi bi-currency-dollar"></i> AUD (A$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CAD'); return false;"><i class="bi bi-currency-dollar"></i> CAD (C$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CHF'); return false;"><i class="bi bi-currency-franc"></i> CHF (Fr)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CNY'); return false;"><i class="bi bi-currency-yuan"></i> CNY (¥)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('INR'); return false;"><i class="bi bi-currency-rupee"></i> INR (₹)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('BRL'); return false;"><i class="bi bi-currency-dollar"></i> BRL (R$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('RUB'); return false;"><i class="bi bi-currency-ruble"></i> RUB (₽)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('KRW'); return false;"><i class="bi bi-currency-won"></i> KRW (₩)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('SGD'); return false;"><i class="bi bi-currency-dollar"></i> SGD (S$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('NZD'); return false;"><i class="bi bi-currency-dollar"></i> NZD (NZ$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('MXN'); return false;"><i class="bi bi-currency-dollar"></i> MXN (Mex$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('HKD'); return false;"><i class="bi bi-currency-dollar"></i> HKD (HK$)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('NOK'); return false;"><i class="bi bi-currency-krone"></i> NOK (kr)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('SEK'); return false;"><i class="bi bi-currency-krone"></i> SEK (kr)</a></li>
                         <li><a class="dropdown-item" href="#" onclick="selectCurrency('BTC'); return false;"><i class="bi bi-currency-bitcoin"></i> BTC (₿)</a></li>
                     </ul>
                 </div>
@@ -368,15 +397,11 @@
 {% block scripts %}
 <script>
 function selectPaymentMethod(displayText, value, button) {
-    // Update hidden select
     document.getElementById('payment-method').value = value;
-
-    // Update button states
     document.querySelectorAll('.payment-method-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     button.classList.add('active');
-
     console.log(`Selected payment method: ${displayText}`);
 }
 
