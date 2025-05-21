@@ -7,7 +7,7 @@ from app.dependencies import get_db
 from app.models import User, Card
 from app.schemas import UserPrivateResponse, UserCreate
 
-router = APIRouter(tags=["users"])
+router = APIRouter(tags=["Users"])
 
 
 @router.post("/", response_model=UserPrivateResponse, response_model_exclude={"balance"})
