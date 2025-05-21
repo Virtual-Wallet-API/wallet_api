@@ -8,19 +8,31 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 120px); /* Account for footer and page-title */
-        padding: 0; /* Remove default padding for precise centering */
+        min-height: calc(100vh - 120px); /* Account for footer */
+        padding: 0;
+    }
+
+    /* Deposit Title */
+    .deposit-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color);
     }
 
     /* Deposit Box Styles */
     .deposit-box {
         position: relative;
+        margin-bottom: -4rem !important;
         width: 90%;
         max-width: 900px;
-        margin: 3rem auto; /* Increased margin */
-        padding: 4rem; /* Increased padding for taller box */
+        margin: 0 auto;
+        padding: 4rem;
         background: var(--balance-bg);
-        border: 1px solid var(--bs-border-color);
+        border: 2px solid var(--bs-border-color);
         border-radius: 20px;
         box-shadow: 0 8px 20px rgba(var(--accent-color-rgb), 0.5), inset 0 1px 4px rgba(var(--accent-color-rgb), 0.4);
         transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
@@ -40,14 +52,6 @@
     .deposit-box:hover {
         transform: scale(1.02);
         box-shadow: 0 10px 25px rgba(var(--accent-color-rgb), 0.6), inset 0 1px 5px rgba(var(--accent-color-rgb), 0.5);
-    }
-
-    .deposit-box h3 {
-        font-size: 2.5rem;
-        font-weight: 600;
-        margin-bottom: 2rem;
-        text-align: center;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     /* Form Elements */
@@ -88,38 +92,61 @@
 
     .payment-method-btn {
         background: none;
-        border: none;
-        padding: 0.75rem; /* Increased padding */
+        border: 1px solid transparent; /* Default transparent border */
+        padding: 1rem; /* Larger padding */
         display: flex;
         flex-direction: column;
         align-items: center;
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease;
-        color: var(--accent-color);
+        transition: transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        border-radius: 12px; /* Increased border radius */
+    }
+
+    [data-bs-theme="light"] .payment-method-btn {
+        color: #a18dd6; /* Lighter purple in light mode */
+    }
+
+    [data-bs-theme="dark"] .payment-method-btn {
+        color: var(--accent-color); /* Keep accent color in dark mode */
     }
 
     .payment-method-btn i {
-        font-size: 3.5rem; /* Larger icon */
+        font-size: 4rem; /* Larger icon */
         margin-bottom: 0.75rem;
     }
 
     .payment-method-btn span {
-        font-size: 1rem; /* Larger text */
+        font-size: 1.1rem; /* Larger text */
         font-weight: 400;
     }
 
     .payment-method-btn:hover {
         transform: scale(1.05);
-        color: white; /* White on hover */
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4); /* Use accent-color-hover for shadow */
+        border: 2px solid var(--accent-color-hover); /* Nice hover border */
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4); /* Darker purple shadow */
+    }
+
+    [data-bs-theme="light"] .payment-method-btn:hover {
+        color: #6f42c1; /* Dark purple in light mode */
+    }
+
+    [data-bs-theme="dark"] .payment-method-btn:hover {
+        color: white; /* White in dark mode */
     }
 
     .payment-method-btn.active {
-        outline: 2px solid var(--accent-color);
-        border-radius: 8px;
+        border: 2px solid var(--accent-color); /* Selected border */
+        border-radius: 12px;
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
         transform: translateY(-2px);
-        color: white; /* White when selected */
+    }
+
+    [data-bs-theme="light"] .payment-method-btn.active {
+        color: #6f42c1; /* Dark purple in light mode */
+    }
+
+    [data-bs-theme="dark"] .payment-method-btn.active {
+        color: white; /* White in dark mode */
     }
 
     /* Currency Dropdown */
@@ -214,6 +241,10 @@
         box-shadow: 0 6px 12px rgba(var(--accent-color-rgb), 0.4);
     }
 
+    label {
+        margin-bottom: 0.5rem;
+    }
+
     /* Responsive Adjustments */
     @media (max-width: 768px) {
         .deposit-box {
@@ -222,7 +253,7 @@
             font-size: 1.2rem;
         }
 
-        .deposit-box h3 {
+        .deposit-title {
             font-size: 2rem;
         }
 
@@ -236,11 +267,11 @@
         }
 
         .payment-method-btn i {
-            font-size: 3rem;
+            font-size: 3.5rem;
         }
 
         .payment-method-btn span {
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         .currency-btn {
@@ -265,13 +296,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="container page-title">
-    <h2>Deposit Money</h2>
-</div>
+<div class="deposit-title">Make a Deposit</div>
 
 <!-- Deposit Box -->
 <div class="deposit-box">
-    <h3>Make a Deposit</h3>
     <form>
         <div class="form-group">
             <label for="payment-method">Payment Method</label>
