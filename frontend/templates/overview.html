@@ -128,10 +128,10 @@
         e.preventDefault();
         if ($(this).text() === 'View All') {
 
-            $(this).onclick(window.location.href = '/transactions')
+            $(this).onclick(window.location.href = '/fe/transactions')
         } else {
             $('.additional-transactions').slideDown(500);
-            $(this).text('View All').attr('href', '/transactions');
+            $(this).text('View All').attr('href', '/fe/transactions');
         }
     });
 
