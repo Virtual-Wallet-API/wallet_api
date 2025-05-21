@@ -7,7 +7,7 @@ from app.schemas.card import CardPrivateResponse, CardCreate
 router = APIRouter(tags=["Cards"])
 
 
-@router.post("/", response_model=CardPrivateResponse, response_model_exclude={"card"})
+@router.post("/", response_model=CardPrivateResponse, response_model_exclude={"balance"})
 def create_card(card:CardCreate, db: Session = Depends(get_db)):
     db_card = Card(**card.model_dump())
     db.add(db_card)
