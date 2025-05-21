@@ -7,15 +7,15 @@ from app.infrestructure.validators import validate_username, validate_password, 
 
 class User(Base):
     __tablename__ = "users"
-    id: int = Column(Integer, primary_key=True, index=True)
-    username: str = Column(String, nullable=False, index=True, unique=True)
-    hashed_password: str = Column(String, nullable=False)
-    email: str = Column(String, nullable=False, index=True, unique=True)
-    phone_number: int = Column(Integer, nullable=False, unique=True)
-    balance: int = Column(Float, nullable=False, default=0)
-    admin: bool = Column(Boolean, nullable=False, default=False)
-    avatar: str = Column(String, nullable=True)
-    status: int = Column(Enum("blocked", "deactivated", "pending", "active", name="status"),
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, nullable=False, index=True, unique=True)
+    hashed_password = Column(String, nullable=False)
+    email = Column(String, nullable=False, index=True, unique=True)
+    phone_number = Column(Integer, nullable=False, unique=True)
+    balance = Column(Float, nullable=False, default=0)
+    admin = Column(Boolean, nullable=False, default=False)
+    avatar = Column(String, nullable=True)
+    status = Column(Enum("blocked", "deactivated", "pending", "active", name="status"),
                          nullable=False, default="pending")
 
     cards = relationship("Card", back_populates="user")

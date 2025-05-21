@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.models import User
+from app.models import User, Card
 from app.schemas import UserPrivateResponse, UserCreate
 
 router = APIRouter(tags=["users"])
 
 
-@router.post("/", response_model=UserPrivateResponse, response_model_exclude={"balance"})
+@router.post("/", response_model=UserPrivateResponse)
 def create_user(user: UserCreate,
                 db: Session = Depends(get_db)):
     """
@@ -26,8 +28,9 @@ def create_user(user: UserCreate,
     :return: The newly created user based on the
              `UserPrivateResponse` schema.
     """
-    user = User(**user.model_dump())
-    db.add(user)
+    db_user = User(**user.model_dump())
+    db.add(db_user)
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(db_user)
+    print(db_user.cards)
+    return db_user

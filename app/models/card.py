@@ -9,7 +9,7 @@ class Card(Base):
     __tablename__ = 'cards'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    number = Column(Integer, nullable=False)
+    number = Column(String, nullable=False)
     expiration_date = Column(DateTime, nullable=False)
     balance = Column(Float, nullable=False, default=0)
     cardholder = Column(String, nullable=False)
@@ -28,6 +28,10 @@ class Card(Base):
 
     @validates("cvv")
     def validate_cvv(self, key, v: str):
-        if len(v) != 3:
+        if len(str(v)) != 3:
             raise HTTPException(status_code=400,
                                 detail="CVV must be 3 digits long")
+        return v
+
+    def __repr__(self):
+        return f"< {self.type.capitalize()} Card #{self.id} | {self.user.username} | ${self.balance} >"
