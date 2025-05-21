@@ -1,0 +1,1 @@
+DB_URL = "postgresql+psycopg2://siso:siso@172.245.56.116:6789/wallet_test"

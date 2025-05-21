@@ -32,5 +32,4 @@ def create_user(user: UserCreate,
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    print(db_user.cards)
     return db_user

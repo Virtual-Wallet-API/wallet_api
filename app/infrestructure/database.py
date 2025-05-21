@@ -2,8 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+from app.config import DB_URL
+
 # url = "sqlite:///./database.db"
-url = "postgresql+psycopg2://siso:siso@172.245.56.116:6789/wallet_test"
+url = DB_URL
 engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
