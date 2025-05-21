@@ -1,9 +1,6 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
 
-from pydantic_core.core_schema import field_after_validator_function
-
-
 class ContactBase(BaseModel):
     contact_id: int
 
