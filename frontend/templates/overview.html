@@ -126,8 +126,13 @@
     // "View More" Button
     $('#view-transactions-btn').on('click', function (e) {
         e.preventDefault();
-        $('.additional-transactions').slideDown(500);
-        $(this).text('View All').attr('href', '#transactions-page');
+        if ($(this).text() === 'View All') {
+
+            $(this).onclick(window.location.href = '/transactions')
+        } else {
+            $('.additional-transactions').slideDown(500);
+            $(this).text('View All').attr('href', '/transactions');
+        }
     });
 
     // Transaction Modal
