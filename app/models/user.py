@@ -33,3 +33,6 @@ class User(Base):
     @validates("phone_number")
     def validate_phone_number(self, key, v: str):
         return validate_phone_number(v)
+
+    def __repr__(self):
+        return f"({self.username}, {self.email})"
