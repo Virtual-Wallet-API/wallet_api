@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style type="text/css">
+    /* Deposit Box Styles */
+    .deposit-box {
+        position: relative;
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background: var(--balance-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 15px;
+        box-shadow: var(--balance-outer-shadow), var(--balance-inner-shadow);
+        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.3rem;
+    }
+
+    [data-bs-theme="light"] .deposit-box {
+        background-color: #e0e3e6; /* Match card-row */
+    }
+
+    [data-bs-theme="dark"] .deposit-box {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .deposit-box:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px var(--shadow-color), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.2);
+    }
+
+    .deposit-box h3 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control, .form-select {
+        background-color: transparent;
+        border: 1px solid var(--accent-color);
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select {
+        background-color: #333;
+        color: #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-color-hover);
+        box-shadow: 0 0 8px rgba(var(--accent-color-rgb), 0.3);
+        outline: none;
+    }
+
+    /* Confirm Button */
+    .confirm-btn {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.5rem;
+        border-radius: 10px;
+        width: 100%;
+        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        box-shadow: 0 3px 6px var(--shadow-color);
+    }
+
+    .confirm-btn:hover {
+        background-color: var(--accent-color-hover);
+        border-color: var(--accent-color-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .deposit-box {
+            margin: 2rem 1rem;
+            padding: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .deposit-box h3 {
+            font-size: 1.5rem;
+        }
+
+        .form-control, .form-select {
+            font-size: 1rem;
+            padding: 0.6rem;
+        }
+
+        .confirm-btn {
+            font-size: 1.2rem;
+            padding: 0.75rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container page-title">
+    <h2>Deposit Money</h2>
+</div>
+
+<!-- Deposit Box -->
+<div class="deposit-box">
+    <h3>Make a Deposit</h3>
+    <form>
+        <div class="form-group">
+            <label for="payment-method">Payment Method</label>
+            <select class="form-select" id="payment-method" aria-label="Select payment method">
+                <option value="debit-card">Debit Card</option>
+                <option value="credit-card">Credit Card</option>
+                <option value="bank-transfer">Bank Transfer</option>
+                <option value="crypto">Cryptocurrency</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="currency">Currency</label>
+            <select class="form-select" id="currency" aria-label="Select currency">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="BTC">BTC (₿)</option>
+            </select>
+        </div>
+        <button type="submit" class="confirm-btn">Confirm Deposit</button>
+    </form>
+</div>
+
+<!-- Add padding to clear fixed footer -->
+<div style="padding-bottom: 80px;"></div>
+{% endblock %}

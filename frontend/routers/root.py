@@ -52,6 +52,13 @@ def read_transactions(request: Request):
     return templates.TemplateResponse("payments/transactions.html", data)
 
 
+@router.get("/deposit", response_model=None)
+def read_transactions(request: Request):
+    data = {"request": request,
+            "page": "deposit"}
+    return templates.TemplateResponse("payments/deposit.html", data)
+
+
 # @router.get("/logout", response_model=None)
 # def read_logout(request: Request):
 #     return RedirectResponse("/")
