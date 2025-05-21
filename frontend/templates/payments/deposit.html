@@ -15,14 +15,14 @@
     /* Deposit Box Styles */
     .deposit-box {
         position: relative;
-        width: 90%; /* Wider box */
-        max-width: 900px; /* Increased max-width */
-        margin: 2rem auto; /* Balanced margin */
-        padding: 3.5rem; /* Increased padding for taller box */
+        width: 90%;
+        max-width: 900px;
+        margin: 3rem auto; /* Increased margin */
+        padding: 4rem; /* Increased padding for taller box */
         background: var(--balance-bg);
         border: 1px solid var(--bs-border-color);
         border-radius: 20px;
-        box-shadow: 0 8px 20px rgba(var(--accent-color-rgb), 0.5), inset 0 1px 4px rgba(var(--accent-color-rgb), 0.4); /* Vibrant shadows */
+        box-shadow: 0 8px 20px rgba(var(--accent-color-rgb), 0.5), inset 0 1px 4px rgba(var(--accent-color-rgb), 0.4);
         transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
         font-family: 'Poppins', sans-serif;
         font-size: 1.4rem;
@@ -78,23 +78,74 @@
         outline: none;
     }
 
-    /* Dropdown Styles */
-    .dropdown-toggle {
+    /* Payment Method Buttons */
+    .payment-method-group {
+        display: flex;
+        justify-content: space-around;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .payment-method-btn {
+        background: none;
+        border: none;
+        padding: 0.75rem; /* Increased padding */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease;
+        color: var(--accent-color);
+    }
+
+    .payment-method-btn i {
+        font-size: 3.5rem; /* Larger icon */
+        margin-bottom: 0.75rem;
+    }
+
+    .payment-method-btn span {
+        font-size: 1rem; /* Larger text */
+        font-weight: 400;
+    }
+
+    .payment-method-btn:hover {
+        transform: scale(1.05);
+        color: white; /* White on hover */
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4); /* Use accent-color-hover for shadow */
+    }
+
+    .payment-method-btn.active {
+        outline: 2px solid var(--accent-color);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
+        transform: translateY(-2px);
+        color: white; /* White when selected */
+    }
+
+    /* Currency Dropdown */
+    .currency-btn {
         background-color: var(--accent-color);
         border-color: var(--accent-color);
         color: white;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
+        padding: 1rem 0.8rem;
         font-size: 1.3rem;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-right: -1px;
+        height: 100%;
         transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
         box-shadow: 0 2px 4px var(--shadow-color);
     }
 
-    .dropdown-toggle:hover {
+    .currency-btn:hover {
         background-color: var(--accent-color-hover);
         border-color: var(--accent-color-hover);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
         transform: translateY(-2px);
+    }
+
+    .amount-group:has(.form-control:focus) .currency-btn {
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
     }
 
     .dropdown-menu {
@@ -130,20 +181,10 @@
         margin-right: 8px;
     }
 
-    /* Currency Button */
-    .currency-btn {
-        padding: 1rem 0.8rem; /* Match input height */
-        font-size: 1.3rem; /* Match input font size */
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        margin-right: -1px; /* Glue to amount input */
-        height: 100%; /* Ensure full height match */
-    }
-
     /* Amount Input Group */
     .amount-group {
         display: flex;
-        align-items: stretch; /* Ensure equal height */
+        align-items: stretch;
     }
 
     .amount-group .form-control {
@@ -177,7 +218,7 @@
     @media (max-width: 768px) {
         .deposit-box {
             width: 95%;
-            padding: 2rem;
+            padding: 2.5rem;
             font-size: 1.2rem;
         }
 
@@ -190,9 +231,16 @@
             padding: 0.8rem;
         }
 
-        .dropdown-toggle {
-            font-size: 1.1rem;
-            padding: 0.6rem 1.2rem;
+        .payment-method-btn {
+            flex: 1 1 45%;
+        }
+
+        .payment-method-btn i {
+            font-size: 3rem;
+        }
+
+        .payment-method-btn span {
+            font-size: 0.9rem;
         }
 
         .currency-btn {
@@ -207,6 +255,10 @@
         .confirm-btn {
             font-size: 1.4rem;
             padding: 1rem 2rem;
+        }
+
+        .payment-method-group {
+            gap: 0.5rem;
         }
     }
 </style>
@@ -223,17 +275,31 @@
     <form>
         <div class="form-group">
             <label for="payment-method">Payment Method</label>
-            <div class="dropdown">
-                <button class="btn dropdown-toggle" type="button" id="payment-method" data-bs-toggle="dropdown" aria-expanded="false">
-                    Select Payment Method
+            <div class="payment-method-group">
+                <button type="button" class="payment-method-btn" data-value="debit-card" onclick="selectPaymentMethod('Debit Card', 'debit-card', this)">
+                    <i class="bi bi-credit-card"></i>
+                    <span>Debit Card</span>
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="payment-method">
-                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Debit Card'); return false;"><i class="bi bi-credit-card"></i> Debit Card</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Credit Card'); return false;"><i class="bi bi-credit-card-2-front"></i> Credit Card</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Bank Transfer'); return false;"><i class="bi bi-bank"></i> Bank Transfer</a></li>
-                    <li><a class="dropdown-item" href="#" onclick="selectPaymentMethod('Cryptocurrency'); return false;"><i class="bi bi-currency-bitcoin"></i> Cryptocurrency</a></li>
-                </ul>
+                <button type="button" class="payment-method-btn" data-value="credit-card" onclick="selectPaymentMethod('Credit Card', 'credit-card', this)">
+                    <i class="bi bi-credit-card-2-front"></i>
+                    <span>Credit Card</span>
+                </button>
+                <button type="button" class="payment-method-btn" data-value="bank-transfer" onclick="selectPaymentMethod('Bank Transfer', 'bank-transfer', this)">
+                    <i class="bi bi-bank"></i>
+                    <span>Bank Transfer</span>
+                </button>
+                <button type="button" class="payment-method-btn" data-value="cryptocurrency" onclick="selectPaymentMethod('Cryptocurrency', 'cryptocurrency', this)">
+                    <i class="bi bi-currency-bitcoin"></i>
+                    <span>Cryptocurrency</span>
+                </button>
             </div>
+            <select class="form-control" id="payment-method" name="payment-method" style="display: none;" required>
+                <option value="" disabled selected>Select Payment Method</option>
+                <option value="debit-card">Debit Card</option>
+                <option value="credit-card">Credit Card</option>
+                <option value="bank-transfer">Bank Transfer</option>
+                <option value="cryptocurrency">Cryptocurrency</option>
+            </select>
         </div>
         <div class="form-group">
             <label for="amount">Amount</label>
@@ -249,7 +315,7 @@
                         <li><a class="dropdown-item" href="#" onclick="selectCurrency('BTC'); return false;"><i class="bi bi-currency-bitcoin"></i> BTC (₿)</a></li>
                     </ul>
                 </div>
-                <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" min="0" required>
+                <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" step="0.01" min="0" required>
             </div>
         </div>
         <button type="submit" class="confirm-btn">Confirm Deposit</button>
@@ -262,9 +328,17 @@
 
 {% block scripts %}
 <script>
-function selectPaymentMethod(method) {
-    document.getElementById('payment-method').textContent = method;
-    console.log(`Selected payment method: ${method}`);
+function selectPaymentMethod(displayText, value, button) {
+    // Update hidden select
+    document.getElementById('payment-method').value = value;
+
+    // Update button states
+    document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    button.classList.add('active');
+
+    console.log(`Selected payment method: ${displayText}`);
 }
 
 function selectCurrency(currency) {
