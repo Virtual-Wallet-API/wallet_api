@@ -5,7 +5,7 @@ from app.api.v1.users import router as users_router
 import frontend.frontend
 
 print("Create all...")
-Base.metadata.create_all(bind=engine, checkfirst=True)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
 
