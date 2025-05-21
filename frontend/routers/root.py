@@ -23,25 +23,27 @@ def read_overview(request: Request):
 
 @router.get("/cards", response_model=None)
 def read_cards(request: Request):
-    data = {"request": request,
-            "page": "cards"}
-
-    dcards = [
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue", "status":"terminated"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "green"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "green", "status":"terminated"},
-    ]
-
-    ccards = [
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "red"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "red"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue"},
-        {"last_four":1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple"},
-    ]
-
-    data["debit_cards"] = dcards
-    data["credit_cards"] = ccards
+    data = {
+        "request": request,
+        "page": "cards",
+        "debit_cards": [
+            {"id": 1, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple", "status": "active"},
+            {"id": 2, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue",
+             "status": "active"},
+            {"id": 3, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "green",
+             "status": "active"},
+            {"id": 4, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "green",
+             "status": "terminated"},
+        ],
+        "credit_cards": [
+            {"id": 5, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "red", "status": "expired"},
+            {"id": 6, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "red",
+             "status": "terminated"},
+            {"id": 7, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue", "status": "lost"},
+            {"id": 8, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple",
+             "status": "frozen"},
+        ]
+    }
     return templates.TemplateResponse("cards.html", data)
 
 
