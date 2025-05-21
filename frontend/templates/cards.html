@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style type="text/css">
+    /* Card Row Styles */
+    .card-row {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease, box-shadow 0.3s ease;
+        border-bottom: 1px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        font-size: 1.3rem; /* Increased font size slightly */
+        box-shadow: var(--transaction-shadow);
+    }
+
+    /* Light mode: Darker white background */
+    [data-bs-theme="light"] .card-row {
+        background-color: #e0e3e6; /* Darker than #e9ecef in base.html */
+    }
+
+    [data-bs-theme="light"] .card-row:hover {
+        background-color: #d5d9dd; /* Slightly darker hover */
+        box-shadow: 0 5px 10px var(--shadow-color);
+    }
+
+    /* Dark mode: Lighter dark background */
+    [data-bs-theme="dark"] .card-row {
+        background-color: #2a2a2a; /* Lighter than #333 in base.html */
+        border-bottom: 1px solid var(--shadow-color);
+    }
+
+    [data-bs-theme="dark"] .card-row:hover {
+        background-color: #3a3a3a; /* Lighter hover */
+        box-shadow: 0 5px 10px var(--shadow-color);
+    }
+
+    .card-details {
+        flex-grow: 1;
+    }
+
+    .card-balance {
+        text-align: right;
+        transition: margin-right 0.3s ease;
+    }
+
+    .info-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.6rem; /* Increased slightly */
+        color: var(--accent-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .card-row:hover .card-balance {
+        margin-right: 30px;
+    }
+
+    .card-row:hover .info-icon {
+        opacity: 1;
+    }
+
+    /* Card Icon Styling */
+    .card-icon {
+        font-size: 2.5rem; /* Increased from 2rem */
+        margin-right: 1rem;
+        background: none;
+    }
+
+    .card-debit-red { color: #ff5733; }
+    .card-debit-green { color: #28a745; }
+    .card-credit-blue { color: #007bff; }
+
+    /* Add Card Button Styling */
+    .add-card-btn {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .add-card-btn:hover {
+        background-color: var(--accent-color-hover);
+        border-color: var(--accent-color-hover);
+        transform: translateY(-2px); /* Pop-up effect */
+        box-shadow: 0 5px 10px rgba(var(--accent-color-rgb), 0.4); /* Stronger purple shadow */
+    }
+
+    /* Header with Button */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .card-row {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem;
+            font-size: 1.1rem; /* Adjusted for responsiveness */
+        }
+
+        .card-icon {
+            font-size: 1.8rem; /* Adjusted for smaller screens */
+            margin-bottom: 0.5rem;
+        }
+
+        .card-balance {
+            text-align: left;
+            margin-top: 0.5rem;
+        }
+
+        .info-icon {
+            right: 10px;
+            font-size: 1.3rem;
+        }
+
+        .card-row:hover .card-balance {
+            margin-right: 0;
+        }
+
+        .add-card-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container page-title">
+    <h2>Cards</h2>
+</div>
+
+<!-- Wallet Cards Section -->
+<div class="card-header">
+    <h2>Debit Cards</h2>
+    <a href="/fe/add-debit-card" class="add-card-btn">Add Debit Card</a>
+</div>
+{% for card in debit_cards %}
+<div class="card-row">
+    <div class="card-icon card-debit-{{ card.color }}">
+        <i class="bi bi-credit-card"></i>
+    </div>
+    <div class="card-details">
+        <div>Debit Card ending in {{ card.last_four }}</div>
+        <div class="text-muted">Expiry: {{ card.expiry }}</div>
+    </div>
+    <div class="card-balance">
+        <div>Balance: {{ card.balance }} $</div>
+    </div>
+    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+</div>
+{% endfor %}
+
+<div class="divider"></div>
+
+<div class="card-header">
+    <h2>Credit Cards</h2>
+    <a href="/fe/add-credit-card" class="add-card-btn">Add Credit Card</a>
+</div>
+{% for card in credit_cards %}
+<div class="card-row">
+    <div class="card-icon card-credit-blue">
+        <i class="bi bi-credit-card"></i>
+    </div>
+    <div class="card-details">
+        <div>Credit Card ending in {{ card.last_four }}</div>
+        <div class="text-muted">Expiry: {{ card.expiry }}</div>
+    </div>
+    <div class="card-balance">
+        <div>Balance: {{ card.balance }} $</div>
+    </div>
+    <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+</div>
+{% endfor %}
+
+<!-- Add padding to clear fixed footer -->
+<div style="padding-bottom: 80px;"></div>
+{% endblock %}

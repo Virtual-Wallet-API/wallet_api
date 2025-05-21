@@ -2,70 +2,120 @@
 
 {% block styles %}
 <style>
+    /* Search Bar Container */
     .search-container {
         position: relative;
         padding: 0;
-        border: 1px solid #ddd;
+        border: 1px solid var(--accent-color);
         border-radius: 10px;
         font-size: 1.2rem;
         box-shadow: var(--transaction-shadow);
-        transition: background-color 0.2s ease, box-shadow 0.3s ease, border-color 0.2s ease;
-        overflow: hidden; /* Ensure child elements don't overflow */
+        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        overflow: hidden;
     }
 
+    /* Hover Effect (Menu Consistency) */
     .search-container:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
         box-shadow: 0 5px 10px var(--shadow-color);
+        transform: scale(1.01);
     }
 
+    /* Active/Focus Shadow Effect */
     .search-container:has(.search-input:focus, .date-picker:focus, .search-button:focus) {
-        border-color: purple;
+        box-shadow: -8px 0 12px 4px var(--shadow-color), inset -8px 0 12px 4px var(--shadow-color);
+        border-color: var(--accent-color);
     }
 
-    .search-button {
-        width: 5rem;
-    }
-
-
-    .search-container .form-control,
-    .search-container .btn {
+    /* Input Fields */
+    .search-input,
+    .date-picker {
+        background-color: transparent;
+        color: var(--text-color);
         border: none;
-        box-shadow: none;
-        font-size: 1.2rem;
         padding: 2rem 1rem;
-        height: 100%;
-        border-radius: 10px; /* Match container's border-radius */
+        font-size: 1.2rem;
     }
 
-    .search-container .search-input {
-        flex-grow: 1;
+    .search-input {
         border-top-left-radius: 10px;
         border-bottom-left-radius: 10px;
-        border: none;
+        border-right: 1px solid var(--accent-color); /* Border between search input and date picker */
     }
 
-    .search-container .date-picker {
-        max-width: 13%;
+    .date-picker {
+        max-width: 15%;
         flex-shrink: 0;
         border-radius: 0;
+        text-align: center;
+        border-left: 1px solid var(--accent-color);
+        box-shadow: -3px 0 6px rgba(var(--accent-color), 0.7); /* Left shadow with accent color */
+        background: #f8f9fa; /* Light background for light mode */
     }
 
-    .search-container .search-button {
+    .date-picker:focus {
+        box-shadow: -6px 0 12px 2px rgba(var(--accent-color), 0.9); /* More powerful left shadow on focus */
+        transform: scale(1.02); /* Pop-up effect */
+        outline: none;
+    }
+
+    /* Search Button */
+    .search-button {
+        background-color: var(--accent-color);
+        color: #fff;
+        border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
-        padding: 2rem 1rem;
+        padding: 1.3rem 3.5rem;
+        font-size: 2rem;
         border-top-right-radius: 10px;
         border-bottom-right-radius: 10px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
     }
 
+    .search-button:hover {
+        background-color: var(--accent-color-hover);
+        box-shadow: -4px 0 8px rgba(var(--accent-color), 0.7); /* Left shadow with accent color on hover */
+        transform: scale(1.02); /* Pop-up effect */
+    }
+
+    /* Dark Mode Adjustments */
+    [data-bs-theme="dark"] .search-container {
+        background-color: #2a252a;
+        border-color: #444;
+    }
+
+    [data-bs-theme="dark"] .search-input,
+    [data-bs-theme="dark"] .date-picker {
+        background-color: #2a252a;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .date-picker {
+        background-color: #322636 !important; /* Dark purple tint for dark mode */
+        box-shadow: -3px 0 6px rgba(var(--accent-color), 0.7) !important;
+        border-left: 1px solid var(--accent-color) !important;
+    }
+
+    [data-bs-theme="dark"] .date-picker:focus {
+        box-shadow: -6px 0 12px 2px rgba(var(--accent-color), 0.9) !important;
+        transform: scale(1.02);
+    }
+
+    [data-bs-theme="dark"] .date-picker:active {
+        box-shadow: -8px 0 12px 4px rgba(var(--accent-color), 0.9) !important;
+        border-left: 1px solid var(--accent-color) !important;
+    }
+
+    /* Focus Styles */
     .search-container .form-control:focus,
     .search-container .btn:focus {
         box-shadow: none;
         outline: none;
     }
 
+    /* Additional Styles (Retained) */
     .bottom-padding {
         padding-bottom: 4rem;
     }
@@ -86,15 +136,14 @@
     }
 
     .transaction-item.hidden {
-
         max-height: 0;
         padding-top: 0;
         padding-bottom: 0;
         margin-top: 0;
         margin-bottom: 0;
         opacity: 0;
-        pointer-events: none; /* Prevents clicks on the hidden element */
-        visibility: hidden; /* Ensures the element is not visible */
+        pointer-events: none;
+        visibility: hidden;
         transition: max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
     }
 
@@ -111,19 +160,37 @@
     <h3>Transactions</h3>
 </div>
 
+<!-- Flatpickr CSS (default) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<!-- Flatpickr Dark Theme CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Search Bar -->
-<div class="mb-4">
+<div class="mb-5">
     <div class="search-container input-group">
         <input type="text" class="form-control search-input" placeholder="Search transactions..."
                aria-label="Search transactions" id="search-input">
-        <input type="date" class="form-control date-picker search-date-picker" aria-label="Select date">
-        <button class="btn btn-outline-primary search-button" type="button" aria-label="Search">
+        <input type="text" class="form-control date-picker search-date-picker" placeholder="Select date"
+               aria-label="Select date">
+        <button class="btn search-button" type="button" aria-label="Search">
             <i class="bi bi-search"></i>
         </button>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        flatpickr(".date-picker", {
+            dateFormat: "Y-m-d",
+            theme: "dark" // Matches dark mode
+        });
+    });
+</script>
+
+<span># Transactions made last 30 days</span>
 <!-- Transaction List -->
-<div class="mb-4">
+<div class="mb-4" style="padding-top: 1.5rem">
     <div class="transaction-list">
         <div class="initial-transactions">
             <div class="transaction-item" data-date="2023-05-01" data-description="Grocery Store"
@@ -133,43 +200,50 @@
                 <span class="amount">-$50.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-01-15" data-description="Coffee Shop" data-amount="-$12.50" data-category="Food">
+            <div class="transaction-item" data-date="2023-01-15" data-description="Coffee Shop" data-amount="-$12.50"
+                 data-category="Food">
                 <span class="date">2023-01-15</span>
                 <span class="description">Coffee Shop</span>
                 <span class="amount">-$12.50</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-02-03" data-description="Salary Deposit" data-amount="$2500.00" data-category="Income">
+            <div class="transaction-item" data-date="2023-02-03" data-description="Salary Deposit"
+                 data-amount="$2500.00" data-category="Income">
                 <span class="date">2023-02-03</span>
                 <span class="description">Salary Deposit</span>
                 <span class="amount">$2500.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-03-10" data-description="Electric Bill" data-amount="-$85.00" data-category="Utilities">
+            <div class="transaction-item" data-date="2023-03-10" data-description="Electric Bill" data-amount="-$85.00"
+                 data-category="Utilities">
                 <span class="date">2023-03-10</span>
                 <span class="description">Electric Bill</span>
                 <span class="amount">-$85.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-04-22" data-description="Online Subscription" data-amount="-$9.99" data-category="Entertainment">
+            <div class="transaction-item" data-date="2023-04-22" data-description="Online Subscription"
+                 data-amount="-$9.99" data-category="Entertainment">
                 <span class="date">2023-04-22</span>
                 <span class="description">Online Subscription</span>
                 <span class="amount">-$9.99</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-05-05" data-description="Gas Station" data-amount="-$40.00" data-category="Transportation">
+            <div class="transaction-item" data-date="2023-05-05" data-description="Gas Station" data-amount="-$40.00"
+                 data-category="Transportation">
                 <span class="date">2023-05-05</span>
                 <span class="description">Gas Station</span>
                 <span class="amount">-$40.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-06-12" data-description="Freelance Payment" data-amount="$800.00" data-category="Income">
+            <div class="transaction-item" data-date="2023-06-12" data-description="Freelance Payment"
+                 data-amount="$800.00" data-category="Income">
                 <span class="date">2023-06-12</span>
                 <span class="description">Freelance Payment</span>
                 <span class="amount">$800.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-07-19" data-description="Restaurant Dinner" data-amount="-$65.00" data-category="Food">
+            <div class="transaction-item" data-date="2023-07-19" data-description="Restaurant Dinner"
+                 data-amount="-$65.00" data-category="Food">
                 <span class="date">2023-07-19</span>
                 <span class="description">Restaurant Dinner</span>
                 <span class="amount">-$65.00</span>
