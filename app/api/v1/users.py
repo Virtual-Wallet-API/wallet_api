@@ -5,8 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2AuthorizationCodeB
 from sqlalchemy.orm import Session
 from starlette import status
 
-from app.business.user.auth import login_service, registration_service
-from app.business.user.user_validators import validate_id_exists
+from app.business.user.user_auth import login_service, registration_service
+from app.business.user.user_validators import validate_user_exists_from
 from app.dependencies import get_db, get_current_user
 from app.models import User, Contact
 from app.schemas.user import UserCreate, UserPublicResponse
@@ -55,7 +55,7 @@ def create_contact(contact: ContactCreate,
     """
     Creates a new contact for the authenticated user.
     """
-    validate_id_exists(contact.contact_id, db)
+    validate_user_exists_from("id", contact.contact_id, db)
 
     db_contact = (db.query(Contact)
                   .filter(Contact.contact_id == contact.contact_id and Contact.user_id == user.id).first())

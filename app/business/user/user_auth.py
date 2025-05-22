@@ -20,11 +20,14 @@ def registration_service(user: UserCreate, db: Session):
 
 
 def login_service(db: Session, user: OAuth2PasswordRequestForm = Depends()):
+    exc = HTTPException(status_code=400, detail="Incorrect username or password")
+
     db_user = db.query(User).filter(User.username == user.username).first()
     if not db_user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise exc
+
     # if not pwd_context.verify(db_user.hashed_password, user.password):
     if not db_user.hashed_password == user.password:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise exc
 
     return {"access_token": generate_token(db_user.username), "token_type": "Bearer"}

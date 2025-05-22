@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import HTTPException
 
 from sqlalchemy.orm import Session
@@ -7,57 +9,33 @@ from app.models import User
 not_exist = HTTPException(status_code=400, detail="User with these details does not exist")
 
 
-def check_username(username: str, db: Session):
+def check_user_with(field: str, value: str | int, db: Session) -> User | bool:
     try:
-        return validate_username_exists(username, db)
+        return validate_user_exists_from(field, value, db)
     except HTTPException:
         return False
 
 
-def check_id(uid: int, db: Session):
-    try:
-        return validate_id_exists(uid, db)
-    except HTTPException:
-        return False
+def validate_user_exists_from(field: str, value: str | int, db: Session) -> User:
+    """
+    Returns a user matching the given field and value or raises exception 400 if not found.
+    :param field: The database field to search for.
+    :param value: The value to search for.
+    :param db: The database session.
+    :return: User object or raises an exception.
+    """
+    fields = {
+        "username": User.username,
+        "email": User.email,
+        "phone": User.phone_number,
+        "id": User.id
+    }
 
+    if field not in fields:
+        raise ValueError("Invalid field provided for validate_user_exists_from function.")
 
-def check_email(email: str, db: Session):
-    try:
-        return validate_email_exists(email, db)
-    except HTTPException:
-        return False
-
-
-def check_phone(phone: str, db: Session):
-    try:
-        return validate_phone_exists(phone, db)
-    except HTTPException:
-        return False
-
-
-def validate_username_exists(username: str, db: Session):
-    user = db.query(User).filter(User.username == username).first()
+    user: Optional[User] = db.query(User).filter(fields[field] == value).first()
     if user:
         return user
-    raise not_exist
 
-
-def validate_id_exists(uid: int, db: Session):
-    user = db.query(User).filter(User.id == uid).first()
-    if user:
-        return user
-    raise not_exist
-
-
-def validate_email_exists(email: str, db: Session):
-    user = db.query(User).filter(User.email == email).first()
-    if user:
-        return user
-    raise not_exist
-
-
-def validate_phone_exists(phone: int, db: Session):
-    user = db.query(User).filter(User.phone_number == phone).first()
-    if user:
-        return user
     raise not_exist
