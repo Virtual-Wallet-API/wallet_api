@@ -244,20 +244,20 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="ajax-login" method="post">
                         <div class="mb-3">
-                            <label for="loginUsername" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="loginUsername" required>
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" value="Testing" required>
                         </div>
                         <div class="mb-3">
-                            <label for="loginPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" value="Testing" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Login</button>
+                    <input type="submit" class="btn btn-primary" value="Login" id="ajax-submit" form="ajax-login">
                 </div>
             </div>
         </div>
@@ -279,15 +279,15 @@
                         </div>
                         <div class="mb-3">
                             <label for="registerEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="registerEmail" required>
+                            <input type="email" class="form-control" autocomplete="studying" id="registerEmail" required>
                         </div>
                         <div class="mb-3">
                             <label for="registerPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="registerPassword" required>
+                            <input type="password" class="form-control" autocomplete="studying" id="registerPassword" required>
                         </div>
                         <div class="mb-3">
                             <label for="registerConfirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="registerConfirmPassword" required>
+                            <input type="password" class="form-control" autocomplete="studying" id="registerConfirmPassword" required>
                         </div>
                     </form>
                 </div>
@@ -338,4 +338,50 @@
         }
     </script>
 </body>
+<script type="text/javascript">
+    $(document).ready(function(e){
+        $("#ajax-login").submit(function(e){
+            console.log("submit");
+            e.preventDefault();
+
+            let username = $("#username").val();
+            let password = $("#password").val();
+            console.log(username, password);
+
+            if (!username || !password) {
+                alert("Please fill in all fields");
+            }
+
+            let data = {"username": username, "password": password};
+            $.ajax({
+                url: "/api/v1/users/token",
+                type: "POST",
+                data: data,
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                dataType: "application/json",
+                success: function(data, textStatus, xhr) {
+                // Extract Bearer token
+                    console.log(xhr.getAllResponseHeaders());
+                let token = xhr.getResponseHeader('Authorization');
+                if (token) {
+                    localStorage.setItem('token', token);
+                } else {
+                    $('#loginError').text('Login successful, but no token received').removeClass('d-none');
+                }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    console.log("Response Headers:", xhr.getAllResponseHeaders());
+                    console.log("Response Text:", xhr.responseText);
+                    let errorMessage = 'An error occurred. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.detail) {
+                        errorMessage = xhr.responseJSON.detail;
+                    } else if (xhr.responseText) {
+                        errorMessage = xhr.responseText;
+                    }
+                    $('#loginError').text(errorMessage).removeClass('d-none');
+                }
+            })
+        })
+    })
+</script>
 </html>
