@@ -10,6 +10,13 @@ not_exist = HTTPException(status_code=400, detail="User with these details does 
 
 
 def check_user_with(field: str, value: str | int, db: Session) -> User | bool:
+    """
+    Check if a user exists in the database based on a specific field and value.
+    :param field: The field to search for the user (e.g., username, email).
+    :param value: The value corresponding to the field to be checked for the user.
+    :param db: The database session used to perform the user verification query.
+    :return: The `User` object if the user is found, otherwise returns `False`.
+    """
     try:
         return validate_user_exists_from(field, value, db)
     except HTTPException:
