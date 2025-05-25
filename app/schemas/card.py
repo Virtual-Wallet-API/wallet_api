@@ -8,8 +8,10 @@ UserResponse = ForwardRef("UserResponse")
 
 class CardBase(BaseModel):
     number: str
+    cardholder: str
     expiration_date: datetime
-    balance: float = 0
+
+
 
     @field_validator('number')
     def number_must_be_16_digits(cls, v):
@@ -23,10 +25,10 @@ class CardType(Enum):
     CREDIT = "credit"
 
 
-class CardCreate(BaseModel):
+class CardCreate(CardBase):
     design: str
-    cardholder: str
     type: CardType
+    cvv: int
 
 
 class CardPrivateResponse(CardBase):
@@ -35,10 +37,12 @@ class CardPrivateResponse(CardBase):
 
 class CardPublicResponse(CardBase):
     id: int
-    cardholder: str
     type: CardType
     design: str
 
+    @field_validator('number')
+    def last_four_digits(cls, v):
+        return v[-4:]
     class Config:
         from_attributes = True
 

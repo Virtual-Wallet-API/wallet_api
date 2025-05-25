@@ -11,13 +11,13 @@ class Card(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     number = Column(String, nullable=False)
     expiration_date = Column(DateTime, nullable=False)
-    balance = Column(Float, nullable=False, default=0)
     cardholder = Column(String, nullable=False)
     cvv = Column(Integer, nullable=False)
     type = Column(Enum("credit", "debit", name="card_type"), nullable=False)
     design = Column(String, nullable=False, default='{"color": "purple"}')
 
     user = relationship("User", back_populates="cards")
+    deposits = relationship("Deposit", back_populates="card")
 
     @validates("number")
     def validate_number(self, key, v: str):
@@ -34,4 +34,4 @@ class Card(Base):
         return v
 
     def __repr__(self):
-        return f"< {self.type.capitalize()} Card #{self.id} | {self.user.username} | ${self.balance} >"
+        return f"< {self.type.capitalize()} Card #{self.id} | {self.user.username}   >"
