@@ -40,6 +40,16 @@ pending_user = HTTPException(
     detail="User is pending, awaiting approval"
 )
 
+deactivated_user = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="User is deactivated, reactivate to access"
+)
+
+blocked_user = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="User is blocked"
+)
+
 
 def verify_token(token: str):
     """
