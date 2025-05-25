@@ -34,6 +34,7 @@ def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(
     """
     if user.status == "pending":
         raise pending_user
+    return user
 
 
 def get_current_admin(admin: User = Depends(get_current_user)):
