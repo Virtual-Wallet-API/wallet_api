@@ -17,6 +17,7 @@ class Card(Base):
     design = Column(String, nullable=False, default='{"color": "purple"}')
 
     user = relationship("User", back_populates="cards")
+    deposits = relationship("Deposit", back_populates="card")
 
     @validates("number")
     def validate_number(self, key, v: str):
