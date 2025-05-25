@@ -7,3 +7,4 @@ from .deposit import Deposit
 from .transaction import Transaction
 from .category import Category
 from .recurring_transation import RecurringTransaction
+from .currency import Currency
