@@ -35,6 +35,11 @@ forbidden_access = HTTPException(
     detail="Access denied"
 )
 
+pending_user = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="User is pending, awaiting approval"
+)
+
 
 def verify_token(token: str):
     """
