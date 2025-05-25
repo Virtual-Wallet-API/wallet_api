@@ -39,7 +39,7 @@ def validate_user_exists_from(field: str, value: str | int, db: Session) -> User
     }
 
     if field not in fields:
-        raise ValueError("Invalid field provided for validate_user_exists_from function.")
+        raise ValueError(f"Invalid field '{field}' provided for validate_user_exists_from function.")
 
     user: Optional[User] = db.query(User).filter(fields[field] == value).first()
     if user:

@@ -19,10 +19,7 @@ class UserBase(BaseModel):
     username: str
     email: EmailStr
     phone_number: str
-    balance: float = 0
-    admin: bool = False
     avatar: Optional[str] = None
-    status: Status = Status.pending
 
 
 class UserPublicBase(BaseModel):
@@ -33,12 +30,12 @@ class UserPublicBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    hashed_password: str
 
 
 class UserUpdate(UserBase):
     username: Optional[str] = None
-    password: Optional[str] = None
+    hashed_password: Optional[str] = None
     email: Optional[str] = None
     balance: Optional[float] = None
     avatar: Optional[str] = None
