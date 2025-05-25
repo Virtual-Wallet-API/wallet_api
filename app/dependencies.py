@@ -2,7 +2,7 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access
+from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access, pending_user
 from app.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
@@ -25,6 +25,15 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
 
     if not user:
         raise invalid_credentials
+    return user
+
+
+def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """
+        Return the User instance of the logged-in user if they are active.
+    """
+    if user.status == "pending":
+        raise pending_user
     return user
 
 
