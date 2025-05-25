@@ -28,8 +28,6 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         raise invalid_credentials
     if user.status == "blocked":
         raise blocked_user
-    elif user.status == "deactivated":
-        raise deactivated_user
     return user
 
 
@@ -39,6 +37,8 @@ def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(
     """
     if user.status == "pending":
         raise pending_user
+    elif user.status == "deactivated":
+        raise deactivated_user
     return user
 
 
