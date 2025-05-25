@@ -14,9 +14,11 @@ class Transaction(Base):
     date = Column(DateTime, nullable=False)
     status = Column(Enum("pending", "completed", "failed", name="status"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
     category = relationship("Category", back_populates="transactions")
     recurring_transaction = relationship("RecurringTransaction", back_populates="transaction")
+    currency = relationship("Currency", back_populates="transactions")
 
     @validates("amount")
     def validate_amount(self, key, v: float):
