@@ -11,4 +11,4 @@ class Currency(Base):
     code = Column(String, nullable=False)
 
     deposits = relationship("Deposit", back_populates="currency")
-
+    transactions = relationship("Transaction", back_populates="currency")
