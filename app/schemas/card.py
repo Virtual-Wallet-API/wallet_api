@@ -31,7 +31,7 @@ class CardCreate(CardBase):
     cvv: int
 
 
-class CardPrivateResponse(CardBase):
+class CardResponse(CardBase):
     id: int
     user: UserResponse
 

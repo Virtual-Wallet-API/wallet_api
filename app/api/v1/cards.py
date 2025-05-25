@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user
 from app.models import Card, User
-from app.schemas.card import CardPrivateResponse, CardCreate, CardBase
+from app.schemas.card import CardResponse, CardCreate, CardBase
 
 router = APIRouter(tags=["Cards"])
 
 
-@router.post("/", response_model=CardPrivateResponse, response_model_exclude={"balance"})
+@router.post("/", response_model=CardResponse, response_model_exclude={"balance"})
 def create_card(card: CardCreate,
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
