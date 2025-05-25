@@ -13,8 +13,10 @@ class Deposit(Base):
     date = Column(DateTime, nullable=False)
     type = Column(Enum("credit", "debit", name="card_type"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
     user = relationship("User", back_populates="deposits")
+    currency = relationship("Currency", back_populates="deposits")
 
     @validates("amount")
     def validate_amount(self, key, v: float):
