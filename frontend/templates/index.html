@@ -350,6 +350,7 @@
 
             if (!username || !password) {
                 alert("Please fill in all fields");
+                return;
             }
 
             let data = {"username": username, "password": password};
@@ -358,16 +359,18 @@
                 type: "POST",
                 data: data,
                 contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                dataType: "application/json",
+                dataType: "json",
                 success: function(data, textStatus, xhr) {
-                // Extract Bearer token
-                    console.log(xhr.getAllResponseHeaders());
-                let token = xhr.getResponseHeader('Authorization');
-                if (token) {
-                    localStorage.setItem('token', token);
-                } else {
-                    $('#loginError').text('Login successful, but no token received').removeClass('d-none');
-                }
+                    // Extract token from response body (FastAPI OAuth2 standard)
+                    let token = data.access_token;
+                    if (token) {
+                        // Set token in a cookie
+                        document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; Secure; SameSite=Strict`;
+                        // Redirect to /overview
+                        window.location.href = "/fe/overview";
+                    } else {
+                        $('#loginError').text('Login successful, but no token received').removeClass('d-none');
+                    }
                 },
                 error: function(xhr, textStatus, errorThrown) {
                     console.log("Response Headers:", xhr.getAllResponseHeaders());
@@ -380,8 +383,8 @@
                     }
                     $('#loginError').text(errorMessage).removeClass('d-none');
                 }
-            })
-        })
-    })
+            });
+        });
+    });
 </script>
 </html>
