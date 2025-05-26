@@ -244,6 +244,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="loginError" style="display: None;"></div>
                     <form id="ajax-login" method="post">
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
@@ -363,25 +364,52 @@
                 success: function(data, textStatus, xhr) {
                     // Extract token from response body (FastAPI OAuth2 standard)
                     let token = data.access_token;
-                    if (token) {
+                    if (token && typeof token === "string" && token.trim() !== "") {
                         // Set token in a cookie
                         document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; Secure; SameSite=Strict`;
-                        // Redirect to /overview
-                        window.location.href = "/fe/overview";
+                        // Show success message briefly before redirect
+                        $('#loginError')
+                            .text('Login successful, redirecting...')
+                            .removeClass('alert-danger')
+                            .addClass('alert-success')
+                            .removeClass('d-none')
+                            .css('display', 'block');
+                        setTimeout(() => {
+                            window.location.href = "/fe/overview";
+                        }, 1000); // 1-second delay for UX
                     } else {
-                        $('#loginError').text('Login successful, but no token received').removeClass('d-none');
+                        $('#loginError')
+                            .text('Error: No valid token received')
+                            .removeClass('alert-success')
+                            .addClass('alert-danger')
+                            .removeClass('d-none')
+                            .css('display', 'block');
                     }
                 },
                 error: function(xhr, textStatus, errorThrown) {
                     console.log("Response Headers:", xhr.getAllResponseHeaders());
                     console.log("Response Text:", xhr.responseText);
                     let errorMessage = 'An error occurred. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.detail) {
-                        errorMessage = xhr.responseJSON.detail;
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.detail) {
+                            // Handle both string and array detail formats
+                            if (Array.isArray(xhr.responseJSON.detail)) {
+                                errorMessage = xhr.responseJSON.detail.map(err => err.msg || JSON.stringify(err)).join('; ');
+                            } else {
+                                errorMessage = xhr.responseJSON.detail;
+                            }
+                        } else {
+                            errorMessage = JSON.stringify(xhr.responseJSON);
+                        }
                     } else if (xhr.responseText) {
                         errorMessage = xhr.responseText;
                     }
-                    $('#loginError').text(errorMessage).removeClass('d-none');
+                    $('#loginError')
+                        .text(errorMessage)
+                        .removeClass('alert-success')
+                        .addClass('alert-danger')
+                        .removeClass('d-none')
+                        .css('display', 'block');
                 }
             });
         });
