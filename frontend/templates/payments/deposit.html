@@ -43,7 +43,7 @@
     }
 
     [data-bs-theme="light"] .deposit-box {
-        background: linear-gradient(135deg, #f0f2f5, #e6e9ec); /* Soft gradient */
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
     }
 
     [data-bs-theme="dark"] .deposit-box {
@@ -65,6 +65,8 @@
     .form-group label {
         display: block;
         margin-bottom: 1rem;
+        font-weight: 500;
+        color: var(--text-color);
     }
 
     .form-control {
@@ -72,16 +74,16 @@
         border: 1px solid var(--accent-color);
         border-radius: 8px;
         padding: 1rem;
-        font-size: 1.4rem; /* Slightly larger */
-        color: #6f42c1; /* Dark purple in light mode */
-        letter-spacing: 0.05em; /* Slight spacing for numbers */
+        font-size: 1.4rem;
+        color: #6f42c1;
+        letter-spacing: 0.05em;
         box-shadow: 0 2px 4px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
         transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
     }
 
     [data-bs-theme="dark"] .form-control {
         background-color: #333;
-        color: var(--accent-color); /* Accent color in dark mode */
+        color: var(--accent-color);
     }
 
     .form-control:focus {
@@ -91,153 +93,51 @@
         outline: none;
     }
 
-    /* Payment Method Buttons */
-    .payment-method-group {
-        display: flex;
-        justify-content: space-around;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .payment-method-btn {
-        background: none;
-        border: 1px solid transparent;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        border-radius: 12px;
-    }
-
-    [data-bs-theme="light"] .payment-method-btn {
-        color: #a18dd6;
-    }
-
-    [data-bs-theme="dark"] .payment-method-btn {
-        color: var(--accent-color);
-    }
-
-    .payment-method-btn i {
-        font-size: 4rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .payment-method-btn span {
-        font-size: 1.1rem;
-        font-weight: 400;
-    }
-
-    .payment-method-btn:hover {
-        transform: scale(1.05);
-    }
-
-    [data-bs-theme="light"] .payment-method-btn:hover {
-        color: #6f42c1;
-        border: 2px solid var(--accent-color-hover);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
-    }
-
-    [data-bs-theme="dark"] .payment-method-btn:hover {
-        color: white;
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
-    }
-
-    .payment-method-btn.active {
-        transform: translateY(-2px);
-    }
-
-    [data-bs-theme="light"] .payment-method-btn.active {
-        color: #6f42c1;
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
-    }
-
-    [data-bs-theme="dark"] .payment-method-btn.active {
-        color: white;
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
-    }
-
-    /* Currency Dropdown */
-    .currency-btn {
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
-        color: white;
-        padding: 1rem 1rem;
-        font-size: 1.4rem;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        margin-right: -1px;
-        height: 100%;
-        transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-        box-shadow: 0 2px 4px var(--shadow-color);
-    }
-
-    [data-bs-theme="light"] .currency-btn:hover {
-        background-color: var(--accent-color-hover);
-        border-color: var(--accent-color-hover);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
-        transform: translateY(-1px); /* Toned down */
-    }
-
-    [data-bs-theme="dark"] .currency-btn:hover {
-        background-color: var(--accent-color-hover);
-        border-color: var(--accent-color-hover);
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
-        transform: translateY(-2px);
-    }
-
-    .amount-group:has(.form-control:focus) .currency-btn {
-        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
-    }
-
-    .dropdown-menu {
-        background-color: var(--bs-body-bg);
-        border: 1px solid var(--bs-border-color);
+    /* Stripe Elements Styling */
+    .stripe-element {
+        background-color: transparent;
+        border: 1px solid var(--accent-color);
         border-radius: 8px;
-        box-shadow: 0 3px 6px var(--shadow-color);
-        font-size: 1.3rem;
-        max-height: 300px; /* Fixed height for scrollbar */
-        overflow-y: auto; /* Add scrollbar */
+        padding: 1rem;
+        font-size: 1.4rem;
+        box-shadow: 0 2px 4px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
+        transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
     }
 
-    [data-bs-theme="light"] .dropdown-menu {
-        background-color: #e0e3e6;
+    [data-bs-theme="dark"] .stripe-element {
+        background-color: #333;
     }
 
-    [data-bs-theme="dark"] .dropdown-menu {
-        background-color: #2a2a2a;
-        border-color: #444;
+    .stripe-element:focus {
+        border-color: var(--accent-color-hover);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4), inset 0 1px 3px rgba(var(--accent-color-rgb), 0.3);
+        transform: scale(1.01);
+        outline: none;
     }
 
-    .dropdown-item {
-        padding: 0.5rem 1.5rem;
-        color: var(--text-color);
-        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-    }
-
-    .dropdown-item:hover {
-        background-color: var(--accent-color-hover);
-        color: white;
-        transform: translateX(3px);
-    }
-
-    .dropdown-item:last-child:hover {
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-    }
-
-    .dropdown-item i {
-        margin-right: 8px;
+    .stripe-element.StripeElement--invalid {
+        border-color: #dc3545;
     }
 
     /* Amount Input Group */
     .amount-group {
         display: flex;
         align-items: stretch;
+    }
+
+    .currency-display {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.4rem;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        margin-right: -1px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
     }
 
     .amount-group .form-control {
@@ -247,7 +147,7 @@
         flex-grow: 1;
     }
 
-    /* Confirm Button */
+    /* Buttons */
     .confirm-btn {
         background-color: var(--accent-color);
         border-color: var(--accent-color);
@@ -259,13 +159,61 @@
         margin-top: 1.5rem;
         transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         box-shadow: 0 4px 8px var(--shadow-color);
+        border: none;
+        cursor: pointer;
     }
 
-    .confirm-btn:hover {
+    .confirm-btn:hover:not(:disabled) {
         background-color: var(--accent-color-hover);
         border-color: var(--accent-color-hover);
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    .confirm-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .save-card-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .save-card-checkbox input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+        accent-color: var(--accent-color);
+    }
+
+    /* Loading and Error States */
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-radius: 4px;
+        border-left: 3px solid #dc3545;
+    }
+
+    .success-message {
+        color: #28a745;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: rgba(40, 167, 69, 0.1);
+        border-radius: 4px;
+        border-left: 3px solid #28a745;
     }
 
     /* Responsive Adjustments */
@@ -289,45 +237,20 @@
             padding: 0 1rem;
         }
 
-        .form-group label {
-            margin-bottom: 0.75rem;
-        }
-
-        .form-control {
+        .form-control, .stripe-element {
             font-size: 1.2rem;
             padding: 0.8rem;
         }
 
-        .payment-method-btn {
-            flex: 1 1 45%;
-        }
-
-        .payment-method-btn i {
-            font-size: 3.5rem;
-        }
-
-        .payment-method-btn span {
-            font-size: 1rem;
-        }
-
-        .currency-btn {
+        .currency-display {
             font-size: 1.2rem;
-            padding: 0.8rem 0.8rem;
-        }
-
-        .dropdown-menu {
-            font-size: 1.1rem;
-            max-height: 200px; /* Smaller height for mobile */
+            padding: 0.8rem 1.2rem;
         }
 
         .confirm-btn {
             font-size: 1.4rem;
             padding: 1rem 2rem;
             margin-top: 1.5rem;
-        }
-
-        .payment-method-group {
-            gap: 0.5rem;
         }
     }
 </style>
@@ -336,70 +259,46 @@
 {% block content %}
 <div class="deposit-title">Make a Deposit</div>
 
-<!-- Deposit Box -->
+<!-- Deposit Box with Stripe Integration -->
 <div class="deposit-box">
-    <form>
-        <div class="form-group">
-            <label for="payment-method">Payment Method</label>
-            <div class="payment-method-group">
-                <button type="button" class="payment-method-btn" data-value="debit-card" onclick="selectPaymentMethod('Debit Card', 'debit-card', this)">
-                    <i class="bi bi-credit-card"></i>
-                    <span>Debit Card</span>
-                </button>
-                <button type="button" class="payment-method-btn" data-value="credit-card" onclick="selectPaymentMethod('Credit Card', 'credit-card', this)">
-                    <i class="bi bi-credit-card-2-front"></i>
-                    <span>Credit Card</span>
-                </button>
-                <button type="button" class="payment-method-btn" data-value="bank-transfer" onclick="selectPaymentMethod('Bank Transfer', 'bank-transfer', this)">
-                    <i class="bi bi-bank"></i>
-                    <span>Bank Transfer</span>
-                </button>
-                <button type="button" class="payment-method-btn" data-value="cryptocurrency" onclick="selectPaymentMethod('Cryptocurrency', 'cryptocurrency', this)">
-                    <i class="bi bi-currency-bitcoin"></i>
-                    <span>Cryptocurrency</span>
-                </button>
-            </div>
-            <select class="form-control" id="payment-method" name="payment-method" style="display: none;" required>
-                <option value="" disabled selected>Select Payment Method</option>
-                <option value="debit-card">Debit Card</option>
-                <option value="credit-card">Credit Card</option>
-                <option value="bank-transfer">Bank Transfer</option>
-                <option value="cryptocurrency">Cryptocurrency</option>
-            </select>
-        </div>
+    <form id="deposit-form">
+        <!-- Amount Input -->
         <div class="form-group">
             <label for="amount">Amount</label>
             <div class="amount-group">
-                <div class="dropdown">
-                    <button class="btn currency-btn dropdown-toggle" type="button" id="currency" data-bs-toggle="dropdown" aria-expanded="false">
-                        USD
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="currency">
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('USD'); return false;"><i class="bi bi-currency-dollar"></i> USD ($)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('EUR'); return false;"><i class="bi bi-currency-euro"></i> EUR (€)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('GBP'); return false;"><i class="bi bi-currency-pound"></i> GBP (£)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('JPY'); return false;"><i class="bi bi-currency-yen"></i> JPY (¥)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('AUD'); return false;"><i class="bi bi-currency-dollar"></i> AUD (A$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CAD'); return false;"><i class="bi bi-currency-dollar"></i> CAD (C$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CHF'); return false;"><i class="bi bi-currency-franc"></i> CHF (Fr)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('CNY'); return false;"><i class="bi bi-currency-yuan"></i> CNY (¥)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('INR'); return false;"><i class="bi bi-currency-rupee"></i> INR (₹)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('BRL'); return false;"><i class="bi bi-currency-dollar"></i> BRL (R$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('RUB'); return false;"><i class="bi bi-currency-ruble"></i> RUB (₽)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('KRW'); return false;"><i class="bi bi-currency-won"></i> KRW (₩)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('SGD'); return false;"><i class="bi bi-currency-dollar"></i> SGD (S$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('NZD'); return false;"><i class="bi bi-currency-dollar"></i> NZD (NZ$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('MXN'); return false;"><i class="bi bi-currency-dollar"></i> MXN (Mex$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('HKD'); return false;"><i class="bi bi-currency-dollar"></i> HKD (HK$)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('NOK'); return false;"><i class="bi bi-currency-krone"></i> NOK (kr)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('SEK'); return false;"><i class="bi bi-currency-krone"></i> SEK (kr)</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="selectCurrency('BTC'); return false;"><i class="bi bi-currency-bitcoin"></i> BTC (₿)</a></li>
-                    </ul>
-                </div>
-                <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount" step="0.01" min="0" required>
+                <div class="currency-display">USD</div>
+                <input type="number" class="form-control" id="amount" name="amount"
+                       placeholder="Enter amount" step="0.01" min="0.50" max="10000" required>
+            </div>
+            <div id="amount-error" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Card Element -->
+        <div class="form-group">
+            <label for="card-element">Card Information</label>
+            <div id="card-element" class="stripe-element">
+                <!-- Stripe Elements will create form elements here -->
+            </div>
+            <div id="card-errors" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Save Card Option -->
+        <div class="form-group">
+            <div class="save-card-checkbox">
+                <input type="checkbox" id="save-card" name="save-card">
+                <label for="save-card">Save this card for future deposits</label>
             </div>
         </div>
-        <button type="submit" class="confirm-btn">Confirm Deposit</button>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-button" class="confirm-btn">
+            <span id="button-text">Confirm Deposit</span>
+            <span id="spinner" style="display: none;">Processing...</span>
+        </button>
+
+        <!-- Messages -->
+        <div id="success-message" class="success-message" style="display: none;"></div>
+        <div id="error-message" class="error-message" style="display: none;"></div>
     </form>
 </div>
 
@@ -408,19 +307,217 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
 <script>
-function selectPaymentMethod(displayText, value, button) {
-    document.getElementById('payment-method').value = value;
-    document.querySelectorAll('.payment-method-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    button.classList.add('active');
-    console.log(`Selected payment method: ${displayText}`);
+// Initialize Stripe
+let stripe;
+let elements;
+let card;
+
+// API Configuration
+const API_BASE = '/api/v1';
+
+// Initialize Stripe Elements
+async function initializeStripe() {
+    try {
+        // Get Stripe publishable key from backend
+        const configResponse = await fetch(`${API_BASE}/cards/config`);
+        const config = await configResponse.json();
+
+        stripe = Stripe(config.publishable_key);
+        elements = stripe.elements();
+
+        // Create card element with custom styling
+        const style = {
+            base: {
+                fontSize: '16px',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text-color') || '#424770',
+                '::placeholder': {
+                    color: '#aab7c4',
+                },
+                fontFamily: 'Poppins, sans-serif',
+            },
+            invalid: {
+                color: '#dc3545',
+                iconColor: '#dc3545'
+            }
+        };
+
+        card = elements.create('card', { style: style });
+        card.mount('#card-element');
+
+        // Handle real-time validation errors from the card Element
+        card.on('change', ({ error }) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+                displayError.style.display = 'block';
+            } else {
+                displayError.style.display = 'none';
+            }
+        });
+
+    } catch (error) {
+        console.error('Error initializing Stripe:', error);
+        showError('Failed to initialize payment system. Please refresh the page.');
+    }
 }
 
-function selectCurrency(currency) {
-    document.getElementById('currency').textContent = currency;
-    console.log(`Selected currency: ${currency}`);
+// Handle form submission
+document.getElementById('deposit-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+
+    // Validate amount
+    const amount = parseFloat(document.getElementById('amount').value);
+    if (!amount || amount < 0.50) {
+        showError('Please enter a valid amount (minimum $0.50)');
+        return;
+    }
+
+    // Set loading state
+    setLoading(true);
+
+    try {
+        // Get auth token (you'll need to implement this based on your auth system)
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (!token) {
+            showError('Please log in to make a deposit');
+            setLoading(false);
+            return;
+        }
+
+        // Create payment intent
+        const paymentIntentResponse = await fetch(`${API_BASE}/deposits/payment-intent`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                amount_cents: Math.round(amount * 100),
+                currency: 'usd',
+                description: 'Wallet deposit',
+                save_payment_method: document.getElementById('save-card').checked
+            })
+        });
+
+        if (!paymentIntentResponse.ok) {
+            const errorData = await paymentIntentResponse.json();
+            throw new Error(errorData.detail || 'Failed to create payment intent');
+        }
+
+        const { client_secret, deposit_id } = await paymentIntentResponse.json();
+
+        // Confirm payment with Stripe
+        const { error, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
+            payment_method: {
+                card: card,
+                billing_details: {
+                    name: 'Wallet User', // You can get this from user profile
+                }
+            }
+        });
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        // Confirm deposit on backend
+        const confirmResponse = await fetch(`${API_BASE}/deposits/confirm`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                payment_intent_id: paymentIntent.id,
+                save_card: document.getElementById('save-card').checked,
+                cardholder_name: 'Wallet User'
+            })
+        });
+
+        if (!confirmResponse.ok) {
+            const errorData = await confirmResponse.json();
+            throw new Error(errorData.detail || 'Failed to confirm deposit');
+        }
+
+        const depositResult = await confirmResponse.json();
+
+        // Show success message
+        showSuccess(`Deposit successful! $${amount.toFixed(2)} has been added to your wallet.`);
+
+        // Reset form
+        document.getElementById('deposit-form').reset();
+        card.clear();
+
+        // Optionally redirect or update balance display
+        setTimeout(() => {
+            // You can redirect to dashboard or update balance
+            // window.location.href = '/dashboard';
+        }, 2000);
+
+    } catch (error) {
+        console.error('Deposit error:', error);
+        showError(error.message || 'An error occurred while processing your deposit');
+    } finally {
+        setLoading(false);
+    }
+});
+
+// Utility functions
+function setLoading(loading) {
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+
+    if (loading) {
+        submitButton.disabled = true;
+        buttonText.style.display = 'none';
+        spinner.style.display = 'inline';
+        document.querySelector('.deposit-box').classList.add('loading');
+    } else {
+        submitButton.disabled = false;
+        buttonText.style.display = 'inline';
+        spinner.style.display = 'none';
+        document.querySelector('.deposit-box').classList.remove('loading');
+    }
 }
+
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    const successDiv = document.getElementById('success-message');
+
+    successDiv.style.display = 'none';
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const errorDiv = document.getElementById('error-message');
+    const successDiv = document.getElementById('success-message');
+
+    errorDiv.style.display = 'none';
+    successDiv.textContent = message;
+    successDiv.style.display = 'block';
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', initializeStripe);
 </script>
 {% endblock %}
