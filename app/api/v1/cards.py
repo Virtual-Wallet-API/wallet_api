@@ -7,9 +7,9 @@ from app.models.user import User
 from app.schemas.card import (
     CardResponse, CardUpdate, CardPublicResponse, CardListResponse,
     PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse,
-    CardDelete, WithdrawalRequest, WithdrawalResponse,
-    RefundRequest, RefundResponse
+    CardDelete
 )
+
 from app.business.card_service import CardService
 from app.config import STRIPE_PUBLISHABLE_KEY
 
@@ -98,21 +98,4 @@ def set_default_card(
     card_update = CardUpdate(is_default=True)
     return CardService.update_card(db, user, card_id, card_update)
 
-# Withdrawal endpoints
-@router.post("/withdraw", response_model=WithdrawalResponse)
-async def withdraw_to_card(
-    withdrawal_request: WithdrawalRequest,
-    user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Withdraw funds from wallet to a specific card"""
-    return await CardService.withdraw_to_card(db, user, withdrawal_request)
 
-@router.post("/refund", response_model=RefundResponse)
-async def create_refund(
-    refund_request: RefundRequest,
-    user: User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Create a refund back to the original payment method"""
-    return await CardService.create_refund(db, user, refund_request)

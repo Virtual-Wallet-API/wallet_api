@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from app.infrestructure.database import Base, engine
 from app.api.v1.users import router as users_router
 from app.api.v1.cards import router as cards_router
+from app.api.v1.deposits import router as deposits_router
+from app.api.v1.withdrawals import router as withdrawals_router
 import frontend.frontend
 
 print("Create all...")
@@ -14,6 +16,8 @@ app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
 prefix = "/api/v1"
 app.include_router(users_router, prefix=prefix + "/users")
 app.include_router(cards_router, prefix=prefix + "/cards")
+app.include_router(deposits_router, prefix=prefix + "/deposits")
+app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

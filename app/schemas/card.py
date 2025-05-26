@@ -66,39 +66,7 @@ class SetupIntentResponse(BaseModel):
     status: str
 
 
-# Withdrawal schemas
-class WithdrawalRequest(BaseModel):
-    amount: int  # Amount in cents
-    card_id: int
-    description: Optional[str] = "Wallet withdrawal"
-    currency: str = "usd"
-
-
-class RefundRequest(BaseModel):
-    amount: int  # Amount in cents
-    payment_intent_id: str
-    reason: Optional[str] = "requested_by_customer"
-    description: Optional[str] = "Refund to original payment method"
-
-
-class WithdrawalResponse(BaseModel):
-    withdrawal_id: str
-    amount: int
-    currency: str
-    status: str
-    card_last_four: str
-    created_at: datetime
-    estimated_arrival: Optional[str] = None
-
-
-class RefundResponse(BaseModel):
-    refund_id: str
-    amount: int
-    currency: str
-    status: str
-    reason: str
-    created_at: datetime
-
+# Withdrawal schemas moved to app/schemas/withdrawal.py
 
 # Schema for card response (safe information only)
 class CardResponse(BaseModel):

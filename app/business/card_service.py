@@ -6,12 +6,14 @@ from datetime import datetime
 
 from app.models.card import Card
 from app.models.user import User
+
+from app.models.currency import Currency
 from app.schemas.card import (
     CardCreate, CardUpdate, CardResponse, CardPublicResponse,
     PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse,
-    CardListResponse, WithdrawalRequest, WithdrawalResponse,
-    RefundRequest, RefundResponse
+    CardListResponse
 )
+
 from app.infrestructure.stripe_service import StripeService
 
 logger = logging.getLogger(__name__)
@@ -316,122 +318,3 @@ class CardService:
                 detail="Failed to delete card"
             )
 
-    # Withdrawal methods
-    @staticmethod
-    async def create_refund(
-            db: Session,
-            user: User,
-            refund_request: RefundRequest
-    ) -> RefundResponse:
-        """Create a refund back to the original payment method"""
-        try:
-            # Validate user has sufficient balance for refund
-            if user.balance < (refund_request.amount / 100):  # Convert cents to dollars
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Insufficient balance for refund"
-                )
-
-            # Create refund through Stripe
-            refund = await StripeService.create_refund(
-                payment_intent_id=refund_request.payment_intent_id,
-                amount=refund_request.amount,
-                reason=refund_request.reason,
-                metadata={
-                    "user_id": str(user.id),
-                    "description": refund_request.description
-                }
-            )
-
-            # Update user balance
-            user.balance -= (refund_request.amount / 100)
-            db.commit()
-            db.refresh(user)
-
-            logger.info(f"Created refund {refund['id']} for user {user.id}")
-
-            return RefundResponse(
-                refund_id=refund["id"],
-                amount=refund["amount"],
-                currency=refund["currency"],
-                status=refund["status"],
-                reason=refund["reason"] or refund_request.reason,
-                created_at=datetime.fromtimestamp(refund["created"])
-            )
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Failed to create refund for user {user.id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to process refund"
-            )
-
-    @staticmethod
-    async def withdraw_to_card(
-            db: Session,
-            user: User,
-            withdrawal_request: WithdrawalRequest
-    ) -> WithdrawalResponse:
-        """Withdraw funds to a specific card (using instant payouts for debit cards)"""
-        try:
-            # Validate user has sufficient balance
-            withdrawal_amount = withdrawal_request.amount / 100  # Convert cents to dollars
-            if user.balance < withdrawal_amount:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Insufficient balance for withdrawal"
-                )
-
-            # Get the card
-            card = db.query(Card).filter(
-                Card.id == withdrawal_request.card_id,
-                Card.user_id == user.id,
-                Card.is_active == True
-            ).first()
-
-            if not card:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Card not found"
-                )
-
-            # Check if card is expired
-            if card.is_expired:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Cannot withdraw to expired card"
-                )
-
-            # For now, we'll simulate a withdrawal since instant payouts require Stripe Connect
-            # In a real implementation, you would need to set up Stripe Connect
-
-            # Simulate withdrawal processing
-            withdrawal_id = f"wd_{user.id}_{card.id}_{int(datetime.now().timestamp())}"
-
-            # Update user balance
-            user.balance -= withdrawal_amount
-            db.commit()
-            db.refresh(user)
-
-            logger.info(f"Processed withdrawal {withdrawal_id} for user {user.id} to card {card.id}")
-
-            return WithdrawalResponse(
-                withdrawal_id=withdrawal_id,
-                amount=withdrawal_request.amount,
-                currency=withdrawal_request.currency,
-                status="processing",  # In real implementation, this would come from Stripe
-                card_last_four=card.last_four,
-                created_at=datetime.now(),
-                estimated_arrival="1-3 business days"
-            )
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Failed to process withdrawal for user {user.id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to process withdrawal"
-            )
