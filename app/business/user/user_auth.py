@@ -30,4 +30,6 @@ def login_service(db: Session, user: OAuth2PasswordRequestForm = Depends()):
     if not db_user.hashed_password == user.password:
         raise exc
 
-    return {"access_token": generate_token(db_user.username), "token_type": "Bearer"}
+    return {"access_token": generate_token(db_user.username),
+            "token_type": "Bearer",
+            "username": db_user.username}
