@@ -1,2 +1,2 @@
-# mobile_wallet_api
-mobile_wallet_api
+# wallet_api_project
+wallet_api_project README
