@@ -17,6 +17,7 @@ class User(Base):
     avatar = Column(String, nullable=True)
     status = Column(Enum("blocked", "deactivated", "pending", "active", name="status"),
                     nullable=False, default="pending")
+    forced_password_reset = Column(Boolean, nullable=False, default=False)
 
     # Stripe integration
     stripe_customer_id = Column(String(255), nullable=True, unique=True)  # Stripe customer ID
