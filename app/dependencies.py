@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access, pending_user, \
-    deactivated_user, blocked_user
+    deactivated_user, blocked_user, forced_password_reset
 from app.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
@@ -17,7 +17,7 @@ def get_db():
         db.close()
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme), fpr: bool = True):
     """
         Return an instance of User - the currently logged-in user.
     """
@@ -26,10 +26,22 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
 
     if not user:
         raise invalid_credentials
+
     if user.status == "blocked":
         raise blocked_user
+
+    if fpr:
+        if user.forced_password_reset:
+            raise forced_password_reset
+
     return user
 
+def get_current_user_at_password_reset(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    """
+        Return an instance of User - the currently logged-in user.
+    """
+    user = get_current_user(db, token, fpr=False)
+    return user
 
 def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """

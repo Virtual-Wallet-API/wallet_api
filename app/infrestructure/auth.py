@@ -50,6 +50,12 @@ blocked_user = HTTPException(
     detail="User is blocked"
 )
 
+forced_password_reset = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="User is required to reset password before access to this resource",
+    headers={"X-Force-Password-Reset": "true"}
+)
+
 
 def verify_token(token: str):
     """

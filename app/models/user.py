@@ -17,6 +17,7 @@ class User(Base):
     avatar = Column(String, nullable=True)
     status = Column(Enum("blocked", "deactivated", "pending", "active", name="status"),
                     nullable=False, default="pending")
+    forced_password_reset = Column(Boolean, nullable=False, default=False)
 
     cards = relationship("Card", back_populates="user")
     contacts = relationship("Contact", foreign_keys="[Contact.user_id]", back_populates="user")
