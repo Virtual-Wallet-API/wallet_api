@@ -7,7 +7,7 @@ from starlette import status
 
 from app.business.user.user_auth import login_service, registration_service
 from app.business.user.user_validators import validate_user_exists_from
-from app.dependencies import get_db, get_current_user
+from app.dependencies import get_db, get_current_user, get_current_user_at_password_reset
 from app.models import User, Contact
 from app.schemas.user import UserCreate, UserPublicResponse
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
@@ -38,6 +38,14 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/token", response_model=dict)
 def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     return login_service(db, user)
+
+
+@router.get("/me", response_model=UserPublicResponse)
+def get_user(user: User = Depends(get_current_user_at_password_reset)):
+    """
+    Retrieve details about the authenticated user.
+    """
+    return user
 
 
 @router.get("/contacts", response_model=List[ContactPublicResponse])
