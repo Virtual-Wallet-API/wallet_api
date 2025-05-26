@@ -36,6 +36,7 @@ class Card(Base):
     # Relationships
     user = relationship("User", back_populates="cards")
     deposits = relationship("Deposit", back_populates="card")
+    withdrawals = relationship("Withdrawal", back_populates="card")
 
     @validates("last_four")
     def validate_last_four(self, key, v: str):
