@@ -4,6 +4,17 @@ from typing import Optional, List
 from pydantic import BaseModel, field_validator
 
 
+# Schema for refund response
+class RefundResponse(BaseModel):
+    refund_id: str
+    amount: int  # Amount in cents
+    currency: str
+    status: str
+    reason: Optional[str]
+    created_at: datetime
+    withdrawal_id: Optional[int] = None  # Link to our tracking record
+
+
 class WithdrawalType(str, Enum):
     REFUND = "refund"
     PAYOUT = "payout"
@@ -72,6 +83,7 @@ class WithdrawalUpdate(BaseModel):
     failure_reason: Optional[str] = None
     stripe_payout_id: Optional[str] = None
     stripe_refund_id: Optional[str] = None
+    estimated_arrival: Optional[str] = None
 
 
 # Schema for withdrawal response
@@ -109,7 +121,7 @@ class WithdrawalPublicResponse(BaseModel):
     estimated_arrival: Optional[str]
     created_at: datetime
     completed_at: Optional[datetime]
-    card_last_four: Optional[str] = None
+    card_info: Optional[dict] = None  # Card details if applicable
 
     class Config:
         from_attributes = True
@@ -131,3 +143,7 @@ class WithdrawalStatsResponse(BaseModel):
     pending_withdrawals: int
     failed_withdrawals: int
     average_amount: float
+    total_refunds: int
+    total_payouts: int
+    refund_amount: float
+    payout_amount: float
