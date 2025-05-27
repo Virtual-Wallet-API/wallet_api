@@ -373,10 +373,25 @@
     }
 
     /* Status text styles for modals */
-    .status-active { color: #28a745; font-weight: bold; }
-    .status-expired { color: #6c757d; font-weight: bold; }
-    .status-terminated { color: #dc3545; font-weight: bold; }
-    .status-lost, .status-unknown { color: #8f8742; font-weight: bold; }
+    .status-active {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .status-expired {
+        color: #6c757d;
+        font-weight: bold;
+    }
+
+    .status-terminated {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .status-lost, .status-unknown {
+        color: #8f8742;
+        font-weight: bold;
+    }
 </style>
 {% endblock %}
 
@@ -388,48 +403,63 @@
 <!-- Wallet Cards Section -->
 <div class="card-header">
     <h2>Debit Cards</h2>
-    <a href="/fe/add-debit-card" class="add-card-btn">Add Debit Card</a>
+    <a class="add-card-btn" href="/fe/add-debit-card">Add Debit Card</a>
 </div>
 {% for card in debit_cards %}
-<div class="card-row card-{{ card | card_status }}" data-bs-toggle="modal" data-bs-target="#cardModal-debit-{{ card.id }}">
+<div class="card-row card-{{ card | card_status }}" data-bs-target="#cardModal-debit-{{ card.id }}"
+     data-bs-toggle="modal">
     <div class="card-icon card-debit-{{ card.color }}">
         <i class="bi bi-credit-card"></i>
     </div>
     <div class="card-details">
         <div>Debit Card ending in {{ card.last_four }}</div>
-        <div class="text-muted">Expiry: {{ card.expiry }}{% if (card | card_status) in ['lost', 'unknown'] %} <i class="bi bi-exclamation-triangle warning-sign"></i>{% endif %}</div>
+        <div class="text-muted">Expiry: {{ card.expiry }}{% if (card | card_status) in ['lost', 'unknown'] %} <i
+                class="bi bi-exclamation-triangle warning-sign"></i>{% endif %}
+        </div>
     </div>
     <div class="card-balance">
         <div>Balance: {{ card.balance }}</div>
     </div>
     <span class="info-icon"><i class="bi bi-info-circle"></i></span>
 </div>
-<div class="modal fade" id="cardModal-debit-{{ card.id }}" tabindex="-1" aria-labelledby="cardModalLabel-debit-{{ card.id }}" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="cardModalLabel-debit-{{ card.id }}" class="modal fade"
+     id="cardModal-debit-{{ card.id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cardModalLabel-debit-{{ card.id }}">Debit Card Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Card Number:</strong> **** **** **** {{ card.last_four }}</p>
                 <p><strong>Expiry:</strong> {{ card.expiry }}</p>
                 <p><strong>Balance:</strong> {{ card.balance }}</p>
-                <p><strong>Status:</strong> <span class="status-{{ card | card_status }}">{{ card | card_status | capitalize }}</span></p>
+                <p><strong>Status:</strong> <span class="status-{{ card | card_status }}">{{ card | card_status | capitalize }}</span>
+                </p>
             </div>
             <div class="modal-footer">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {% if (card | card_status) == 'terminated' %}disabled{% endif %}>
-                        Actions
+                    <button (card aria-expanded="false" card_status)==
+                            class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" if type="button" {% |
+                    'terminated' %}disabled{% endif %}>
+                    Actions
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('freeze', {{ card.id }}); return false;"><i class="bi bi-pause-circle"></i> Freeze Card</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('terminate', {{ card.id }}); return false;"><i class="bi bi-x-circle"></i> Terminate Card</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('reset_cvv', {{ card.id }}); return false;"><i class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('report', {{ card.id }}); return false;"><i class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('freeze', {{ card.id }}) return false;"><i
+                                class="bi bi-pause-circle"></i> Freeze Card</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('terminate', {{ card.id }}) return false;"><i
+                                class="bi bi-x-circle"></i> Terminate Card</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('reset_cvv', {{ card.id }}) return false;"><i
+                                class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('report', {{ card.id }}) return false;"><i
+                                class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
                     </ul>
                 </div>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -440,48 +470,63 @@
 
 <div class="card-header">
     <h2>Credit Cards</h2>
-    <a href="/fe/add-credit-card" class="add-card-btn">Add Credit Card</a>
+    <a class="add-card-btn" href="/fe/add-credit-card">Add Credit Card</a>
 </div>
 {% for card in credit_cards %}
-<div class="card-row card-{{ card | card_status }}" data-bs-toggle="modal" data-bs-target="#cardModal-credit-{{ card.id }}">
+<div class="card-row card-{{ card | card_status }}" data-bs-target="#cardModal-credit-{{ card.id }}"
+     data-bs-toggle="modal">
     <div class="card-icon card-credit-{{ card.color | default('blue') }}">
         <i class="bi bi-credit-card"></i>
     </div>
     <div class="card-details">
         <div>Credit Card ending in {{ card.last_four }}</div>
-        <div class="text-muted">Expiry: {{ card.expiry }}{% if (card | card_status) in ['lost', 'unknown'] %} <i class="bi bi-exclamation-triangle warning-sign"></i>{% endif %}</div>
+        <div class="text-muted">Expiry: {{ card.expiry }}{% if (card | card_status) in ['lost', 'unknown'] %} <i
+                class="bi bi-exclamation-triangle warning-sign"></i>{% endif %}
+        </div>
     </div>
     <div class="card-balance">
         <div>Balance: {{ card.balance }}</div>
     </div>
     <span class="info-icon"><i class="bi bi-info-circle"></i></span>
 </div>
-<div class="modal fade" id="cardModal-credit-{{ card.id }}" tabindex="-1" aria-labelledby="cardModalLabel-credit-{{ card.id }}" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="cardModalLabel-credit-{{ card.id }}" class="modal fade"
+     id="cardModal-credit-{{ card.id }}" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cardModalLabel-credit-{{ card.id }}">Credit Card Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Card Number:</strong> **** **** **** {{ card.last_four }}</p>
                 <p><strong>Expiry:</strong> {{ card.expiry }}</p>
                 <p><strong>Balance:</strong> {{ card.balance }}</p>
-                <p><strong>Status:</strong> <span class="status-{{ card | card_status }}">{{ card | card_status | capitalize }}</span></p>
+                <p><strong>Status:</strong> <span class="status-{{ card | card_status }}">{{ card | card_status | capitalize }}</span>
+                </p>
             </div>
             <div class="modal-footer">
                 <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" {% if (card | card_status) == 'terminated' %}disabled{% endif %}>
-                        Actions
+                    <button (card aria-expanded="false" card_status)==
+                            class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" if type="button" {% |
+                    'terminated' %}disabled{% endif %}>
+                    Actions
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('freeze', {{ card.id }}); return false;"><i class="bi bi-pause-circle"></i> Freeze Card</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('terminate', {{ card.id }}); return false;"><i class="bi bi-x-circle"></i> Terminate Card</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('reset_cvv', {{ card.id }}); return false;"><i class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="handleCardAction('report', {{ card.id }}); return false;"><i class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('freeze', {{ card.id }}) return false;"><i
+                                class="bi bi-pause-circle"></i> Freeze Card</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('terminate', {{ card.id }}) return false;"><i
+                                class="bi bi-x-circle"></i> Terminate Card</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('reset_cvv', {{ card.id }}) return false;"><i
+                                class="bi bi-arrow-repeat"></i> Reset CVV</a></li>
+                        <li><a class="dropdown-item" href="#"
+                               onclick="handleCardAction('report', {{ card.id }}) return false;"><i
+                                class="bi bi-exclamation-triangle"></i> Report Lost/Stolen</a></li>
                     </ul>
                 </div>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>

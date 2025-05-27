@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Page Title</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,10 +11,14 @@
     <!-- Google Fonts (Poppins) -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        html * {
+            transition: all 0.3s ease;
+        }
+
         /* Theme Variables */
         [data-bs-theme="light"] {
             --hero-gradient: linear-gradient(135deg, #6f42c1, #533c9f);
-            --background-color: linear-gradient(135deg, #f5f5f5, #ffffff);
+            --background-color: #f5f5f5;
             --text-color: #000000;
             --accent-color: #6f42c1;
             --accent-color-rgb: 111, 66, 193;
@@ -119,9 +123,9 @@
         }
 
         /* Transaction List Styles */
-        .transaction-list {
-            margin-bottom: 1rem;
-        }
+        /*.transaction-list {*/
+        /*    margin-bottom: 1rem;*/
+        /*}*/
 
         .transaction-item {
             position: relative;
@@ -129,10 +133,10 @@
             justify-content: space-between;
             padding: 2rem;
             cursor: pointer;
-            transition: background-color 0.2s ease, box-shadow 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
             border-bottom: 1px solid #ddd;
             border-radius: 10px;
-            margin-bottom: 1rem;
+            /*margin-bottom: 1rem;*/
             font-size: 1.2rem;
             box-shadow: var(--transaction-shadow);
         }
@@ -382,7 +386,41 @@
         .modal-dialog {
             box-shadow: 0 5px 15px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
             transition: box-shadow 0.3s ease;
-            margin-top: 10rem !important;
+            /*margin-top: 10rem !important;*/
+            min-width: 50% !important;
+        }
+
+        .modal-dialog-centered {
+            min-height: auto !important;
+            max-height: 100% !important;
+        }
+
+        .modal.fade {
+            align-content: center !important;
+        }
+
+        /* Alert Info Styling */
+        .alert.alert-info {
+            background-color: rgba(var(--accent-color-rgb), 0.1); /* Soft tint of accent color */
+            border-color: var(--accent-color); /* Solid accent color border */
+            color: var(--text-color); /* Theme text color for readability */
+            box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow for depth */
+            padding: 1.25rem 1.6rem;
+            margin-bottom: 0;
+        }
+
+        /* Light Theme Specific */
+        [data-bs-theme="light"] .alert.alert-info {
+            background-color: #d4c7e3; /* Lighter shade from --balance-bg */
+            border-color: #6f42c1; /* --accent-color */
+            color: var(--accent-color); /* --text-color */
+        }
+
+        /* Dark Theme Specific */
+        [data-bs-theme="dark"] .alert.alert-info {
+            background-color: #1f122e; /* Darker shade from --balance-bg */
+            border-color: #bb86fc; /* --accent-color */
+            color: var(--accent-color); /* --text-color */
         }
     </style>
 
@@ -432,13 +470,13 @@
                     <span class="menu-text">Contacts</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="#" id="logout-btn">
                     <i class="bi bi-box-arrow-right"></i>
                     <span class="menu-text">Logout</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
             </nav>
-            <a class="nav-link mt-auto theme-toggle" id="theme-toggle" href="#">
+            <a class="nav-link mt-auto theme-toggle" href="#" id="theme-toggle">
                 <i class="bi bi-moon"></i>
                 <span class="menu-text">Toggle Theme</span>
             </a>
@@ -454,9 +492,9 @@
             <div class="footer d-flex justify-content-between align-items-center">
                 <p class="mb-0">© 2025 VWallet. All rights reserved.</p>
                 <div>
-                    <a href="#" class="ms-3">Privacy Policy</a>
-                    <a href="#" class="ms-3">Terms of Service</a>
-                    <a href="#" class="ms-3">Contact Us</a>
+                    <a class="ms-3" href="#">Privacy Policy</a>
+                    <a class="ms-3" href="#">Terms of Service</a>
+                    <a class="ms-3" href="#">Contact Us</a>
                 </div>
             </div>
         </div>
@@ -470,6 +508,79 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // API Configuration
+    const API_BASE = '/api/v1';
+    const FE_BASE = '/fe';
+
+    // Utility function to get cookie by name
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+        return null;
+    }
+
+    // Set token
+    const token = getCookie('access_token');
+    console.log(token);
+
+    if (!token) {
+        document.getElementsByClassName('main-content')[0].textContent = 'Please log in to make a deposit';
+        window.location.href = `${FE_BASE}/login`;
+    }
+
+    // User data
+    const userData = {};
+
+    let uname, uid, uemail, uphone, ubalance, uavatar, ustatus;
+
+    async function refreshUserData() {
+        if (!token) {
+            alert('Please log in to use the app.');
+            window.location.href = `${fe_base}/login`;
+            return;
+        }
+
+        try {
+            const userResponse = await fetch(`${API_BASE}/users/me`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                alert((errorData.detail || 'Failed to get user details') + " Please login again.");
+                document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                window.location.href = `${FE_BASE}/login`;
+                throw new Error(errorData.detail || 'Unknown error');
+            }
+
+            const udata = await userResponse.json();
+            if (!udata || typeof udata.username !== 'string') {
+                throw new Error('Invalid user data format');
+            }
+
+            userData.username = udata.username;
+            userData.id = udata.id;
+            userData.email = udata.email;
+            userData.phone = udata.phone_number;
+            userData.balance = udata.balance.toFixed(2);
+            userData.avatar = udata.avatar;
+            userData.status = udata.status;
+            console.log(`User data successfully fetched.`);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            alert((error.message || 'Failed to load user data') + " Please login again.");
+            document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            window.location.href = `${FE_BASE}/login`;
+        }
+    }
+
+    refreshUserData();
+
     // Update toggle icon on load
     document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -496,8 +607,16 @@
             icon.classList.add('bi-moon');
         }
     }
+
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.cookie = "access_token=; max-age=0; path=/;";
+        window.location.href = `/fe/`;
+    });
 </script>
+
 {% block scripts %}
 {% endblock %}
+
 </body>
 </html>

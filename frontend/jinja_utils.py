@@ -12,6 +12,7 @@ class CardStatuses(Enum):
     LOST = "lost"
     UNKNOWN = "unknown"
 
+
 ## Card statuses
 def card_status(card: dict):
     if not card or not card.get("status"):
@@ -20,5 +21,6 @@ def card_status(card: dict):
         return CardStatuses(card.get("status").lower()).value
     except ValueError:
         return CardStatuses.UNKNOWN.value
+
 
 jenv.filters["card_status"] = card_status

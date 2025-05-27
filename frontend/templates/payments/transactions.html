@@ -249,6 +249,7 @@
 
     .modal-body p strong {
         color: #6f42c1;
+
         [data-bs-theme="dark"] & {
             color: var(--accent-color);
         }
@@ -257,9 +258,11 @@
     .modal-footer .btn-primary {
         padding: 0.75rem 1.5rem;
         font-size: 1.2rem;
+
         [data-bs-theme="light"] &:hover {
             transform: translateY(-1px);
         }
+
         [data-bs-theme="dark"] &:hover {
             transform: translateY(-2px);
         }
@@ -333,17 +336,17 @@
 </div>
 
 <!-- Flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css" rel="stylesheet">
 
 <!-- Search Bar -->
 <div class="mb-5">
     <div class="search-container input-group">
-        <input type="text" class="form-control search-input" placeholder="Search transactions..."
-               aria-label="Search transactions" id="search-input">
-        <input type="text" class="form-control date-picker search-date-picker" placeholder="Select date"
-               aria-label="Select date">
-        <button class="btn search-button" type="button" aria-label="Search">
+        <input aria-label="Search transactions" class="form-control search-input" id="search-input"
+               placeholder="Search transactions..." type="text">
+        <input aria-label="Select date" class="form-control date-picker search-date-picker" placeholder="Select date"
+               type="text">
+        <button aria-label="Search" class="btn search-button" type="button">
             <i class="bi bi-search"></i>
         </button>
     </div>
@@ -354,15 +357,15 @@
 <div class="mb-4" style="padding-top: 1.5rem">
     <div class="transaction-list">
         <div class="initial-transactions">
-            <div class="transaction-item" data-date="2023-05-01" data-description="Grocery Store"
-                 data-amount="-$50.00" data-category="Food">
+            <div class="transaction-item" data-amount="-$50.00" data-category="Food"
+                 data-date="2023-05-01" data-description="Grocery Store">
                 <span class="date">2023-05-01</span>
                 <span class="description">Grocery Store</span>
                 <span class="amount">-$50.00</span>
                 <span class="info-icon"><i class="bi bi-info-circle"></i></span>
             </div>
-            <div class="transaction-item" data-date="2023-07-19" data-description="Restaurant Dinner"
-                 data-amount="-$65.00" data-category="Food">
+            <div class="transaction-item" data-amount="-$65.00" data-category="Food"
+                 data-date="2023-07-19" data-description="Restaurant Dinner">
                 <span class="date">2023-07-19</span>
                 <span class="description">Restaurant Dinner</span>
                 <span class="amount">-$65.00</span>
@@ -380,12 +383,12 @@
 
 {% block modals %}
 <!-- Transaction Modal -->
-<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="transactionModalLabel" class="modal fade" id="transactionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Date:</strong> <span id="modal-date"></span></p>
@@ -394,7 +397,7 @@
                 <p><strong>Category:</strong> <span id="modal-category"></span></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
@@ -414,7 +417,7 @@
 
     // Color Transaction Amounts
     document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.transaction-item .amount').forEach(function(amountElement) {
+        document.querySelectorAll('.transaction-item .amount').forEach(function (amountElement) {
             const amountText = amountElement.textContent;
             const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
             if (amountValue < 0) {
