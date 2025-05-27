@@ -385,9 +385,9 @@ $(document).ready(function(e){
                         .addClass('alert-success')
                         .removeClass('d-none')
                         .css('display', 'block');
-                    // setTimeout(() => {
-                    //     window.location.href = "/fe/overview";
-                    // }, 1000); // 1-second delay for UX
+                    setTimeout(() => {
+                        window.location.href = "/fe/overview";
+                    }, 1000); // 1-second delay for UX
                 } else {
                     $('#loginError')
                         .text('Error: No valid token received')
