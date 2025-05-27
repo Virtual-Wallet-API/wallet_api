@@ -207,7 +207,6 @@ class CardService:
             has_default=has_default
         )
 
-
     @staticmethod
     def validate_card_fingerprint(db: Session, user: User, fingerprint: str):
         card = db.query(Card).filter(Card.stripe_card_fingerprint == fingerprint).first()
@@ -319,4 +318,3 @@ class CardService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete card"
             )
-
