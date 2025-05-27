@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float
 from sqlalchemy.orm import relationship
 from app.infrestructure import Base

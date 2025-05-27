@@ -9,7 +9,7 @@ from app.infrestructure import Base
 class Card(Base):
     __tablename__ = 'cards'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     # Stripe-related fields

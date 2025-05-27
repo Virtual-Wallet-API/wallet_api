@@ -7,7 +7,7 @@ from app.infrestructure import Base
 
 class Currency(Base):
     __tablename__ = 'currencies'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     code = Column(String, nullable=False)
 
     deposits = relationship("Deposit", back_populates="currency")

@@ -8,7 +8,7 @@ from sqlalchemy.orm import validates
 class Contact(Base):
     __tablename__ = "contacts"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     contact_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
