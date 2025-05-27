@@ -3,17 +3,14 @@ from datetime import datetime
 from typing import Optional, ForwardRef, List
 from pydantic import BaseModel, ConfigDict
 
-
-class TransactionStatus(str, Enum):
-    pending = "pending"
-    completed = "completed"
-    failed = "failed"
+from app.models.transaction import TransactionStatus
 
 
 class TransactionBase(BaseModel):
     sender_id: int
     receiver_id: int
     amount: float
+    description: Optional[str] = None
     category_id: Optional[int] = None
     currency_id: int
 
@@ -21,6 +18,7 @@ class TransactionBase(BaseModel):
 class TransactionCreate(BaseModel):
     receiver_id: int
     amount: float
+    description: Optional[str] = None
     category_id: Optional[int] = None
     currency_id: int
 
