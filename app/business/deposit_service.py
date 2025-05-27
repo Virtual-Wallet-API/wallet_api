@@ -199,7 +199,6 @@ class DepositService:
             confirm_data: DepositConfirm
     ) -> DepositResponse:
         """Confirm a deposit and update user balance"""
-        print(confirm_data.payment_intent_id)
         try:
             # Get the deposit by payment intent ID
             deposit = db.query(Deposit).filter(
@@ -215,7 +214,6 @@ class DepositService:
 
             # Retrieve payment intent from Stripe to check status
             payment_intent = await StripeService.retrieve_payment_intent(confirm_data.payment_intent_id.split("_secret_")[0])
-            print("Payment status:", payment_intent["status"], sep=" ")
             if payment_intent["status"] == "succeeded":
                 # Update deposit status
                 deposit.mark_completed()
@@ -224,13 +222,12 @@ class DepositService:
                 user.balance += deposit.amount
 
                 # Save card if requested and payment method exists
-                print("save_card: ", confirm_data.save_card,
-                      "payment_method: ", payment_intent.get("payment_method"),
-                      sep="\n")
-                if confirm_data.save_card and payment_intent.get("payment_method"):
+                pmethod = payment_intent.get("payment_method")
+                await StripeService.verify_payment_method_saved(pmethod, user, db)
+                if confirm_data.save_card and pmethod:
                     try:
                         await CardService.save_card_from_payment_method(
-                            db, user, payment_intent["payment_method"],
+                            db, user, pmethod,
                             confirm_data.cardholder_name
                         )
                     except Exception as e:
