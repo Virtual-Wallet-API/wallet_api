@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Virtual Wallet</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -145,285 +145,288 @@
     </style>
 </head>
 <body>
-    <!-- Theme Toggle Button -->
-    <button id="theme-toggle" class="btn btn-outline-light" title="Toggle theme">
-        <i class="bi bi-moon-fill"></i>
-    </button>
+<!-- Theme Toggle Button -->
+<button class="btn btn-outline-light" id="theme-toggle" title="Toggle theme">
+    <i class="bi bi-moon-fill"></i>
+</button>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 d-flex flex-column justify-content-center">
-                    <h1>Manage Your Finances with Ease</h1>
-                    <p>Virtual Wallet - Your secure and convenient digital wallet</p>
-                    <div>
-                        <button class="btn btn-primary btn-login me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            Login
-                        </button>
-                        <button class="btn btn-outline-light btn-signup me-2" data-bs-toggle="modal" data-bs-target="#registerModal">
-                            Sign Up
-                        </button>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 d-flex flex-column justify-content-center">
+                <h1>Manage Your Finances with Ease</h1>
+                <p>Virtual Wallet - Your secure and convenient digital wallet</p>
+                <div>
+                    <button class="btn btn-primary btn-login me-2" data-bs-target="#loginModal" data-bs-toggle="modal">
+                        Login
+                    </button>
+                    <button class="btn btn-outline-light btn-signup me-2" data-bs-target="#registerModal"
+                            data-bs-toggle="modal">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center align-items-center">
+                <i class="bi bi-wallet2 wallet-icon"></i>
+                <span class="company-logo ms-3">VWallet</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Features</h2>
+        <!-- Row 1 -->
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <i class="bi bi-shield-lock feature-icon"></i>
+                <h4>Secure Transactions</h4>
+                <p>Your transactions are encrypted and secure.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-wallet2 feature-icon"></i>
+                <h4>Multi-Currency Support</h4>
+                <p>Manage multiple currencies in one place.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-clock-history feature-icon"></i>
+                <h4>Transaction History</h4>
+                <p>View your transaction history anytime.</p>
+            </div>
+        </div>
+        <!-- Row 2 -->
+        <div class="row mt-4">
+            <div class="col-md-4 text-center">
+                <i class="bi bi-pie-chart feature-icon"></i>
+                <h4>Budget Tracking</h4>
+                <p>Keep track of your spending and savings.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-receipt feature-icon"></i>
+                <h4>Bill Payments</h4>
+                <p>Pay your bills directly from your wallet.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-graph-up feature-icon"></i>
+                <h4>Investment Options</h4>
+                <p>Explore investment opportunities.</p>
+            </div>
+        </div>
+        <!-- Row 3 -->
+        <div class="row mt-4">
+            <div class="col-md-4 text-center">
+                <i class="bi bi-headset feature-icon"></i>
+                <h4>Customer Support</h4>
+                <p>24/7 support for all your queries.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-phone feature-icon"></i>
+                <h4>Mobile App</h4>
+                <p>Access your wallet on the go.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-gift feature-icon"></i>
+                <h4>Rewards Program</h4>
+                <p>Earn rewards for using the wallet.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Login Modal -->
+<div aria-hidden="true" aria-labelledby="loginModalLabel" class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger d-none" id="loginError" style="display: None;"></div>
+                <form id="ajax-login" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control" id="username" required type="text" value="Testing">
                     </div>
-                </div>
-                <div class="col-md-6 d-flex justify-content-center align-items-center">
-                    <i class="bi bi-wallet2 wallet-icon"></i>
-                    <span class="company-logo ms-3">VWallet</span>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" required type="password" value="Testing">
+                    </div>
+                </form>
             </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-4">Features</h2>
-            <!-- Row 1 -->
-            <div class="row">
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-shield-lock feature-icon"></i>
-                    <h4>Secure Transactions</h4>
-                    <p>Your transactions are encrypted and secure.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-wallet2 feature-icon"></i>
-                    <h4>Multi-Currency Support</h4>
-                    <p>Manage multiple currencies in one place.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-clock-history feature-icon"></i>
-                    <h4>Transaction History</h4>
-                    <p>View your transaction history anytime.</p>
-                </div>
-            </div>
-            <!-- Row 2 -->
-            <div class="row mt-4">
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-pie-chart feature-icon"></i>
-                    <h4>Budget Tracking</h4>
-                    <p>Keep track of your spending and savings.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-receipt feature-icon"></i>
-                    <h4>Bill Payments</h4>
-                    <p>Pay your bills directly from your wallet.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-graph-up feature-icon"></i>
-                    <h4>Investment Options</h4>
-                    <p>Explore investment opportunities.</p>
-                </div>
-            </div>
-            <!-- Row 3 -->
-            <div class="row mt-4">
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-headset feature-icon"></i>
-                    <h4>Customer Support</h4>
-                    <p>24/7 support for all your queries.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-phone feature-icon"></i>
-                    <h4>Mobile App</h4>
-                    <p>Access your wallet on the go.</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-gift feature-icon"></i>
-                    <h4>Rewards Program</h4>
-                    <p>Earn rewards for using the wallet.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Login Modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-danger d-none" id="loginError" style="display: None;"></div>
-                    <form id="ajax-login" method="post">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" value="Testing" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" value="Testing" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <input type="submit" class="btn btn-primary" value="Login" id="ajax-submit" form="ajax-login">
-                </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <input class="btn btn-primary" form="ajax-login" id="ajax-submit" type="submit" value="Login">
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Register Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="registerModalLabel">Sign Up</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="registerUsername" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="registerUsername" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="registerEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" autocomplete="studying" id="registerEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="registerPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" autocomplete="studying" id="registerPassword" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="registerConfirmPassword" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" autocomplete="studying" id="registerConfirmPassword" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Sign Up</button>
-                </div>
+<!-- Register Modal -->
+<div aria-hidden="true" aria-labelledby="registerModalLabel" class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerModalLabel">Sign Up</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label" for="registerUsername">Username</label>
+                        <input class="form-control" id="registerUsername" required type="text">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="registerEmail">Email</label>
+                        <input autocomplete="studying" class="form-control" id="registerEmail" required type="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="registerPassword">Password</label>
+                        <input autocomplete="studying" class="form-control" id="registerPassword" required
+                               type="password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
+                        <input autocomplete="studying" class="form-control" id="registerConfirmPassword" required
+                               type="password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                <button class="btn btn-primary" type="button">Sign Up</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load saved theme or default to light
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateToggleIcon(savedTheme);
+<!-- Bootstrap JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Load saved theme or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateToggleIcon(savedTheme);
 
-            // Ensure theme toggle button is accessible
-            const themeToggle = document.getElementById('theme-toggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', () => {
-                    // Toggle between light and dark themes
-                    const currentTheme = document.documentElement.getAttribute('data-theme');
-                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                    updateToggleIcon(newTheme);
-                });
-            }
-        });
+        // Ensure theme toggle button is accessible
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                // Toggle between light and dark themes
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateToggleIcon(newTheme);
+            });
+        }
+    });
 
-        function updateToggleIcon(theme) {
-            const icon = document.querySelector('#theme-toggle i');
-            if (icon) {
-                if (theme === 'dark') {
-                    icon.classList.remove('bi-moon-fill');
-                    icon.classList.add('bi-sun');
-                } else {
-                    icon.classList.remove('bi-sun');
-                    icon.classList.add('bi-moon-fill');
-                }
+    function updateToggleIcon(theme) {
+        const icon = document.querySelector('#theme-toggle i');
+        if (icon) {
+            if (theme === 'dark') {
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun');
+            } else {
+                icon.classList.remove('bi-sun');
+                icon.classList.add('bi-moon-fill');
             }
         }
-    </script>
+    }
+</script>
 </body>
 <script type="text/javascript">
-// Utility function to get cookie by name
-function getCookie(name) {
-    let value = `; ${document.cookie}`;
-    let parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
-    return null;
-}
+    // Utility function to get cookie by name
+    function getCookie(name) {
+        let value = `; ${document.cookie}`;
+        let parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+        return null;
+    }
 
-$(document).ready(function(e){
-    $("#ajax-login").submit(function(e){
-        console.log("submit");
-        e.preventDefault();
+    $(document).ready(function (e) {
+        $("#ajax-login").submit(function (e) {
+            console.log("submit");
+            e.preventDefault();
 
-        let username = $("#username").val();
-        let password = $("#password").val();
-        console.log(username, password);
+            let username = $("#username").val();
+            let password = $("#password").val();
+            console.log(username, password);
 
-        if (!username || !password) {
-            alert("Please fill in all fields");
-            return;
-        }
+            if (!username || !password) {
+                alert("Please fill in all fields");
+                return;
+            }
 
-        let data = {"username": username, "password": password};
-        $.ajax({
-            url: "/api/v1/users/token",
-            type: "POST",
-            data: data,
-            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-            dataType: "json",
-            success: function(data, textStatus, xhr) {
-                // Extract token from response body (FastAPI OAuth2 standard)
-                let token = data.access_token;
-                let uname = data.username;
-                if (token && typeof token === "string" && token.trim() !== "") {
-                    // Set token in a cookie
-                    document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; SameSite=Strict`;
-                    console.log('Access token set in cookie');
-                    console.log(getCookie("access_token"))
-                    // Show success message briefly before redirect
+            let data = {"username": username, "password": password};
+            $.ajax({
+                url: "/api/v1/users/token",
+                type: "POST",
+                data: data,
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                dataType: "json",
+                success: function (data, textStatus, xhr) {
+                    // Extract token from response body (FastAPI OAuth2 standard)
+                    let token = data.access_token;
+                    let uname = data.username;
+                    if (token && typeof token === "string" && token.trim() !== "") {
+                        // Set token in a cookie
+                        document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; SameSite=Strict`;
+                        console.log('Access token set in cookie');
+                        console.log(getCookie("access_token"))
+                        // Show success message briefly before redirect
+                        $('#loginError')
+                            .text('Login successful, redirecting...')
+                            .removeClass('alert-danger')
+                            .addClass('alert-success')
+                            .removeClass('d-none')
+                            .css('display', 'block');
+                        setTimeout(() => {
+                            window.location.href = "/fe/overview";
+                        }, 1000); // 1-second delay for UX
+                    } else {
+                        $('#loginError')
+                            .text('Error: No valid token received')
+                            .removeClass('alert-success')
+                            .addClass('alert-danger')
+                            .removeClass('d-none')
+                            .css('display', 'block');
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log("Response Headers:", xhr.getAllResponseHeaders());
+                    console.log("Response Text:", xhr.responseText);
+                    let errorMessage = 'An error occurred. Please try again.';
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.detail) {
+                            // Handle both string and array detail formats
+                            if (Array.isArray(xhr.responseJSON.detail)) {
+                                errorMessage = xhr.responseJSON.detail.map(err => err.msg || JSON.stringify(err)).join('; ');
+                            } else {
+                                errorMessage = xhr.responseJSON.detail;
+                            }
+                        } else {
+                            errorMessage = JSON.stringify(xhr.responseJSON);
+                        }
+                    } else if (xhr.responseText) {
+                        errorMessage = xhr.responseText;
+                    }
                     $('#loginError')
-                        .text('Login successful, redirecting...')
-                        .removeClass('alert-danger')
-                        .addClass('alert-success')
-                        .removeClass('d-none')
-                        .css('display', 'block');
-                    setTimeout(() => {
-                        window.location.href = "/fe/overview";
-                    }, 1000); // 1-second delay for UX
-                } else {
-                    $('#loginError')
-                        .text('Error: No valid token received')
+                        .text(errorMessage)
                         .removeClass('alert-success')
                         .addClass('alert-danger')
                         .removeClass('d-none')
                         .css('display', 'block');
                 }
-            },
-            error: function(xhr, textStatus, errorThrown) {
-                console.log("Response Headers:", xhr.getAllResponseHeaders());
-                console.log("Response Text:", xhr.responseText);
-                let errorMessage = 'An error occurred. Please try again.';
-                if (xhr.responseJSON) {
-                    if (xhr.responseJSON.detail) {
-                        // Handle both string and array detail formats
-                        if (Array.isArray(xhr.responseJSON.detail)) {
-                            errorMessage = xhr.responseJSON.detail.map(err => err.msg || JSON.stringify(err)).join('; ');
-                        } else {
-                            errorMessage = xhr.responseJSON.detail;
-                        }
-                    } else {
-                        errorMessage = JSON.stringify(xhr.responseJSON);
-                    }
-                } else if (xhr.responseText) {
-                    errorMessage = xhr.responseText;
-                }
-                $('#loginError')
-                    .text(errorMessage)
-                    .removeClass('alert-success')
-                    .addClass('alert-danger')
-                    .removeClass('d-none')
-                    .css('display', 'block');
-            }
+            });
         });
     });
-});
 </script>
 </html>

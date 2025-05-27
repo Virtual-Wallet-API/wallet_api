@@ -448,35 +448,35 @@
 <!-- Deposit Box with Stripe Integration -->
 <div class="deposit-box" id="stripe-box">
     <!-- Messages -->
-    <div id="success-message" class="alert alert-success" style="display: none;"></div>
-    <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+    <div class="alert alert-success" id="success-message" style="display: none;"></div>
+    <div class="alert alert-danger" id="error-message" style="display: none;"></div>
 
-    <form id="deposit-form" action="#" method="POST">
+    <form action="#" id="deposit-form" method="POST">
         <!-- Amount Input -->
         <div class="form-group">
             <label for="amount">Amount</label>
             <div class="amount-group">
                 <div class="currency-display">USD</div>
                 <div class="input-wrapper">
-                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount"
-                           step="0.01" min="0.50" max="10000" required>
+                    <input class="form-control" id="amount" max="10000" min="0.50" name="amount"
+                           placeholder="Enter amount" required step="0.01" type="number">
                 </div>
             </div>
-            <div id="amount-error" class="error-message" style="display: none;"></div>
+            <div class="error-message" id="amount-error" style="display: none;"></div>
         </div>
 
         <!-- Saved Payment Methods -->
         <div class="form-group" id="saved-card-group">
             <div class="label-button-container">
                 <label for="payment-method">Payment Method</label>
-                <button type="button" id="manage-cards-button" class="manage-cards-btn"><i class="bi bi-gear"></i>
+                <button class="manage-cards-btn" id="manage-cards-button" type="button"><i class="bi bi-gear"></i>
                     Manage
                 </button>
             </div>
             <div class="saved-cards-group" id="saved-card-group-inner">
                 <div class="saved-cards-icon" id="saved-cards-icon"><i class="bi bi-credit-card ml-1"
                                                                        id="saved-card-icon"></i></div>
-                <select id="payment-method" class="form-control" style="width: 100%;">
+                <select class="form-control" id="payment-method" style="width: 100%;">
                     <!-- Saved cards will be populated here -->
                 </select>
             </div>
@@ -485,19 +485,19 @@
         <!-- Card Element (shown only for new card) -->
         <div class="form-group" id="card-element-group">
             <label for="card-element">Card Information</label>
-            <div id="card-element" class="stripe-element">Loading...</div>
-            <div id="card-error-message" class="alert alert-danger card-error-message" style="display: none;"></div>
+            <div class="stripe-element" id="card-element">Loading...</div>
+            <div class="alert alert-danger card-error-message" id="card-error-message" style="display: none;"></div>
             <!-- Save Card Option -->
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" id="submit-button" class="confirm-btn" style="margin-top: 5.9rem !important;">
+        <button class="confirm-btn" id="submit-button" style="margin-top: 5.9rem !important;" type="submit">
             <span id="button-text">Confirm Deposit</span>
             <span id="spinner" style="display: none;">Processing...</span>
         </button>
 
         <div class="save-card-checkbox" style="margin-top: 1.5rem !important;">
-            <input type="checkbox" id="save-card" name="save-card">
+            <input id="save-card" name="save-card" type="checkbox">
             <label for="save-card">Save this card for future deposits</label>
         </div>
     </form>
@@ -506,15 +506,15 @@
 <!-- Deposit Box with Stripe Integration -->
 <div class="deposit-box" id="stripe-error-box" style="display: none;">
     <!-- Messages -->
-    <div id="error-message-stripe" class="alert alert-danger" style="display: none;"></div>
+    <div class="alert alert-danger" id="error-message-stripe" style="display: none;"></div>
 
     <div class="container" style="align-items: center; justify-content: center; display: flex;">
-        <img src="https://cdni.iconscout.com/illustration/free/thumb/free-website-development-illustration-download-in-svg-png-gif-file-formats--cancel-webpage-design-and-pack-illustrations-1731290.png"
-             alt="Error 500" style="width: 50%; height: 75%; align-self: center;">
+        <img alt="Error 500"
+             src="https://cdni.iconscout.com/illustration/free/thumb/free-website-development-illustration-download-in-svg-png-gif-file-formats--cancel-webpage-design-and-pack-illustrations-1731290.png" style="width: 50%; height: 75%; align-self: center;">
     </div>
 
     <!-- Submit Button -->
-    <button type="submit" id="submit-button-refresh" class="confirm-btn" style="display: none;">
+    <button class="confirm-btn" id="submit-button-refresh" style="display: none;" type="submit">
         <span id="stripe-error" style="display: none;">Refresh Page</span>
     </button>
 </div>
@@ -657,22 +657,22 @@
     }
 </style>
 <!-- Modal for Managing Saved Cards -->
-<div class="modal fade" id="manageCardsModal" tabindex="-1" aria-labelledby="manageCardsModalLabel" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="manageCardsModalLabel" class="modal fade" id="manageCardsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="manageCardsModalLabel">Manage Saved Cards</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
-                <div id="modal-error-message" class="alert alert-danger" style="display: none;"></div>
-                <div id="modal-success-message" class="alert alert-success" style="display: none;"></div>
+                <div class="alert alert-danger" id="modal-error-message" style="display: none;"></div>
+                <div class="alert alert-success" id="modal-success-message" style="display: none;"></div>
                 <div id="saved-cards-list">
                     <!-- Saved cards will be populated here -->
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn confirm-btn" data-bs-dismiss="modal">Close</button>
+                <button class="btn confirm-btn" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>

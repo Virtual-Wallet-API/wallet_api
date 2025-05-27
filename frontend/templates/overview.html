@@ -461,13 +461,13 @@
     <div class="transaction-list" id="transactions-list">
         <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i>
         </div>
-        <div id="initial-transactions-list" class="initial-transactions">
+        <div class="initial-transactions" id="initial-transactions-list">
             <!-- Transaction items will be inserted here -->
         </div>
-        <div id="additional-transactions-list" class="additional-transactions">
+        <div class="additional-transactions" id="additional-transactions-list">
             <!-- Additional transaction items will be inserted here -->
         </div>
-        <a id="view-transactions-btn" class="btn btn-outline-primary view-more-button" href="#" style="display: none;">View
+        <a class="btn btn-outline-primary view-more-button" href="#" id="view-transactions-btn" style="display: none;">View
             More
             Transactions</a>
     </div>
@@ -481,13 +481,13 @@
     </div>
     <div class="transaction-list deposit-list" id="deposits-list">
         <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
-        <div id="initial-deposits" class="initial-transactions">
+        <div class="initial-transactions" id="initial-deposits">
             <!-- Deposit items will be inserted here -->
         </div>
-        <div id="additional-deposits" class="additional-transactions">
+        <div class="additional-transactions" id="additional-deposits">
             <!-- Additional deposit items will be inserted here -->
         </div>
-        <a id="view-deposits-btn" class="btn btn-outline-primary view-more-button" href="#" style="display: none;">View
+        <a class="btn btn-outline-primary view-more-button" href="#" id="view-deposits-btn" style="display: none;">View
             More Deposits</a>
     </div>
 </div>
@@ -498,12 +498,12 @@
 
 {% block modals %}
 <!-- Transaction Modal -->
-<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+<div aria-hidden="true" aria-labelledby="transactionModalLabel" class="modal fade" id="transactionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
             </div>
             <div class="modal-body">
                 <p><strong>Date:</strong> <span id="modal-date"></span></p>
@@ -512,7 +512,7 @@
                 <p><strong>Category:</strong> <span id="modal-category"></span></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
         </div>
     </div>
