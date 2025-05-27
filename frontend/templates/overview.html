@@ -34,6 +34,8 @@
     .loading-container.hidden {
         max-height: 0;
         opacity: 0;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     .bi-arrow-repeat {
@@ -44,18 +46,30 @@
     }
 
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     @-webkit-keyframes spin {
-        0% { -webkit-transform: rotate(0deg); }
-        100% { -webkit-transform: rotate(360deg); }
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
     }
 
     @-moz-keyframes spin {
-        0% { -moz-transform: rotate(0deg); }
-        100% { -moz-transform: rotate(360deg); }
+        0% {
+            -moz-transform: rotate(0deg);
+        }
+        100% {
+            -moz-transform: rotate(360deg);
+        }
     }
 
     /* Balance Box */
@@ -136,7 +150,29 @@
 
     /* Transaction List */
     .transaction-list {
-        margin-top: 1.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    .transaction-list.loaded {
+        margin-left: 0.6rem;
+        padding-left: 1.7rem;
+        /*border-left: 1px solid var(--accent-color);*/
+        position: relative;
+    }
+
+    .transaction-list.loaded::before {
+        background-color: var(--accent-color);
+        margin-left: 0.65rem;
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -6px;
+        width: 1px;
+        box-shadow: -3px 0 8px 1px var(--accent-color);
+        z-index: -1;
     }
 
     .transaction-item {
@@ -152,6 +188,10 @@
         font-family: 'Poppins', sans-serif;
     }
 
+    .transaction-item:last-child {
+        margin-bottom: 0 !important;
+    }
+
     [data-bs-theme="light"] .transaction-item {
         background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
     }
@@ -162,7 +202,8 @@
 
     .transaction-item:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);
+        /*box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);*/
+        box-shadow: 0 3px 8px -2px var(--accent-color);
     }
 
     .transaction-item .date,
@@ -196,6 +237,13 @@
 
     .transaction-item .info-icon:hover {
         color: var(--accent-color-hover);
+    }
+
+    .transaction-list .view-more-button {
+        display: block;
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+        text-align: center;
     }
 
     /* View More Button */
@@ -273,7 +321,26 @@
         justify-content: space-between;
         align-items: center;
         cursor: pointer;
-        padding: 0.5rem 0;
+        border-radius: 8px 8px 8px 8px;
+        margin-top: 3rem !important;
+        /*border-bottom: 1px solid var(--accent-color);*/
+        box-shadow: 0 1px 3px 1px var(--accent-color);
+        padding: 1.2rem 1.5rem !important;
+        color: var(--accent-color);
+    }
+
+    .header-toggle:first-child {
+        margin-top: 0;
+    }
+
+    .header-toggle i {
+        color: var(--accent-color);
+        transition: all 0.3s ease;
+    }
+
+    .header-toggle:hover i {
+        font-weight: bold;
+        text-shadow: 0 0 5px var(--accent-color);
     }
 
     .header-toggle h3 {
@@ -392,18 +459,18 @@
         <i class="bi bi-chevron-down"></i>
     </div>
     <div class="transaction-list" id="transactions-list">
-        <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i>
+        </div>
         <div id="initial-transactions-list" class="initial-transactions">
             <!-- Transaction items will be inserted here -->
         </div>
         <div id="additional-transactions-list" class="additional-transactions">
             <!-- Additional transaction items will be inserted here -->
         </div>
-        <a id="view-transactions-btn" class="btn btn-outline-primary" href="#" style="display: none;">View More Transactions</a>
+        <a id="view-transactions-btn" class="btn btn-outline-primary view-more-button" href="#" style="display: none;">View More
+            Transactions</a>
     </div>
 </div>
-
-<hr style="margin: 2rem 0; opacity: 0;"/>
 
 <!-- Recent Deposits -->
 <div class="mb-4">
@@ -419,7 +486,7 @@
         <div id="additional-deposits" class="additional-transactions">
             <!-- Additional deposit items will be inserted here -->
         </div>
-        <a id="view-deposits-btn" class="btn btn-outline-primary" href="#" style="display: none;">View More Deposits</a>
+        <a id="view-deposits-btn" class="btn btn-outline-primary view-more-button" href="#" style="display: none;">View More Deposits</a>
     </div>
 </div>
 
@@ -537,8 +604,11 @@
             const initialList = document.getElementById('initial-transactions-list');
             const additionalList = document.getElementById('additional-transactions-list');
             const loadingAlert = document.getElementById('transactions-loading-alert');
+            const listTransactions = document.getElementById('transactions-list');
+            console.log(listTransactions, listTransactions.classList);
             additionalList.innerHTML = '';
             loadingAlert.classList.add('hidden');
+            listTransactions.classList.add('loaded');
 
             if (latestTransactions.length <= 3 && latestTransactions.length > 0) {
                 initialList.innerHTML = transactionItems.join('');
@@ -607,8 +677,10 @@
             const initialList = document.getElementById('initial-deposits');
             const additionalList = document.getElementById('additional-deposits');
             const loadingAlert = document.getElementById('deposits-loading-alert');
+            const listDeposits = document.getElementById('deposits-list');
             additionalList.innerHTML = '';
             loadingAlert.classList.add('hidden');
+            listDeposits.classList.add('loaded');
 
             if (latestDeposits.length <= 3 && latestDeposits.length > 0) {
                 initialList.innerHTML = depositItems.join('');
