@@ -1,12 +1,14 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float
-from sqlalchemy.orm import relationship
-from app.infrestructure import Base
 from fastapi import HTTPException
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
+
+from app.infrestructure import Base
+
 
 class RecurringTransaction(Base):
     __tablename__ = "recurring_transactions"
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(Integer, ForeignKey("transactions.id"))
     interval = Column(Integer, nullable=False)
     is_active = Column(Integer, nullable=False, default=True)
@@ -19,6 +21,7 @@ class RecurringTransaction(Base):
             raise HTTPException(status_code=400,
                                 detail="Interval must be positive")
         return v
+
     @validates("is_active")
     def validate_is_active(self, key, v: int):
         if v not in [0, 1]:

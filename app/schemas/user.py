@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional, List, ForwardRef
+
 from pydantic import BaseModel, EmailStr
 
 from app.schemas.contact import ContactResponse
@@ -47,7 +48,6 @@ class UserPublicResponse(UserPublicBase):
     id: int
     status: Status = Status.pending
 
-
     class Config:
         from_attributes = True
 
@@ -62,5 +62,3 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
-
-

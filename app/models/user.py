@@ -7,7 +7,7 @@ from app.infrestructure.validators import validate_username, validate_password, 
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, nullable=False, index=True, unique=True)
     hashed_password = Column(String, nullable=False)
     email = Column(String, nullable=False, index=True, unique=True)

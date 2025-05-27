@@ -10,6 +10,7 @@ def validate_username(v: str) -> str:
 
     return v
 
+
 def validate_password(v: str):
     """
         Check if a password is at least 8 characters long
@@ -24,6 +25,7 @@ def validate_password(v: str):
         raise HTTPException(status_code=400,
                             detail="Password must contain at least one digit, one uppercase letter and one special character")
     return v
+
 
 def validate_phone_number(v: str):
     """
