@@ -1,7 +1,6 @@
 from typing import Optional
 
 from fastapi import HTTPException
-
 from sqlalchemy.orm import Session
 
 from app.models import User

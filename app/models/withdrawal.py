@@ -1,14 +1,16 @@
+from datetime import datetime
+
+from fastapi import HTTPException
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float, String, Text
 from sqlalchemy.orm import relationship, validates
-from datetime import datetime
+
 from app.infrestructure import Base
-from fastapi import HTTPException
 
 
 class Withdrawal(Base):
     __tablename__ = "withdrawals"
 
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     card_id = Column(Integer, ForeignKey("cards.id"), nullable=True)  # Nullable for bank transfers
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)

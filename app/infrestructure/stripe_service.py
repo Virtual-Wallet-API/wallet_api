@@ -1,13 +1,10 @@
-import stripe
+import logging
 from typing import Dict, Any, Optional
 
+import stripe
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
 
 from app.config import STRIPE_SECRET_KEY
-import logging
-
-from app.models import User, Card
 
 # Configure Stripe
 stripe.api_key = STRIPE_SECRET_KEY

@@ -1,12 +1,14 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float, String
-from sqlalchemy.orm import relationship
-from app.infrestructure import Base
 from fastapi import HTTPException
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
+
+from app.infrestructure import Base
+
 
 class Category(Base):
     __tablename__ = "categories"
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 

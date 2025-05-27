@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -9,8 +9,8 @@ from app.business.user.user_auth import login_service, registration_service
 from app.business.user.user_validators import validate_user_exists_from
 from app.dependencies import get_db, get_current_user, get_current_user_at_password_reset
 from app.models import User, Contact
-from app.schemas.user import UserCreate, UserPublicResponse, UserResponse
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
+from app.schemas.user import UserCreate, UserPublicResponse, UserResponse
 
 router = APIRouter(tags=["Users"])
 

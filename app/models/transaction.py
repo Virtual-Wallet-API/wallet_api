@@ -1,11 +1,12 @@
 from datetime import datetime
 
+from fastapi import HTTPException
 from pydantic_core import core_schema, CoreSchema
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float, String
 from sqlalchemy.orm import relationship
-from app.infrestructure import Base
-from fastapi import HTTPException
 from sqlalchemy.orm import validates
+
+from app.infrestructure import Base
 
 
 class TransactionStatus(str, Enum):

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List, ForwardRef
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 UserResponse = ForwardRef("UserResponse")
 

@@ -1,7 +1,8 @@
-from enum import Enum
 from datetime import datetime
-from typing import Optional, ForwardRef, List
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+from typing import Optional, List
+
+from pydantic import BaseModel
 
 from app.models.transaction import TransactionStatus
 

@@ -1,15 +1,14 @@
-from typing import Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.business.deposit_service import DepositService
 from app.dependencies import get_db, get_current_active_user
 from app.models.user import User
 from app.schemas.deposit import (
-    DepositCreate, DepositWithCard, DepositResponse, DepositPublicResponse,
-    DepositHistoryResponse, DepositStatsResponse, DepositPaymentIntentCreate,
+    DepositWithCard, DepositResponse, DepositHistoryResponse, DepositStatsResponse, DepositPaymentIntentCreate,
     DepositPaymentIntentResponse, DepositConfirm
 )
-from app.business.deposit_service import DepositService
 
 router = APIRouter(tags=["Deposits"])
 

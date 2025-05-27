@@ -1,14 +1,15 @@
+from fastapi import HTTPException
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
-from app.infrestructure import Base
-from fastapi import HTTPException
 from sqlalchemy.orm import validates
+
+from app.infrestructure import Base
 
 
 class Contact(Base):
     __tablename__ = "contacts"
 
-    id = Column(Integer, primary_key=True,autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     contact_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 

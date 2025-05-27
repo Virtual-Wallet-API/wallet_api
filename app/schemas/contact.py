@@ -1,6 +1,6 @@
-from pydantic import BaseModel, field_validator
-from typing import Optional, List, ForwardRef
+from typing import Optional, ForwardRef
 
+from pydantic import BaseModel
 
 UserPublicResponse = ForwardRef("UserPublicResponse")
 
@@ -31,7 +31,6 @@ class ContactPublicResponse(ContactBase):
 
     class Config:
         from_attributes = True
-
 
 # class ContactCreate(ContactBase):
 #     contact_id: int

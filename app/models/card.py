@@ -1,7 +1,8 @@
+from datetime import datetime
+
 from fastapi import HTTPException
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Enum, Boolean, Text
 from sqlalchemy.orm import relationship, validates
-from datetime import datetime
 
 from app.infrestructure import Base
 

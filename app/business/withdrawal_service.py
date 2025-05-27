@@ -1,19 +1,20 @@
-from typing import List, Optional, Dict, Any
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 import logging
 from datetime import datetime
+from typing import Optional
 
-from app.models.withdrawal import Withdrawal
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.infrestructure.stripe_service import StripeService
 from app.models.card import Card
-from app.models.user import User
 from app.models.currency import Currency
+from app.models.user import User
+from app.models.withdrawal import Withdrawal
 from app.schemas.withdrawal import (
     WithdrawalCreate, WithdrawalUpdate, WithdrawalResponse,
     WithdrawalPublicResponse, WithdrawalHistoryResponse, WithdrawalStatsResponse,
     RefundCreate, RefundResponse
 )
-from app.infrestructure.stripe_service import StripeService
 
 logger = logging.getLogger(__name__)
 
@@ -374,4 +375,4 @@ class WithdrawalService:
 
         logger.info(f"Cancelled withdrawal {withdrawal_id} for user {user.id}, refunded ${withdrawal.amount}")
 
-        return WithdrawalResponse.model_validate(withdrawal) 
+        return WithdrawalResponse.model_validate(withdrawal)

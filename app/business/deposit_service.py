@@ -1,24 +1,21 @@
-from typing import List, Optional, Dict, Any
+import logging
 
 import stripe
-from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-import logging
-from datetime import datetime
-
+from sqlalchemy.orm import Session
 from stripe import CardError
 
-from app.models.deposit import Deposit
+from app.business.card_service import CardService
+from app.infrestructure.stripe_service import StripeService
 from app.models.card import Card
-from app.models.user import User
 from app.models.currency import Currency
+from app.models.deposit import Deposit
+from app.models.user import User
 from app.schemas.deposit import (
-    DepositCreate, DepositWithCard, DepositUpdate, DepositResponse,
-    DepositPublicResponse, DepositHistoryResponse, DepositStatsResponse,
+    DepositWithCard, DepositResponse,
+    DepositStatsResponse,
     DepositPaymentIntentCreate, DepositPaymentIntentResponse, DepositConfirm
 )
-from app.infrestructure.stripe_service import StripeService
-from app.business.card_service import CardService
 
 logger = logging.getLogger(__name__)
 
