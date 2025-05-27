@@ -142,6 +142,7 @@ class DepositPaymentIntentCreate(BaseModel):
     currency: str = "usd"
     description: Optional[str] = "Wallet deposit"
     save_payment_method: bool = False
+    payment_method_id: str
 
     @field_validator('amount_cents')
     @classmethod

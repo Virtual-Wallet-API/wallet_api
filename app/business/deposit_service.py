@@ -1,8 +1,12 @@
 from typing import List, Optional, Dict, Any
+
+import stripe
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import logging
 from datetime import datetime
+
+from stripe import CardError
 
 from app.models.deposit import Deposit
 from app.models.card import Card
@@ -32,6 +36,7 @@ class DepositService:
         try:
             # Ensure user has Stripe customer
             stripe_customer_id = await CardService.ensure_stripe_customer(db, user)
+            stripe.PaymentMethod.attach(deposit_data.payment_method_id, customer=stripe_customer_id)
 
             # Get or create USD currency
             currency = db.query(Currency).filter(Currency.code == "USD").first()
@@ -58,17 +63,40 @@ class DepositService:
             db.refresh(deposit)
 
             # Create payment intent with Stripe
-            payment_intent = await StripeService.create_payment_intent(
-                amount=deposit_data.amount_cents,
-                currency=deposit_data.currency,
-                customer_id=stripe_customer_id,
-                metadata={
-                    "user_id": str(user.id),
-                    "deposit_id": str(deposit.id),
-                    "description": deposit_data.description or "Wallet deposit"
-                },
-                setup_future_usage="off_session" if deposit_data.save_payment_method else None
-            )
+            payment_method = await StripeService.retrieve_payment_method(deposit_data.payment_method_id)
+            try:
+                payment_intent = await StripeService.create_payment_intent(
+                    amount=deposit_data.amount_cents,
+                    currency=deposit_data.currency,
+                    customer_id=stripe_customer_id,
+                    metadata={
+                        "user_id": str(user.id),
+                        "deposit_id": str(deposit.id),
+                        "description": deposit_data.description or "Wallet deposit"
+                    },
+                    setup_future_usage="off_session" if deposit_data.save_payment_method else None,
+                    payment_method=payment_method
+                )
+            except Exception as e:
+                print("Error creating payment intent: " + str(e))
+                raise HTTPException\
+                    (status_code=400, detail="Error creating payment intent with payment method ID " + str(deposit_data.payment_method_id))
+
+
+            # Verify payment method is not in the database and if so that it belongs to this user
+            card_fingerprint = payment_method["card"]["fingerprint"]
+            existing = CardService.validate_card_fingerprint(db, user, card_fingerprint)
+            if existing["status"] not in ("verified_existing", "verified_new"):
+                stripe.PaymentIntent.cancel(payment_intent["id"])
+                deposit.status = "failed"
+                db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Card is already associated with another account"
+                )
+            elif existing["status"] != "verified_new":
+                card = db.query(Card).filter(Card.stripe_card_fingerprint == card_fingerprint).first()
+                deposit.card_id = card.id
 
             # Update deposit with Stripe payment intent ID
             deposit.stripe_payment_intent_id = payment_intent["id"]
@@ -86,12 +114,18 @@ class DepositService:
                 status=payment_intent["status"],
                 deposit_id=deposit.id
             )
-
+        except CardError as e:
+            str_error = f"{e}"
+            error_reason = str_error.split(":")[1].strip()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_reason
+            )
         except Exception as e:
             logger.error(f"Failed to create deposit payment intent for user {user.id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create deposit payment intent"
+                detail=f"{e}"
             )
 
     @staticmethod
@@ -223,12 +257,12 @@ class DepositService:
 
                 # Save card if requested and payment method exists
                 pmethod = payment_intent.get("payment_method")
-                await StripeService.verify_payment_method_saved(pmethod, user, db)
+                await StripeService.verify_payment_method_saved(payment_intent.get("id"), pmethod, user, db)
                 if confirm_data.save_card and pmethod:
                     try:
                         await CardService.save_card_from_payment_method(
                             db, user, pmethod,
-                            confirm_data.cardholder_name
+                            user.username
                         )
                     except Exception as e:
                         print("Save card failed")
