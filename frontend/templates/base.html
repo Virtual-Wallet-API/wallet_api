@@ -488,6 +488,12 @@
 
     // Set token
     const token = getCookie('access_token');
+    console.log(token);
+
+    if (!token) {
+        document.getElementsByClassName('main-content')[0].textContent = 'Please log in to make a deposit';
+        window.location.href = `${FE_BASE}/login`;
+    }
 
     // User data
     const userData = {};
@@ -496,11 +502,9 @@
 
     async function refreshUserData() {
         if (!token) {
-            showError('Please log in to make a deposit');
-            setTimeout(() => {
-                window.location.href = `${fe_base}/login`;
-            }, 2500);
-            throw new Error('No access token found');
+            alert('Please log in to use the app.');
+            window.location.href = `${fe_base}/login`;
+            return;
         }
 
         try {
@@ -514,7 +518,7 @@
 
             if (!userResponse.ok) {
                 const errorData = await userResponse.json();
-                showError(errorData.detail || 'Failed to get user details');
+                alert((errorData.detail || 'Failed to get user details') + " Please login again.");
                 document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
                 window.location.href = `${FE_BASE}/login`;
                 throw new Error(errorData.detail || 'Unknown error');
@@ -535,7 +539,9 @@
             console.log(`User data successfully fetched.`);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            showError(error.message || 'Failed to load user data');
+            alert((error.message || 'Failed to load user data') + " Please login again.");
+            document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            window.location.href = `${FE_BASE}/login`;
         }
     }
 

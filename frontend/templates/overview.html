@@ -388,6 +388,20 @@
     <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>
 </div>
 
+<!-- Recent Transactions -->
+<div class="mb-4">
+    <h3>Recent Deposits</h3>
+    <div class="transaction-list deposit-list">
+        <div id="initial-deposits" class="initial-transactions">
+            <!-- Deposit items will be inserted here -->
+        </div>
+        <div id="additional-deposits" class="additional-transactions" style="display: none;">
+            <!-- Additional deposit items will be inserted here -->
+        </div>
+    </div>
+    <a id="view-deposits-btn" class="btn btn-outline-primary" href="#">View More Deposits</a>
+</div>
+
 <!-- Add padding to clear fixed footer -->
 <div style="padding-bottom: 80px;"></div>
 {% endblock %}
@@ -452,12 +466,78 @@
         $('#transactionModal').modal('show');
     });
 
-    $(document).ready(function () {
+    async function fetchDeposits() {
+        try {
+            const response = await fetch(`${API_BASE}/deposits`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                console.error('Fetch deposits failed:', response.status);
+                throw new Error('Failed to fetch deposits');
+            }
+            const data = await response.json();
+            const deposits = data.deposits;
+
+            // Sort by created_at descending
+            deposits.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            // Take latest 12
+            const latestDeposits = deposits.slice(0, 12);
+
+            // Generate deposit items
+            const depositItems = latestDeposits.map(deposit => {
+                const date = new Date(deposit.created_at).toISOString().split('T')[0];
+                const amount = `$${deposit.amount.toFixed(2)}`;
+                const status = deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1);
+                const description = `Deposit via ${deposit.method}`;
+                return `
+                    <div class="transaction-item" data-deposit-id="${deposit.id}" data-date="${date}" data-description="${description}" data-amount="${amount}">
+                      <span class="date">${date}</span>
+                      <span class="status">${status}</span>
+                      <span class="amount">${amount}</span>
+                      <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                    </div>`;
+            });
+
+            // Clear containers
+            $('#initial-deposits').empty();
+            $('#additional-deposits').empty();
+
+            if (latestDeposits.length <= 3 && latestDeposits.length > 0) {
+                $('#initial-deposits').html(depositItems.join(''));
+                $('#view-deposits-btn').hide();
+            } else if (latestDeposits.length > 3) {
+                $('#initial-deposits').html(depositItems.slice(0, 3).join(''));
+                $('#additional-deposits').html(depositItems.slice(3).join(''));
+                $('#additional-deposits').hide();
+                $('#view-deposits-btn').text('View More Deposits').show().off('click').on('click', function (e) {
+                    e.preventDefault();
+                    $('#additional-deposits').slideDown(500);
+                    $(this).text('See All').attr('href', `${FE_BASE}/all-deposits`);
+                });
+            } else {
+                $('#initial-deposits').html("<div class='alert alert-info'>No deposits yet.</div>");
+                $('#view-deposits-btn').hide();
+            }
+        } catch (error) {
+            console.log("Error while fetching deposits: ", error)
+            console.error('Error fetching deposits:', error);
+        }
+    }
+
+    $(document).ready(async function () {
         // Update balance
         setTimeout(async function () {
             const balanceAmount = document.getElementById('balance-amount');
             balanceAmount.textContent = '$ ' + userData.balance;
         }, 2000);
-    })
+
+        // Fetch and populate deposits
+        await fetchDeposits();
+    });
 </script>
 {% endblock %}
