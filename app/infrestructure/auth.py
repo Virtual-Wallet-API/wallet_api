@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import jwt
 from fastapi import HTTPException
-
 from passlib.context import CryptContext
 from starlette import status
 

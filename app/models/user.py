@@ -7,7 +7,7 @@ from app.infrestructure.validators import validate_username, validate_password, 
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, nullable=False, index=True, unique=True)
     hashed_password = Column(String, nullable=False)
     email = Column(String, nullable=False, index=True, unique=True)
@@ -19,10 +19,14 @@ class User(Base):
                     nullable=False, default="pending")
     forced_password_reset = Column(Boolean, nullable=False, default=False)
 
+    # Stripe integration
+    stripe_customer_id = Column(String(255), nullable=True, unique=True)  # Stripe customer ID
+
     cards = relationship("Card", back_populates="user")
     contacts = relationship("Contact", foreign_keys="[Contact.user_id]", back_populates="user")
     categories = relationship("Category", back_populates="user")
     deposits = relationship("Deposit", back_populates="user")
+    withdrawals = relationship("Withdrawal", back_populates="user")
 
     @validates("username")
     def validate_username(self, key, v: str):

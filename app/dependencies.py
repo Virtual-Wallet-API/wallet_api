@@ -17,7 +17,7 @@ def get_db():
         db.close()
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme), fpr: bool = True):
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     """
         Return an instance of User - the currently logged-in user.
     """
@@ -30,18 +30,27 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     if user.status == "blocked":
         raise blocked_user
 
-    if fpr:
-        if user.forced_password_reset:
-            raise forced_password_reset
+    if user.forced_password_reset:
+        raise forced_password_reset
 
     return user
+
 
 def get_current_user_at_password_reset(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     """
         Return an instance of User - the currently logged-in user.
     """
-    user = get_current_user(db, token, fpr=False)
+    username = verify_token(token)
+    user = db.query(User).filter(User.username == username).first()
+
+    if not user:
+        raise invalid_credentials
+
+    if user.status == "blocked":
+        raise blocked_user
+
     return user
+
 
 def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """
