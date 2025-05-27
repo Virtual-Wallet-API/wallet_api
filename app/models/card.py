@@ -15,6 +15,7 @@ class Card(Base):
     # Stripe-related fields
     stripe_payment_method_id = Column(String(255), nullable=False, unique=True)  # Stripe payment method ID
     stripe_customer_id = Column(String(255), nullable=True)  # Stripe customer ID (if different from user's)
+    stripe_card_fingerprint = Column(String(255), nullable=True)
 
     # Safe card information (no sensitive data)
     last_four = Column(String(4), nullable=False)  # Last 4 digits only

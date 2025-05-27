@@ -122,7 +122,6 @@ class CardService:
             design: Optional[str] = None
     ) -> CardResponse:
         """Save a card to database after successful Stripe payment method creation"""
-        print("Save card called, details: ", stripe_payment_method_id, cardholder_name, design)
         try:
             # Retrieve payment method from Stripe
             payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
@@ -134,17 +133,20 @@ class CardService:
                 )
 
             card_data = payment_method["card"]
+            card_fingerprint = card_data["fingerprint"]
 
             # Check if card already exists
+            # TODO: Check for existing card with same fingerprint
             existing_card = db.query(Card).filter(
-                Card.stripe_payment_method_id == stripe_payment_method_id
+                Card.stripe_card_fingerprint == card_fingerprint
             ).first()
 
             if existing_card:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Card already exists"
-                )
+                if existing_card.user_id != user.id:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="This card is already associated with another account"
+                    )
 
             # Determine if this should be the default card
             is_default = db.query(Card).filter(Card.user_id == user.id).count() == 0
@@ -154,6 +156,7 @@ class CardService:
                 user_id=user.id,
                 stripe_payment_method_id=stripe_payment_method_id,
                 stripe_customer_id=user.stripe_customer_id,
+                stripe_card_fingerprint=card_fingerprint,
                 last_four=card_data["last4"],
                 brand=card_data["brand"],
                 exp_month=card_data["exp_month"],
@@ -175,12 +178,6 @@ class CardService:
 
         except HTTPException:
             raise
-        except Exception as e:
-            logger.error(f"Failed to save card for user {user.id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to save card"
-            )
 
     @staticmethod
     def get_user_cards(db: Session, user: User) -> CardListResponse:
