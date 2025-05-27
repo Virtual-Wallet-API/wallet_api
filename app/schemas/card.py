@@ -71,6 +71,7 @@ class SetupIntentResponse(BaseModel):
 # Schema for card response (safe information only)
 class CardResponse(BaseModel):
     id: int
+    stripe_payment_method_id: str
     last_four: str
     brand: str
     exp_month: int
@@ -129,7 +130,7 @@ class CardDelete(BaseModel):
 
 # List of cards response
 class CardListResponse(BaseModel):
-    cards: List[CardPublicResponse]
+    cards: List[CardResponse]
     total: int
     has_default: bool
 

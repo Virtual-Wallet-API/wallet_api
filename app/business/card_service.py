@@ -1,15 +1,13 @@
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 import logging
-from datetime import datetime
 
 from app.models.card import Card
 from app.models.user import User
 
-from app.models.currency import Currency
 from app.schemas.card import (
-    CardCreate, CardUpdate, CardResponse, CardPublicResponse,
+    CardUpdate, CardResponse, CardPublicResponse,
     PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse,
     CardListResponse
 )
@@ -102,7 +100,7 @@ class CardService:
 
             return PaymentIntentResponse(
                 client_secret=payment_intent["client_secret"],
-                payment_intent_id=payment_intent["id"],
+                payment_intent_id=payment_intent["client_secret"],
                 amount=payment_intent["amount"],
                 currency=payment_intent["currency"],
                 status=payment_intent["status"]
@@ -124,6 +122,7 @@ class CardService:
             design: Optional[str] = None
     ) -> CardResponse:
         """Save a card to database after successful Stripe payment method creation"""
+        print("Save card called, details: ", stripe_payment_method_id, cardholder_name, design)
         try:
             # Retrieve payment method from Stripe
             payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
@@ -195,6 +194,7 @@ class CardService:
         for card in cards:
             card_dict = {
                 "id": card.id,
+                "stripe_payment_method_id": card.stripe_payment_method_id,
                 "last_four": card.last_four,
                 "brand": card.brand,
                 "exp_month": card.exp_month,
@@ -205,9 +205,10 @@ class CardService:
                 "is_default": card.is_default,
                 "is_active": card.is_active,
                 "masked_number": card.masked_number,
-                "is_expired": card.is_expired
+                "is_expired": card.is_expired,
+                "created_at": card.created_at
             }
-            card_responses.append(CardPublicResponse(**card_dict))
+            card_responses.append(CardResponse(**card_dict))
 
         has_default = any(card.is_default for card in cards)
 

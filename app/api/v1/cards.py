@@ -16,7 +16,7 @@ from app.config import STRIPE_PUBLISHABLE_KEY
 router = APIRouter(tags=["Cards"])
 
 @router.get("/config")
-def get_stripe_config():
+def get_stripe_config(user: User = Depends(get_current_active_user)):
     """Get Stripe configuration for frontend"""
     return {
         "publishable_key": STRIPE_PUBLISHABLE_KEY
