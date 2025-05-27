@@ -13,7 +13,7 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     date = Column(DateTime, nullable=False)
     status = Column(Enum("pending", "completed", "failed", name="status"), nullable=False)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
     category = relationship("Category", back_populates="transactions")
