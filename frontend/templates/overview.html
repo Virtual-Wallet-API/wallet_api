@@ -8,7 +8,7 @@
         border: 1px solid var(--bs-border-color);
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
-        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
         font-family: 'Poppins', sans-serif;
     }
 
@@ -42,6 +42,7 @@
         font-size: 2.5rem;
         font-weight: 600;
         color: #6f42c1;
+
         [data-bs-theme="dark"] & {
             color: var(--accent-color);
         }
@@ -52,7 +53,7 @@
         padding: 1rem 2rem;
         font-size: 1.3rem;
         border-radius: 10px;
-        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         box-shadow: 0 2px 4px var(--shadow-color);
     }
 
@@ -100,7 +101,7 @@
         border: 1px solid var(--bs-border-color);
         border-radius: 12px; /* Slightly larger radius */
         margin-bottom: 1.2rem;
-        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
     }
@@ -153,7 +154,7 @@
         color: var(--accent-color);
         border-radius: 8px;
         padding: 0.75rem 1.5rem;
-        transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
     }
 
     [data-bs-theme="light"] .btn-outline-primary:hover {
@@ -203,6 +204,7 @@
 
     .modal-body p strong {
         color: #6f42c1;
+
         [data-bs-theme="dark"] & {
             color: var(--accent-color);
         }
@@ -263,6 +265,29 @@
             font-size: 1rem;
         }
     }
+
+    .dot {
+        display: inline;
+        margin-left: 0.2em;
+        margin-right: 0.2em;
+        position: relative;
+        top: -1em;
+        font-size: 3.5em;
+        opacity: 0;
+        animation: showHideDot 2.5s ease-in-out infinite;
+
+        &.one {
+            animation-delay: 0.2s;
+        }
+
+        &.two {
+            animation-delay: 0.4s;
+        }
+
+        &.three {
+            animation-delay: 0.6s;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -278,7 +303,7 @@
             <h5 class="balance-title">Account Balance</h5>
             <div class="d-flex justify-content-between align-items-center">
                 <i class="bi bi-wallet2 balance-icon"></i>
-                <p class="balance-amount mb-0">$1,234.56</p>
+                <p class="balance-amount mb-0" id="balance-amount">loading</p>
             </div>
         </div>
     </div>
@@ -393,7 +418,7 @@
 {% block scripts %}
 <script>
     // Color Transaction Amounts
-    document.querySelectorAll('.transaction-item .amount').forEach(function(amountElement) {
+    document.querySelectorAll('.transaction-item .amount').forEach(function (amountElement) {
         const amountText = amountElement.textContent;
         const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
         if (amountValue < 0) {
@@ -426,5 +451,13 @@
         $('#modal-category').text(category);
         $('#transactionModal').modal('show');
     });
+
+    $(document).ready(function () {
+        // Update balance
+        setTimeout(async function () {
+            const balanceAmount = document.getElementById('balance-amount');
+            balanceAmount.textContent = '$ ' + userData.balance;
+        }, 2000);
+    })
 </script>
 {% endblock %}
