@@ -396,6 +396,49 @@
         max-height: 68px !important;
         margin-bottom: 1rem; /* Add space between card element and checkbox */
     }
+
+    /* Label and Button Container */
+    .label-button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end; /* Aligns items to the bottom */
+        margin-bottom: 1rem;
+    }
+
+    .label-button-container label {
+        margin-bottom: -0.1rem; /* Optional: fine-tune vertical position */
+    }
+
+    /* Manage Cards Button */
+    .manage-cards-btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .manage-cards-btn:hover {
+        background-color: var(--accent-color-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    .manage-cards-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    [data-bs-theme="dark"] .manage-cards-btn {
+        background-color: var(--accent-color);
+        color: white;
+    }
+
 </style>
 {% endblock %}
 
@@ -424,7 +467,12 @@
 
         <!-- Saved Payment Methods -->
         <div class="form-group" id="saved-card-group">
-            <label for="payment-method">Payment Method</label>
+            <div class="label-button-container">
+                <label for="payment-method">Payment Method</label>
+                <button type="button" id="manage-cards-button" class="manage-cards-btn"><i class="bi bi-gear"></i>
+                    Manage
+                </button>
+            </div>
             <div class="saved-cards-group" id="saved-card-group-inner">
                 <div class="saved-cards-icon" id="saved-cards-icon"><i class="bi bi-credit-card ml-1"
                                                                        id="saved-card-icon"></i></div>
@@ -443,7 +491,7 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" id="submit-button" class="confirm-btn" style="margin-top: 4.5rem !important;">
+        <button type="submit" id="submit-button" class="confirm-btn" style="margin-top: 5.9rem !important;">
             <span id="button-text">Confirm Deposit</span>
             <span id="spinner" style="display: none;">Processing...</span>
         </button>
@@ -473,6 +521,162 @@
 
 <!-- Add padding to clear fixed footer -->
 <div style="padding-bottom: 80px;"></div>
+{% endblock %}
+
+{% block modals %}
+<style type="text/css">
+    /* Modal Styling */
+    .modal-content {
+        background: var(--balance-bg);
+        border: 1px solid var(--accent-color);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color);
+    }
+
+    [data-bs-theme="light"] .modal-content {
+        background: #f0f2f5;
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--accent-color);
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--accent-color);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--accent-color);
+    }
+
+    /* Saved Cards List */
+    .saved-cards-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: var(--balance-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        transition: background-color 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .saved-cards-list-item:hover {
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+        box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
+    }
+
+    .saved-cards-list-item .card-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1; /* Ensure card-info takes available space */
+    }
+
+    .saved-cards-list-item .card-icon {
+        font-size: 1.4rem;
+    }
+
+    .saved-cards-list-item .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .saved-cards-list-item .default-badge {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .saved-cards-list-item .remove-card-btn {
+        opacity: 0;
+        transform: translateX(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.3rem 0.3rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .saved-cards-list-item:hover .default-badge {
+        transform: translateX(-10px); /* Slide badge left on hover */
+    }
+
+    .saved-cards-list-item:hover .remove-card-btn {
+        opacity: 1;
+        transform: translateX(0); /* Slide button in from right */
+    }
+
+    [data-bs-theme="dark"] .saved-cards-list-item {
+        background-color: #333;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .modal-title {
+            font-size: 1.4rem;
+        }
+
+        .saved-cards-list-item {
+            font-size: 1rem;
+            padding: 0.8rem;
+        }
+
+        .saved-cards-list-item .card-icon {
+            font-size: 1.2rem;
+        }
+
+        .saved-cards-list-item .default-badge {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+<!-- Modal for Managing Saved Cards -->
+<div class="modal fade" id="manageCardsModal" tabindex="-1" aria-labelledby="manageCardsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageCardsModalLabel">Manage Saved Cards</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-error-message" class="alert alert-danger" style="display: none;"></div>
+                <div id="modal-success-message" class="alert alert-success" style="display: none;"></div>
+                <div id="saved-cards-list">
+                    <!-- Saved cards will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn confirm-btn" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -511,6 +715,7 @@
             }
             const data = await response.json();
             populatePaymentMethods(data.cards || []);
+            populateModalSavedCards(data.cards || []);
         } catch (error) {
             console.error('Error fetching saved cards:', error);
             showError('Failed to load saved payment methods');
@@ -518,6 +723,38 @@
             populatePaymentMethods([]); // Populate dropdown anyway
         }
     }
+
+
+    // New function to show modal error
+    function showModalError(message) {
+        const modalError = document.getElementById('modal-error-message');
+        if (modalError) {
+            modalError.textContent = message;
+            modalError.style.display = 'block';
+            modalError.setAttribute('role', 'alert');
+        }
+    }
+
+    // New function to show modal error
+    function showModalSuccess(message) {
+        const modalError = document.getElementById('modal-success-message');
+        if (modalError) {
+            modalError.textContent = message;
+            modalError.style.display = 'block';
+            modalError.setAttribute('role', 'alert');
+        }
+    }
+
+    // Handle manage cards button click
+    document.getElementById('manage-cards-button')?.addEventListener('click', async () => {
+        const modal = new bootstrap.Modal(document.getElementById('manageCardsModal'));
+        try {
+            modal.show();
+        } catch (error) {
+            console.error('Error loading saved cards modal:', error);
+            showModalError('Failed to load saved cards modal');
+        }
+    });
 
     function populatePaymentMethods(savedCards) {
 
@@ -562,7 +799,7 @@
                 const option = document.createElement('option');
                 option.value = card.stripe_payment_method_id;
                 const card_brand = card.brand ? card.brand.charAt(0).toUpperCase() + card.brand.slice(1).toLowerCase() : 'Unknown';
-                option.textContent = `${card_brand} | * ${card.last_four} (${card.exp_month}/${card.exp_year})`;
+                option.textContent = `Card ending in ${card.last_four} (${card.exp_month}/${card.exp_year.toString().slice(2)}) - ${card_brand}`;
                 if (card.is_default) {
                     option.selected = true;
                     defaultCardId = card.stripe_payment_method_id;
@@ -589,6 +826,47 @@
 
         // Trigger initial change event to set correct icon
         select.dispatchEvent(new Event('change'));
+    }
+
+    // New function to populate modal with saved cards
+    function populateModalSavedCards(savedCards) {
+        const cardsList = document.getElementById('saved-cards-list');
+        const modalError = document.getElementById('modal-error-message');
+        cardsList.innerHTML = '';
+
+        if (savedCards.length === 0) {
+            cardsList.innerHTML = '<p>No saved payment methods found.</p>';
+            return;
+        }
+
+        const brandIconMap = {
+            visa: 'bi bi-credit-card-2-front',
+            mastercard: 'bi bi-credit-card-2-back',
+            amex: 'bi bi-credit-card-fill',
+            discover: 'bi bi-credit-card',
+            default: 'bi bi-credit-card'
+        };
+
+        savedCards.forEach(card => {
+            const cardItem = document.createElement('div');
+            cardItem.className = 'saved-cards-list-item';
+            const card_brand = card.brand ? card.brand.charAt(0).toUpperCase() + card.brand.slice(1).toLowerCase() : 'Unknown';
+            cardItem.innerHTML = `
+            <div class="card-info">
+                <i class="${brandIconMap[card.brand?.toLowerCase()] || brandIconMap.default} card-icon"></i>
+                <span>Card ending in ${card.last_four} (${card.exp_month}/${card.exp_year.toString().slice(2)}, ${card_brand})</span>
+            </div>
+            <div class="card-actions">
+                ${card.is_default ? '<span class="default-badge">Default</span>' : ''}
+                <button type="button" id="removeCardButton" class="btn btn-danger btn-sm remove-card-btn" data-card-id="${card.id}">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `;
+            cardsList.appendChild(cardItem);
+        });
+
+        modalError.style.display = 'none';
     }
 
     // Initialize Stripe Elements
@@ -677,29 +955,58 @@
     document.getElementById('deposit-form')?.addEventListener('submit', async (event) => {
         event.preventDefault();
 
+        if (!token) {
+            document.getElementById('deposit-form').textContent = '';
+            showError('Please log in to make a deposit');
+            return;
+        }
+
         if (!stripe) {
             showError('Stripe is not initialized. Please refresh the page.');
             return;
+
         }
 
         const amount = parseFloat(document.getElementById('amount')?.value);
         if (isNaN(amount) || amount <= 0 || amount < 0.50) {
             showError('Please enter a valid amount (minimum $0.50)');
             return;
+
         }
 
         setLoading(true);
 
-        try {
-            if (!token) {
-                document.getElementById('deposit-form').textContent = '';
-                showError('Please log in to make a deposit');
-                return;
-            }
+        let paymentMethod, paymentMethodId;
 
-            const paymentMethod = document.getElementById('payment-method').value;
-            const isNewCard = paymentMethod === 'new';
+        try {
+            const paymentMethodSelect = document.getElementById('payment-method').value;
+            const isNewCard = paymentMethodSelect === 'new';
             const saveCard = isNewCard && document.getElementById('save-card')?.checked;
+
+            if (isNewCard) {
+                // Create a payment method for new cards
+                const {paymentMethod, error} = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: card,
+                    billing_details: {name: uname || 'Unnamed wallet User'}
+                });
+
+                if (error) {
+                    showError(error.message);
+                    throw new Error(error.message);
+                }
+
+                paymentMethodId = paymentMethod.id;
+                console.log('Created payment method:', paymentMethodId);
+            } else {
+                // Use the selected saved card
+                paymentMethodId = paymentMethodSelect;
+                if (!paymentMethodId.startsWith('pm_')) {
+                    showError('Invalid payment method selected');
+                    throw new Error('Invalid payment method selected');
+                }
+                console.log('Using saved payment method:', paymentMethodId);
+            }
 
             // Create payment intent
             const paymentIntentResponse = await fetch(`${API_BASE}/deposits/payment-intent`, {
@@ -713,7 +1020,7 @@
                     currency: 'usd',
                     description: `${uname || 'Unnamed wallet User'} wallet deposit`,
                     save_payment_method: saveCard,
-                    payment_method_id: isNewCard ? undefined : paymentMethod
+                    payment_method_id: paymentMethodId
                 })
             });
 
@@ -870,10 +1177,68 @@
         window.location.reload();
     });
 
+    // Handles saved card removal
+    async function removeCardSetup() {
+        const removeButtons = document.querySelectorAll('.remove-card-btn');
+        console.log(removeButtons);
+        removeButtons.forEach(removeButton => {
+            console.log(removeButton);
+            removeButton.addEventListener('click', async (event) => {
+                console.log('Removing card ', removeButton.attributes['data-card-id'].value);
+                event.preventDefault();
+                const cardId = removeButton.attributes['data-card-id'].value;
+                if (!cardId) {
+                    showModalError('Failed to remove card, no card ID found');
+                    console.error('Card ID not found');
+                }
+
+                const removeAttempt = await fetch(`${API_BASE}/cards/${cardId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!removeAttempt.ok) {
+                    showModalError('Failed to remove card, API request failed: ' + removeAttempt.status);
+                    console.error('Failed to remove card, API request failed:' + removeAttempt.statusText);
+                }
+
+                console.log(removeAttempt);
+                const attemptResponseCode = removeAttempt.status;
+                const attemptData = await removeAttempt.json();
+                console.log(attemptData);
+
+                if (attemptResponseCode !== 204) {
+                    try {
+                        const errorMessage = attemptData.detail || "Unknown error";
+                        console.error(`Failed to remove card: ${attemptData}`);
+                        showModalError(`Failed to remove card: ${errorMessage}`);
+                        console.error(`Failed to remove card: ${errorMessage}`);
+                    } catch (error) {
+                        console.error('Failed to remove card:', error);
+                        showModalError('Failed to remove card: ', error);
+                    }
+                } else {
+                    const savedCardElement = removeButton.parentElement.parentElement;
+                    savedCardElement.style.transition = 'all 0.5s ease-in-out';
+                    savedCardElement.style.maxHeight = '0';
+                    showModalSuccess('Card removed successfully');
+                    setTimeout(() => {
+                        savedCardElement.remove();
+                    }, 1500);
+                }
+            })
+        });
+
+    }
+
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', async () => {
         await fetchSavedCards();
         await initializeStripe();
+        await removeCardSetup();
 
         // Fix height and width of inputs
         const currencyDisplay = document.querySelector('.currency-display');
