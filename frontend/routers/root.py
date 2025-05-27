@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
-from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
 
@@ -27,7 +25,8 @@ def read_cards(request: Request):
         "request": request,
         "page": "cards",
         "debit_cards": [
-            {"id": 1, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple", "status": "active"},
+            {"id": 1, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple",
+             "status": "active"},
             {"id": 2, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue",
              "status": "active"},
             {"id": 3, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "green",
@@ -59,7 +58,6 @@ def read_transactions(request: Request):
     data = {"request": request,
             "page": "deposit"}
     return templates.TemplateResponse("payments/deposit.html", data)
-
 
 # @router.get("/logout", response_model=None)
 # def read_logout(request: Request):
