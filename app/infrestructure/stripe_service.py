@@ -1,7 +1,13 @@
 import stripe
 from typing import Dict, Any, Optional
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
 from app.config import STRIPE_SECRET_KEY
 import logging
+
+from app.models import User, Card
 
 # Configure Stripe
 stripe.api_key = STRIPE_SECRET_KEY
@@ -119,6 +125,23 @@ class StripeService:
         except stripe.error.StripeError as e:
             logger.error(f"Error retrieving payment method: {e}")
             raise e
+
+    @staticmethod
+    async def retrieve_payment_method_fingerprting(payment_method_id: str) -> str:
+        """Retrieve a payment method (card) fingerprint"""
+        payment_method = await StripeService.retrieve_payment_method(payment_method_id)
+        return payment_method["card"]["fingerprint"]
+
+    @staticmethod
+    async def verify_payment_method_saved(payment_method_id: str, user: User, db: Session) -> str:
+        """Retrieve a payment method (card) fingerprint"""
+        payment_method = await StripeService.retrieve_payment_method(payment_method_id)
+        fingerprint = payment_method["card"]["fingerprint"]
+        card = db.query(Card).filter(Card.stripe_card_fingerprint == fingerprint).first()
+
+        if card:
+            if card.user_id != user.id:
+                raise HTTPException(status_code=400, detail="This card is associated with another account")
 
     @staticmethod
     async def detach_payment_method(payment_method_id: str) -> Dict[str, Any]:
