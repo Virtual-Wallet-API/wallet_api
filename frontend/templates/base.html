@@ -386,7 +386,41 @@
         .modal-dialog {
             box-shadow: 0 5px 15px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
             transition: box-shadow 0.3s ease;
-            margin-top: 10rem !important;
+            /*margin-top: 10rem !important;*/
+            min-width: 50% !important;
+        }
+
+        .modal-dialog-centered {
+            min-height: auto !important;
+            max-height: 100% !important;
+        }
+
+        .modal.fade {
+            align-content: center !important;
+        }
+
+        /* Alert Info Styling */
+        .alert.alert-info {
+            background-color: rgba(var(--accent-color-rgb), 0.1); /* Soft tint of accent color */
+            border-color: var(--accent-color); /* Solid accent color border */
+            color: var(--text-color); /* Theme text color for readability */
+            box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow for depth */
+            padding: 1.25rem 1.6rem;
+            margin-bottom: 0;
+        }
+
+        /* Light Theme Specific */
+        [data-bs-theme="light"] .alert.alert-info {
+            background-color: #d4c7e3; /* Lighter shade from --balance-bg */
+            border-color: #6f42c1; /* --accent-color */
+            color: var(--accent-color); /* --text-color */
+        }
+
+        /* Dark Theme Specific */
+        [data-bs-theme="dark"] .alert.alert-info {
+            background-color: #1f122e; /* Darker shade from --balance-bg */
+            border-color: #bb86fc; /* --accent-color */
+            color: var(--accent-color); /* --text-color */
         }
     </style>
 
