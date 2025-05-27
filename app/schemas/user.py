@@ -54,6 +54,7 @@ class UserPublicResponse(UserPublicBase):
 
 class UserResponse(UserBase):
     id: int
+    balance: float = 0.0
     contacts: List["ContactResponse"] = []
     cards: List["CardPublicResponse"] = []
     status: Status = Status.pending
