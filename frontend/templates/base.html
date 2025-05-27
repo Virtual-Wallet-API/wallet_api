@@ -436,7 +436,7 @@
                     <span class="menu-text">Contacts</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="#" id="logout-btn">
                     <i class="bi bi-box-arrow-right"></i>
                     <span class="menu-text">Logout</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
@@ -567,6 +567,12 @@
             icon.classList.add('bi-moon');
         }
     }
+
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.cookie = "access_token=; max-age=0; path=/;";
+        window.location.href = `/fe/`;
+    });
 </script>
 {% block scripts %}
 {% endblock %}

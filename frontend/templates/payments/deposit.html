@@ -416,7 +416,7 @@
                 <div class="currency-display">USD</div>
                 <div class="input-wrapper">
                     <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount"
-                           step="1.00" min="0.50" max="10000" required>
+                           step="0.01" min="0.50" max="10000" required>
                 </div>
             </div>
             <div id="amount-error" class="error-message" style="display: none;"></div>
@@ -471,8 +471,6 @@
     </button>
 </div>
 
-</div>
-
 <!-- Add padding to clear fixed footer -->
 <div style="padding-bottom: 80px;"></div>
 {% endblock %}
@@ -489,6 +487,16 @@
     let savedCards = [];
 
     async function fetchSavedCards() {
+
+        if (!token) {
+            document.getElementById('deposit-form').textContent = '';
+            showError('Please log in to make a deposit');
+            setTimeout(() => {
+                window.location.href = `${FE_BASE}/`;
+            }, 5000);
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE}/cards`, {
                 method: 'GET',
@@ -512,6 +520,16 @@
     }
 
     function populatePaymentMethods(savedCards) {
+
+        if (!token) {
+            document.getElementById('deposit-form').textContent = '';
+            showError('Please log in to make a deposit');
+            setTimeout(() => {
+                window.location.href = `${FE_BASE}/`;
+            }, 5000);
+            return;
+        }
+
         const select = document.getElementById('payment-method');
         const cardIcon = document.querySelector('#saved-card-group .saved-cards-icon i');
         const brandIconMap = {
@@ -575,9 +593,13 @@
 
     // Initialize Stripe Elements
     async function initializeStripe() {
-        if (!token || !API_BASE || !FE_BASE) {
-            showError('Configuration error: Missing required variables. Please contact support.');
-            setStripLoadingError('Configuration error: Missing required variables.', true);
+
+        if (!token) {
+            document.getElementById('deposit-form').textContent = '';
+            showError('Please log in to make a deposit');
+            setTimeout(() => {
+                window.location.href = `${FE_BASE}/`;
+            }, 5000);
             return;
         }
 
@@ -670,6 +692,7 @@
 
         try {
             if (!token) {
+                document.getElementById('deposit-form').textContent = '';
                 showError('Please log in to make a deposit');
                 return;
             }
