@@ -79,14 +79,18 @@ def update_card(
     """Update card information"""
     return CardService.update_card(db, user, card_id, card_update)
 
-@router.delete("/{card_id}")
+@router.delete("/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_card(
     card_id: int,
     user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
     """Delete/deactivate a card"""
-    return await CardService.delete_card(db, user, card_id)
+    try:
+        remove = await CardService.delete_card(db, user, card_id)
+        return remove
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.post("/{card_id}/set-default", response_model=CardResponse)
 def set_default_card(

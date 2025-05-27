@@ -122,32 +122,25 @@ class CardService:
             design: Optional[str] = None
     ) -> CardResponse:
         """Save a card to database after successful Stripe payment method creation"""
-        try:
-            # Retrieve payment method from Stripe
-            payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
+        # Retrieve payment method from Stripe
+        payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
+        if payment_method["type"] != "card":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only card payment methods are supported"
+            )
 
-            if payment_method["type"] != "card":
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Only card payment methods are supported"
-                )
+        card_data = payment_method["card"]
+        card_fingerprint = card_data["fingerprint"]
+        existing = CardService.validate_card_fingerprint(db, user, card_fingerprint)
+        if existing["status"] not in ("verified_existing", "verified_new"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Card is already associated with another account"
+            )
 
-            card_data = payment_method["card"]
-            card_fingerprint = card_data["fingerprint"]
-
-            # Check if card already exists
-            # TODO: Check for existing card with same fingerprint
-            existing_card = db.query(Card).filter(
-                Card.stripe_card_fingerprint == card_fingerprint
-            ).first()
-
-            if existing_card:
-                if existing_card.user_id != user.id:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="This card is already associated with another account"
-                    )
-
+        is_default = False
+        if existing["status"] == "verified_new":
             # Determine if this should be the default card
             is_default = db.query(Card).filter(Card.user_id == user.id).count() == 0
 
@@ -175,9 +168,8 @@ class CardService:
             logger.info(f"Saved card {card.id} for user {user.id}")
 
             return CardResponse.model_validate(card)
-
-        except HTTPException:
-            raise
+        else:
+            return db.query(Card).filter(Card.stripe_card_fingerprint == card_fingerprint).first()
 
     @staticmethod
     def get_user_cards(db: Session, user: User) -> CardListResponse:
@@ -214,6 +206,17 @@ class CardService:
             total=len(cards),
             has_default=has_default
         )
+
+
+    @staticmethod
+    def validate_card_fingerprint(db: Session, user: User, fingerprint: str):
+        card = db.query(Card).filter(Card.stripe_card_fingerprint == fingerprint).first()
+        if card:
+            if card.user_id != user.id:
+                return {"status": "existing_other_user"}
+            else:
+                return {"status": "verified_existing"}
+        return {"status": "verified_new"}
 
     @staticmethod
     def get_card_by_id(db: Session, user: User, card_id: int) -> CardResponse:
@@ -275,14 +278,13 @@ class CardService:
         """Delete/deactivate a card"""
         card = db.query(Card).filter(
             Card.id == card_id,
-            Card.user_id == user.id,
-            Card.is_active == True
+            Card.user_id == user.id
         ).first()
 
         if not card:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Card not found"
+                detail="Invalid card ID provided"
             )
 
         try:
@@ -302,6 +304,8 @@ class CardService:
 
                 if other_card:
                     other_card.is_default = True
+
+            card.is_default = False
 
             db.commit()
 
