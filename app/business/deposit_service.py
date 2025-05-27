@@ -79,9 +79,9 @@ class DepositService:
                 )
             except Exception as e:
                 print("Error creating payment intent: " + str(e))
-                raise HTTPException\
-                    (status_code=400, detail="Error creating payment intent with payment method ID " + str(deposit_data.payment_method_id))
-
+                raise HTTPException \
+                    (status_code=400, detail="Error creating payment intent with payment method ID " + str(
+                        deposit_data.payment_method_id))
 
             # Verify payment method is not in the database and if so that it belongs to this user
             card_fingerprint = payment_method["card"]["fingerprint"]
@@ -247,7 +247,8 @@ class DepositService:
                 )
 
             # Retrieve payment intent from Stripe to check status
-            payment_intent = await StripeService.retrieve_payment_intent(confirm_data.payment_intent_id.split("_secret_")[0])
+            payment_intent = await StripeService.retrieve_payment_intent(
+                confirm_data.payment_intent_id.split("_secret_")[0])
             if payment_intent["status"] == "succeeded":
                 # Update deposit status
                 deposit.mark_completed()
@@ -257,7 +258,6 @@ class DepositService:
 
                 # Save card if requested and payment method exists
                 pmethod = payment_intent.get("payment_method")
-                await StripeService.verify_payment_method_saved(payment_intent.get("id"), pmethod, user, db)
                 if confirm_data.save_card and pmethod:
                     try:
                         await CardService.save_card_from_payment_method(
@@ -352,4 +352,4 @@ class DepositService:
             pending_deposits=pending_deposits,
             failed_deposits=failed_deposits,
             average_amount=average_amount
-        ) 
+        )

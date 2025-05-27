@@ -28,8 +28,8 @@ def read_transactions(db: Session = Depends(get_db),
 
 @router.post("/", response_model=TransactionResponse)
 def send_transaction(transaction_data: TransactionCreate,
-                       db: Session = Depends(get_db),
-                       user: User = Depends(get_current_active_user)):
+                     db: Session = Depends(get_db),
+                     user: User = Depends(get_current_active_user)):
     # TODO: Move to services and implement proper balance check and change
     transaction = Transaction(sender_id=user.id, **transaction_data.model_dump())
     print(transaction)

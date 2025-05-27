@@ -47,4 +47,3 @@ class Transaction(Base):
             raise HTTPException(status_code=400,
                                 detail="Amount must be positive")
         return v
-

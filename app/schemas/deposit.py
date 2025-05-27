@@ -168,4 +168,4 @@ class DepositPaymentIntentResponse(BaseModel):
 class DepositConfirm(BaseModel):
     payment_intent_id: str
     save_card: bool = False
-    cardholder_name: Optional[str] = None 
+    cardholder_name: Optional[str] = None
