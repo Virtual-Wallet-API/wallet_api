@@ -38,6 +38,7 @@ async def confirm_deposit(
     db: Session = Depends(get_db)
 ):
     """Confirm a deposit and update user balance"""
+    print(confirm_data.payment_intent_id)
     return await DepositService.confirm_deposit(db, user, confirm_data)
 
 @router.get("/", response_model=DepositHistoryResponse)

@@ -5,6 +5,14 @@ from app.infrestructure import Base
 from fastapi import HTTPException
 
 
+class DepositStatus(Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
 class Deposit(Base):
     __tablename__ = "deposits"
 
@@ -18,16 +26,27 @@ class Deposit(Base):
     amount_cents = Column(Integer, nullable=False)  # Amount in cents for precision
 
     # Deposit method and type
-    deposit_type = Column(Enum("card_payment", "bank_transfer", "cash", "other", name="deposit_type"), nullable=False,
-                          default="card_payment")
     method = Column(Enum("stripe", "manual", "bank", name="deposit_method"), nullable=False, default="stripe")
+    deposit_type = Column(Enum("card_payment",
+                               "bank_transfer",
+                               "cash", "other",
+                               name="deposit_type"),
+                          nullable=False,
+                          default="card_payment")
 
     # Status tracking
-    status = Column(Enum("pending", "processing", "completed", "failed", "cancelled", name="deposit_status"),
-                    nullable=False, default="pending")
+    status = Column(Enum(DepositStatus.PENDING,
+                         DepositStatus.PROCESSING,
+                         DepositStatus.COMPLETED,
+                         DepositStatus.FAILED,
+                         DepositStatus.CANCELLED,
+                         name="deposit_status"),
+                    nullable=False,
+                    default="pending")
 
     # Stripe integration fields
     stripe_payment_intent_id = Column(String(255), nullable=True, unique=True)  # Stripe payment intent ID
+    stripe_payment_intent_secret = Column(String(255), nullable=True)
     stripe_charge_id = Column(String(255), nullable=True)  # Stripe charge ID
     stripe_customer_id = Column(String(255), nullable=True)  # Stripe customer ID
 
@@ -36,14 +55,10 @@ class Deposit(Base):
     failure_reason = Column(Text, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False)
     completed_at = Column(DateTime, nullable=True)
     failed_at = Column(DateTime, nullable=True)
-
-    # Legacy field for backward compatibility
-    date = Column(DateTime, default=datetime.utcnow, nullable=False)  # Keep for existing code
-    type = Column(Enum("credit", "debit", name="card_type"), nullable=False, default="credit")  # Keep for existing code
 
     # Relationships
     user = relationship("User", back_populates="deposits")
@@ -70,33 +85,35 @@ class Deposit(Base):
     @property
     def is_completed(self) -> bool:
         """Check if deposit is completed"""
-        return self.status == "completed"
+        return self.status == DepositStatus.COMPLETED
 
     @property
     def is_pending(self) -> bool:
         """Check if deposit is pending"""
-        return self.status in ["pending", "processing"]
+        return self.status in (DepositStatus.PENDING, DepositStatus.PROCESSING)
+
+    @property
+    def is_cancelled_or_failed(self) -> bool:
+        """Check if deposit is cancelled or has failed"""
+        return self.status in (DepositStatus.CANCELLED, DepositStatus.FAILED)
 
     @property
     def can_be_cancelled(self) -> bool:
         """Check if deposit can be cancelled"""
-        return self.status in ["pending"]
+        return self.status in (DepositStatus.PENDING,)
 
     def mark_completed(self):
         """Mark deposit as completed"""
-        self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.status = DepositStatus.COMPLETED
+        self.completed_at = datetime.now()
 
     def mark_failed(self, reason: str = None):
         """Mark deposit as failed"""
-        self.status = "failed"
-        self.failed_at = datetime.utcnow()
+        self.status = DepositStatus.FAILED
+        self.failed_at = datetime.now()
         if reason:
             self.failure_reason = reason
 
     def mark_processing(self):
         """Mark deposit as processing"""
-        self.status = "processing"
-
-
-
+        self.status = DepositStatus.PROCESSING
