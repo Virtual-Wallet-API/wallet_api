@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import datetime
-from typing import Optional, ForwardRef
-from pydantic import BaseModel
+from typing import Optional, ForwardRef, List
+from pydantic import BaseModel, ConfigDict
 
 
 class TransactionStatus(str, Enum):
@@ -9,21 +9,36 @@ class TransactionStatus(str, Enum):
     completed = "completed"
     failed = "failed"
 
+
 class TransactionBase(BaseModel):
     sender_id: int
     receiver_id: int
     amount: float
-    category_id: int
+    category_id: Optional[int] = None
     currency_id: int
 
-class TransactionCreate(TransactionBase):
-    date: datetime
+
+class TransactionCreate(BaseModel):
+    receiver_id: int
+    amount: float
+    category_id: Optional[int] = None
+    currency_id: int
 
 
 class TransactionResponse(TransactionBase):
     id: int
     date: datetime
     status: TransactionStatus
+
+    class Config:
+        from_attributes = True
+
+
+class TransactionHistoryResponse(BaseModel):
+    transactions: List[TransactionResponse] = []
+    total: int = 0
+    outgoing_total: float = 0.0
+    incoming_total: float = 0.0
 
     class Config:
         from_attributes = True

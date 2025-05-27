@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float
 from sqlalchemy.orm import relationship
 from app.infrestructure import Base
@@ -7,12 +9,12 @@ from sqlalchemy.orm import validates
 
 class Transaction(Base):
     __tablename__ = "transactions"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     amount = Column(Float, nullable=False)
-    date = Column(DateTime, nullable=False)
-    status = Column(Enum("pending", "completed", "failed", name="status"), nullable=False)
+    date = Column(DateTime, default=datetime.now, nullable=False)
+    status = Column(Enum("pending", "completed", "failed", name="status"), default="pending", nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
