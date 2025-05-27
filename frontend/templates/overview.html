@@ -2,13 +2,69 @@
 
 {% block styles %}
 <style type="text/css">
+    /* Override base template's display: none for additional-transactions */
+    .additional-transactions {
+        display: block !important; /* Override base template */
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 1s ease-in-out, opacity 0.7s ease-in-out;
+    }
+
+    .additional-transactions.show {
+        max-height: 2000px; /* Large enough for content */
+        opacity: 1;
+    }
+
+    .loading-container {
+        font-size: 2.5rem;
+        text-align: center;
+        width: 100% !important;
+        display: flex;
+        color: var(--accent-color);
+        justify-content: center;
+        align-items: center;
+        margin: 1.5rem;
+        max-height: 100px;
+        opacity: 1;
+        overflow: hidden;
+        transition: max-height 1s ease-in-out, opacity 0.7s ease-in-out;
+    }
+
+    .loading-container.hidden {
+        max-height: 0;
+        opacity: 0;
+    }
+
+    .bi-arrow-repeat {
+        display: inline-block;
+        animation: spin 1.5s linear infinite;
+        -webkit-animation: spin 1.5s linear infinite;
+        -moz-animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @-moz-keyframes spin {
+        0% { -moz-transform: rotate(0deg); }
+        100% { -moz-transform: rotate(360deg); }
+    }
+
     /* Balance Box */
     .balance-box {
         padding: 2rem;
         border: 1px solid var(--bs-border-color);
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
-        transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        transition: background-color 0.5s ease, box-shadow 0.5s ease, transform 0.5s ease;
         font-family: 'Poppins', sans-serif;
     }
 
@@ -42,10 +98,10 @@
         font-size: 2.5rem;
         font-weight: 600;
         color: #6f42c1;
+    }
 
-        [data-bs-theme="dark"] & {
-            color: var(--accent-color);
-        }
+    [data-bs-theme="dark"] .balance-amount {
+        color: var(--accent-color);
     }
 
     /* Action Buttons */
@@ -53,13 +109,8 @@
         padding: 1rem 2rem;
         font-size: 1.3rem;
         border-radius: 10px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        transition: transform 0.5s ease, box-shadow 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
         box-shadow: 0 2px 4px var(--shadow-color);
-    }
-
-    .btn-primary {
-        background-color: var(--accent-color);
-        border-color: var(--accent-color);
     }
 
     [data-bs-theme="light"] .btn-primary:hover {
@@ -74,11 +125,6 @@
         border-color: var(--accent-color-hover);
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
     }
 
     .btn-success:hover {
@@ -97,11 +143,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.5rem; /* Increased padding */
+        padding: 1.5rem;
         border: 1px solid var(--bs-border-color);
-        border-radius: 12px; /* Slightly larger radius */
+        border-radius: 12px;
         margin-bottom: 1.2rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.5s ease, box-shadow 0.5s ease;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
     }
@@ -121,27 +167,31 @@
 
     .transaction-item .date,
     .transaction-item .description {
-        font-size: 1.4rem; /* Increased font size */
+        font-size: 1.4rem;
         color: var(--text-color);
     }
 
     .transaction-item .amount {
-        font-size: 1.4rem; /* Increased font size */
+        font-size: 1.4rem;
         font-weight: 500;
+        min-width: 7rem !important;
+        width: 7rem;
+        align-content: flex-end;
+        text-align: right;
     }
 
     .transaction-item .amount.positive {
-        color: #28a745; /* Green for positive */
+        color: #28a745;
     }
 
     .transaction-item .amount.negative {
-        color: #dc3545; /* Red for negative */
+        color: #dc3545 !important;
     }
 
     .transaction-item .info-icon {
-        font-size: 1.5rem; /* Increased icon size */
+        font-size: 1.5rem;
         color: var(--accent-color);
-        transition: color 0.3s ease;
+        transition: color 0.5s ease;
     }
 
     .transaction-item .info-icon:hover {
@@ -154,19 +204,21 @@
         color: var(--accent-color);
         border-radius: 8px;
         padding: 0.75rem 1.5rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        transition: transform 0.5s ease, box-shadow 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
     }
 
     [data-bs-theme="light"] .btn-outline-primary:hover {
         background-color: var(--accent-color);
-        color: white;
+        color: #ffffff;
+        border-color: var(--accent-color-hover);
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
     }
 
     [data-bs-theme="dark"] .btn-outline-primary:hover {
         background-color: var(--accent-color);
-        color: white;
+        color: #ffffff;
+        border-color: var(--accent-color-hover);
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
     }
@@ -204,15 +256,52 @@
 
     .modal-body p strong {
         color: #6f42c1;
+    }
 
-        [data-bs-theme="dark"] & {
-            color: var(--accent-color);
-        }
+    [data-bs-theme="dark"] .modal-body p strong {
+        color: var(--accent-color);
     }
 
     .modal-footer .btn-primary {
         padding: 0.75rem 1.5rem;
         font-size: 1.2rem;
+    }
+
+    /* Header Toggle Styles */
+    .header-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        padding: 0.5rem 0;
+    }
+
+    .header-toggle h3 {
+        margin: 0;
+    }
+
+    .header-toggle i {
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .header-toggle i.up {
+        transform: rotate(180deg);
+    }
+
+    /* List Toggle Styles */
+    #transactions-list,
+    #deposits-list {
+        transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
+        max-height: 2000px;
+        opacity: 1;
+    }
+
+    #transactions-list.list-hidden,
+    #deposits-list.list-hidden {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
     }
 
     /* Responsive Adjustments */
@@ -265,29 +354,6 @@
             font-size: 1rem;
         }
     }
-
-    .dot {
-        display: inline;
-        margin-left: 0.2em;
-        margin-right: 0.2em;
-        position: relative;
-        top: -1em;
-        font-size: 3.5em;
-        opacity: 0;
-        animation: showHideDot 2.5s ease-in-out infinite;
-
-        &.one {
-            animation-delay: 0.2s;
-        }
-
-        &.two {
-            animation-delay: 0.4s;
-        }
-
-        &.three {
-            animation-delay: 0.6s;
-        }
-    }
 </style>
 {% endblock %}
 
@@ -303,7 +369,7 @@
             <h5 class="balance-title">Account Balance</h5>
             <div class="d-flex justify-content-between align-items-center">
                 <i class="bi bi-wallet2 balance-icon"></i>
-                <p class="balance-amount mb-0" id="balance-amount">loading</p>
+                <p class="balance-amount mb-0" id="balance-amount"><i class="bi bi-arrow-repeat"></i></p>
             </div>
         </div>
     </div>
@@ -316,90 +382,45 @@
         </button>
     </div>
 </div>
-<!-- Fancy Divider -->
+
 <hr style="margin: 2rem 0; opacity: 0;"/>
-<!-- Recent Transactions -->
-<div class="mb-4">
-    <h3>Recent Transactions</h3>
-    <div class="transaction-list">
-        <div class="initial-transactions">
-            <div class="transaction-item" data-date="2023-05-01" data-description="Grocery Store"
-                 data-amount="-$50.00" data-category="Food">
-                <span class="date">2023-05-01</span>
-                <span class="description">Grocery Store</span>
-                <span class="amount">-$50.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
-                 data-amount="+$2,000.00" data-category="Income">
-                <span class="date">2023-05-02</span>
-                <span class="description">Salary</span>
-                <span class="amount">+$2,000.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
-                 data-amount="-$30.00" data-category="Food">
-                <span class="date">2023-05-03</span>
-                <span class="description">Restaurant</span>
-                <span class="amount">-$30.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-        </div>
-        <div class="additional-transactions" style="display: none;">
-            <div class="transaction-item" data-date="2023-05-02" data-description="Salary"
-                 data-amount="+$2,000.00" data-category="Income">
-                <span class="date">2023-05-02</span>
-                <span class="description">Salary</span>
-                <span class="amount">+$2,000.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-03" data-description="Restaurant"
-                 data-amount="-$30.00" data-category="Food">
-                <span class="date">2023-05-03</span>
-                <span class="description">Restaurant</span>
-                <span class="amount">-$30.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-        </div>
-        <div class="additional-transactions" style="display: none;">
-            <div class="transaction-item" data-date="2023-05-04" data-description="Gas Station"
-                 data-amount="-$30.00" data-category="Transportation">
-                <span class="date">2023-05-04</span>
-                <span class="description">Gas Station</span>
-                <span class="amount">-$30.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-05" data-description="Online Shopping"
-                 data-amount="-$100.00" data-category="Shopping">
-                <span class="date">2023-05-05</span>
-                <span class="description">Online Shopping</span>
-                <span class="amount">-$100.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-            <div class="transaction-item" data-date="2023-05-06" data-description="Utility Bill"
-                 data-amount="-$75.00" data-category="Bills">
-                <span class="date">2023-05-06</span>
-                <span class="description">Utility Bill</span>
-                <span class="amount">-$75.00</span>
-                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
-            </div>
-        </div>
-    </div>
-    <a id="view-transactions-btn" class="btn btn-outline-primary" href="#">View More</a>
-</div>
 
 <!-- Recent Transactions -->
 <div class="mb-4">
-    <h3>Recent Deposits</h3>
-    <div class="transaction-list deposit-list">
+    <div class="header-toggle" id="transactions-toggle">
+        <h3>Recent Transactions</h3>
+        <i class="bi bi-chevron-down"></i>
+    </div>
+    <div class="transaction-list" id="transactions-list">
+        <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+        <div id="initial-transactions-list" class="initial-transactions">
+            <!-- Transaction items will be inserted here -->
+        </div>
+        <div id="additional-transactions-list" class="additional-transactions">
+            <!-- Additional transaction items will be inserted here -->
+        </div>
+        <a id="view-transactions-btn" class="btn btn-outline-primary" href="#" style="display: none;">View More Transactions</a>
+    </div>
+</div>
+
+<hr style="margin: 2rem 0; opacity: 0;"/>
+
+<!-- Recent Deposits -->
+<div class="mb-4">
+    <div class="header-toggle" id="deposits-toggle">
+        <h3>Recent Deposits</h3>
+        <i class="bi bi-chevron-down"></i>
+    </div>
+    <div class="transaction-list deposit-list" id="deposits-list">
+        <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
         <div id="initial-deposits" class="initial-transactions">
             <!-- Deposit items will be inserted here -->
         </div>
-        <div id="additional-deposits" class="additional-transactions" style="display: none;">
+        <div id="additional-deposits" class="additional-transactions">
             <!-- Additional deposit items will be inserted here -->
         </div>
+        <a id="view-deposits-btn" class="btn btn-outline-primary" href="#" style="display: none;">View More Deposits</a>
     </div>
-    <a id="view-deposits-btn" class="btn btn-outline-primary" href="#">View More Deposits</a>
 </div>
 
 <!-- Add padding to clear fixed footer -->
@@ -431,40 +452,119 @@
 
 {% block scripts %}
 <script>
-    // Color Transaction Amounts
-    document.querySelectorAll('.transaction-item .amount').forEach(function (amountElement) {
-        const amountText = amountElement.textContent;
-        const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
-        if (amountValue < 0) {
-            amountElement.classList.add('negative');
-        } else {
-            amountElement.classList.add('positive');
-        }
-    });
-
-    // "View More" Button
-    $('#view-transactions-btn').on('click', function (e) {
-        e.preventDefault();
-        if ($(this).text() === 'View All') {
-            window.location.href = '/fe/transactions';
-        } else {
-            $('.additional-transactions').slideDown(500);
-            $(this).text('View All').attr('href', '/fe/transactions');
-        }
-    });
-
     // Transaction Modal
-    $('.transaction-item').on('click', function () {
-        const date = $(this).data('date');
-        const description = $(this).data('description');
-        const amount = $(this).data('amount');
-        const category = $(this).data('category');
-        $('#modal-date').text(date);
-        $('#modal-description').text(description);
-        $('#modal-amount').text(amount);
-        $('#modal-category').text(category);
-        $('#transactionModal').modal('show');
-    });
+    function attachTransactionListeners() {
+        document.querySelectorAll('.transaction-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const date = this.dataset.date;
+                const description = this.dataset.description;
+                const amount = this.dataset.amount;
+                const category = this.dataset.category || 'N/A';
+                document.getElementById('modal-date').textContent = date;
+                document.getElementById('modal-description').textContent = description;
+                document.getElementById('modal-amount').textContent = amount;
+                document.getElementById('modal-category').textContent = category;
+                $('#transactionModal').modal('show');
+            });
+        });
+    }
+
+    // "View More" Button for Transactions
+    function toggleTransactions() {
+        const additionalList = document.getElementById('additional-transactions-list');
+        const viewBtn = document.getElementById('view-transactions-btn');
+        additionalList.classList.toggle('show');
+        viewBtn.textContent = additionalList.classList.contains('show') ? 'See All' : 'View More';
+        viewBtn.setAttribute('href', '/fe/transactions');
+    }
+
+    // "View More" Button for Deposits
+    function toggleDeposits() {
+        const additionalList = document.getElementById('additional-deposits');
+        const viewBtn = document.getElementById('view-deposits-btn');
+        additionalList.classList.toggle('show');
+        viewBtn.textContent = additionalList.classList.contains('show') ? 'See All' : 'View More Deposits';
+        viewBtn.setAttribute('href', '/fe/all-deposits');
+    }
+
+    async function fetchTransactions() {
+        try {
+            const response = await fetch(`${API_BASE}/transactions`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                console.error('Fetch transactions failed:', response.status);
+                throw new Error('Failed to fetch transactions');
+            }
+            const data = await response.json();
+            const transactions = data.transactions;
+
+            // Sort by date descending
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Take latest 12
+            const latestTransactions = transactions.slice(0, 12);
+
+            // Generate transaction items
+            const transactionItems = latestTransactions.map(transaction => {
+                const date = new Date(transaction.date).toISOString().split('T')[0];
+                let amount_str, amount_float, amount_class;
+                if (transaction.sender_id === userData.id) {
+                    amount_str = `-${Math.abs(transaction.amount).toFixed(2)}$`;
+                    amount_float = -transaction.amount;
+                    amount_class = 'negative';
+                } else {
+                    amount_str = `+${Math.abs(transaction.amount).toFixed(2)}$`;
+                    amount_float = transaction.amount;
+                    amount_class = 'positive';
+                }
+                console.log(`Transaction ${transaction.id} (${amount_str}, ${amount_float}, ${amount_class})`);
+                const description = transaction.status;
+                return `
+                    <div class="transaction-item" data-transaction-id="${transaction.id}" data-date="${date}" data-description="${description}" data-amount="${amount_float}">
+                      <span class="date">${date}</span>
+                      <span class="description">${description}</span>
+                      <span class="amount ${amount_class}">${amount_str}</span>
+                      <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                    </div>`;
+            });
+
+            // Clear containers
+            const initialList = document.getElementById('initial-transactions-list');
+            const additionalList = document.getElementById('additional-transactions-list');
+            const loadingAlert = document.getElementById('transactions-loading-alert');
+            additionalList.innerHTML = '';
+            loadingAlert.classList.add('hidden');
+
+            if (latestTransactions.length <= 3 && latestTransactions.length > 0) {
+                initialList.innerHTML = transactionItems.join('');
+                document.getElementById('view-transactions-btn').style.display = 'none';
+            } else if (latestTransactions.length > 3) {
+                initialList.innerHTML = transactionItems.slice(0, 3).join('');
+                additionalList.innerHTML = transactionItems.slice(3).join('');
+                additionalList.classList.remove('show');
+                const viewBtn = document.getElementById('view-transactions-btn');
+                viewBtn.textContent = 'View More';
+                viewBtn.style.display = 'block';
+                viewBtn.removeEventListener('click', toggleTransactions); // Prevent duplicate listeners
+                viewBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    toggleTransactions();
+                });
+            } else {
+                initialList.innerHTML = "<div class='alert alert-info'>No transactions yet.</div>";
+                document.getElementById('view-transactions-btn').style.display = 'none';
+            }
+
+            attachTransactionListeners();
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+        }
+    }
 
     async function fetchDeposits() {
         try {
@@ -504,40 +604,73 @@
             });
 
             // Clear containers
-            $('#initial-deposits').empty();
-            $('#additional-deposits').empty();
+            const initialList = document.getElementById('initial-deposits');
+            const additionalList = document.getElementById('additional-deposits');
+            const loadingAlert = document.getElementById('deposits-loading-alert');
+            additionalList.innerHTML = '';
+            loadingAlert.classList.add('hidden');
 
             if (latestDeposits.length <= 3 && latestDeposits.length > 0) {
-                $('#initial-deposits').html(depositItems.join(''));
-                $('#view-deposits-btn').hide();
+                initialList.innerHTML = depositItems.join('');
+                document.getElementById('view-deposits-btn').style.display = 'none';
             } else if (latestDeposits.length > 3) {
-                $('#initial-deposits').html(depositItems.slice(0, 3).join(''));
-                $('#additional-deposits').html(depositItems.slice(3).join(''));
-                $('#additional-deposits').hide();
-                $('#view-deposits-btn').text('View More Deposits').show().off('click').on('click', function (e) {
+                initialList.innerHTML = depositItems.slice(0, 3).join('');
+                additionalList.innerHTML = depositItems.slice(3).join('');
+                additionalList.classList.remove('show');
+                const viewBtn = document.getElementById('view-deposits-btn');
+                viewBtn.textContent = 'View More Deposits';
+                viewBtn.style.display = 'block';
+                viewBtn.removeEventListener('click', toggleDeposits); // Prevent duplicate listeners
+                viewBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    $('#additional-deposits').slideDown(500);
-                    $(this).text('See All').attr('href', `${FE_BASE}/all-deposits`);
+                    toggleDeposits();
                 });
             } else {
-                $('#initial-deposits').html("<div class='alert alert-info'>No deposits yet.</div>");
-                $('#view-deposits-btn').hide();
+                initialList.innerHTML = "<div class='alert alert-info'>No deposits yet.</div>";
+                document.getElementById('view-deposits-btn').style.display = 'none';
             }
+
+            attachTransactionListeners();
         } catch (error) {
-            console.log("Error while fetching deposits: ", error)
             console.error('Error fetching deposits:', error);
         }
     }
 
-    $(document).ready(async function () {
+    document.addEventListener("DOMContentLoaded", async function () {
         // Update balance
-        setTimeout(async function () {
-            const balanceAmount = document.getElementById('balance-amount');
-            balanceAmount.textContent = '$ ' + userData.balance;
-        }, 2000);
+        const balanceAmount = document.getElementById('balance-amount');
+        if (userData.balance) {
+            balanceAmount.innerHTML = `$ ${userData.balance}`;
+        } else {
+            await refreshUserData();
+            balanceAmount.innerHTML = `$ ${userData.balance}`;
+        }
 
-        // Fetch and populate deposits
-        await fetchDeposits();
+        // Fetch and populate transactions and deposits
+        if (userData.id) {
+            await Promise.all([fetchTransactions(), fetchDeposits()]);
+        } else {
+            await refreshUserData();
+            await Promise.all([fetchTransactions(), fetchDeposits()]);
+        }
+
+        // Toggle functionality for transactions
+        const transactionsToggle = document.getElementById('transactions-toggle');
+        const transactionsList = document.getElementById('transactions-list');
+        const transactionsArrow = transactionsToggle.querySelector('i');
+        transactionsToggle.addEventListener('click', () => {
+            transactionsList.classList.toggle('list-hidden');
+            transactionsArrow.classList.toggle('up');
+        });
+
+        // Toggle functionality for deposits
+        const depositsToggle = document.getElementById('deposits-toggle');
+        const depositsList = document.getElementById('deposits-list');
+        const depositsArrow = depositsToggle.querySelector('i');
+        depositsToggle.addEventListener('click', () => {
+            depositsList.classList.toggle('list-hidden');
+            depositsArrow.classList.toggle('up');
+        });
     });
 </script>
 {% endblock %}
