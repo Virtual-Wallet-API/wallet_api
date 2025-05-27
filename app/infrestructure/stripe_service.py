@@ -36,17 +36,26 @@ class StripeService:
     async def create_payment_intent(
             amount: int,
             currency: str = "usd",
+            payment_method: Dict[str, Any] = None,
             customer_id: Optional[str] = None,
             metadata: Optional[Dict[str, str]] = None,
-            setup_future_usage: Optional[str] = None
+            setup_future_usage: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Create a payment intent for card payments"""
         try:
+            if not payment_method:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Payment method is required for card payments"
+                )
             payment_intent_data = {
                 "amount": amount,  # Amount in cents
                 "currency": currency,
                 "automatic_payment_methods": {"enabled": True},
-                "metadata": metadata or {}
+                "metadata": metadata or {},
+                "customer": customer_id,
+                "setup_future_usage": setup_future_usage,
+                "payment_method": payment_method
             }
 
             if customer_id:
@@ -133,25 +142,14 @@ class StripeService:
         return payment_method["card"]["fingerprint"]
 
     @staticmethod
-    async def verify_payment_method_saved(payment_method_id: str, user: User, db: Session) -> str:
-        """Retrieve a payment method (card) fingerprint"""
-        payment_method = await StripeService.retrieve_payment_method(payment_method_id)
-        fingerprint = payment_method["card"]["fingerprint"]
-        card = db.query(Card).filter(Card.stripe_card_fingerprint == fingerprint).first()
-
-        if card:
-            if card.user_id != user.id:
-                raise HTTPException(status_code=400, detail="This card is associated with another account")
-
-    @staticmethod
     async def detach_payment_method(payment_method_id: str) -> Dict[str, Any]:
         """Detach a payment method from a customer"""
         try:
             payment_method = stripe.PaymentMethod.detach(payment_method_id)
             return payment_method
-        except stripe.error.StripeError as e:
+        except (stripe.error.StripeError, Exception) as e:
             logger.error(f"Error detaching payment method: {e}")
-            raise e
+            raise HTTPException(status_code=400, detail="Error detaching payment method")
 
     @staticmethod
     async def create_refund(
@@ -254,4 +252,4 @@ class StripeService:
             return refund
         except stripe.error.StripeError as e:
             logger.error(f"Error creating refund to source: {e}")
-            raise e 
+            raise e
