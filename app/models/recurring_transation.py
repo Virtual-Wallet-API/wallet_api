@@ -6,7 +6,7 @@ from sqlalchemy.orm import validates
 
 class RecurringTransaction(Base):
     __tablename__ = "recurring_transactions"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     transaction_id = Column(Integer, ForeignKey("transactions.id"))
     interval = Column(Integer, nullable=False)
     is_active = Column(Integer, nullable=False, default=True)

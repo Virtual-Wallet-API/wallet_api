@@ -8,7 +8,7 @@ from fastapi import HTTPException
 class Withdrawal(Base):
     __tablename__ = "withdrawals"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     card_id = Column(Integer, ForeignKey("cards.id"), nullable=True)  # Nullable for bank transfers
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)

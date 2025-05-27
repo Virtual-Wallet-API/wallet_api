@@ -7,7 +7,7 @@ from sqlalchemy.orm import validates
 
 class Transaction(Base):
     __tablename__ = "transactions"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     amount = Column(Float, nullable=False)
