@@ -1,35 +1,155 @@
-from fastapi import Depends, HTTPException
+from typing import Dict
+
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from starlette import status
+from starlette.responses import RedirectResponse, JSONResponse
 
+from app.business.user.user_validators import UserValidators as UVal
+from app.config import BASE_URL
+from app.dependencies import get_db
 from app.infrestructure import generate_token
-from app.models import User
+from app.models import User, UStatus
 from app.schemas.user import UserCreate
 
 
-# TODO hash passwords
-def registration_service(user: UserCreate, db: Session):
-    db_user = db.query(User).filter(User.username == user.username).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    db_user = User(**user.model_dump())
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+class UserAuthService:
+    """Business logic for user authentication and authorization"""
 
+    # TODO hash passwords
+    @classmethod
+    def register(cls, user_data: UserCreate, db: Session) -> User:
+        """
+        Create a new user account in the database.
+        :param user_data: user input data
+        :param db: database session
+        :return user: User object if account is successfully created
+        """
+        user = UVal.validate_unique_user_data(dict(user_data), db)
+        if user:
+            raise HTTPException(status_code=400, detail="Username, email or phone number is already in use")
 
-def login_service(db: Session, user: OAuth2PasswordRequestForm = Depends()):
-    exc = HTTPException(status_code=400, detail="Incorrect username or password")
+        user = User(username=user_data.username,
+                    hashed_password=user_data.password,
+                    email=user_data.email,
+                    phone_number=user_data.phone_number)
 
-    db_user = db.query(User).filter(User.username == user.username).first()
-    if not db_user:
-        raise exc
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
 
-    # if not pwd_context.verify(db_user.hashed_password, user.password):
-    if not db_user.hashed_password == user.password:
-        raise exc
+    @classmethod
+    def login(cls,
+              db: Session = Depends(get_db),
+              user_data: OAuth2PasswordRequestForm = Depends()) -> JSONResponse:
+        """
+        Authenticate a user and generates an authorization token if successful.
+        :param db: database session
+        :param user_data: OAuth2 login credentials
+        :return dict: access token, token type and username if successful
+        """
 
-    return {"access_token": generate_token(db_user.username),
-            "token_type": "Bearer",
-            "username": db_user.username}
+        exc = HTTPException(status_code=400, detail="Incorrect username or password")
+        user = UVal.find_user_with_or_raise_exception("username", user_data.username, db, exc)
+
+        if not user:
+            raise exc
+
+        # TODO: Hash password
+        if not user.hashed_password == user_data.password:
+            raise exc
+
+        if user.status == UStatus.BLOCKED:
+            raise HTTPException(status_code=403, detail="Your account is blocked. Please contact support.")
+
+        if user.status == UStatus.DEACTIVATED:
+            user.status = UStatus.REACTIVATION
+            db.commit()
+            db.refresh(user)
+
+            raise HTTPException(status_code=400, detail="Your account is deactivated. Log in again to reactivate.")
+
+        if user.status == UStatus.REACTIVATION:
+            user.status = UStatus.ACTIVE
+            db.commit()
+            db.refresh(user)
+
+        # Create response and set cookie
+        token = generate_token(user.username)
+        response = JSONResponse(
+            content={
+                "access_token": token,
+                "token_type": "Bearer",
+                "username": user.username
+            }
+        )
+
+        response.delete_cookie("access_token")
+        response.set_cookie(key="access_token", value=token, httponly=False, secure=False, samesite="lax")
+        return response
+
+    @classmethod
+    def set_status(cls, db: Session, user: User, status: UStatus = UStatus.ACTIVE) -> User:
+        """
+        Sets the status of a user.
+        :param db: database session
+        :param user: User object
+        :param status: new user status
+        :return: updated User object
+        """
+        db.refresh(user)
+        user.status = status
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @classmethod
+    def get_status(cls, db: Session, user: User | str) -> UStatus:
+        """
+        Gets the status of a user.
+        :param db: database session
+        :param user: User object or username
+        :return: the user's status
+        """
+        if isinstance(user, str):
+            user = UVal.find_user_with_or_raise_exception("username", user, db)
+
+        return user.status
+
+    @classmethod
+    def verify_user_can_deposit(cls, user: User) -> bool:
+        """
+        Checks if a user can deposit money.
+        :param user: User object
+        :return: True if user can deposit, raises exception otherwise
+        """
+        if user.status == UStatus.ACTIVE or user.admin:
+            return True
+        else:
+            if len(user.deactivated_cards) <= 2 and user.completed_deposits_count <= 3:
+                return True
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You have reached your deposit limit for a pending account, please await approval"
+        )
+
+    @classmethod
+    def verify_user_can_add_card(cls, user: User) -> bool:
+        """
+        Checks if a user can add cards.
+        :param user: User object
+        :return: True if user can add cards, raises exception otherwise
+        """
+        if user.status == UStatus.ACTIVE or user.admin:
+            return True
+        else:
+            if len(user.deactivated_cards) <= 2 and len(user.active_cards) <= 3:
+                return True
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You have reached your cards limit for a pending account, please await approval"
+        )
