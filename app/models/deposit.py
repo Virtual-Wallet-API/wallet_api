@@ -1,7 +1,9 @@
 from datetime import datetime
+from enum import Enum
 
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float, String, Text
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String, Text
+from sqlalchemy.types import Enum as CEnum
 from sqlalchemy.orm import relationship, validates
 
 from app.infrestructure import Base
@@ -13,6 +15,19 @@ class DepositStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+
+class DepositMethod(Enum):
+    STRIPE = "stripe"
+    MANUAL = "manual"
+    BANK = "bank"
+
+
+class DepositType(Enum):
+    CARD_PAYMENT = "card_payment"
+    BANK_TRANSFER = "bank_transfer"
+    CASH = "cash"
+    OTHER = "other"
 
 
 class Deposit(Base):
@@ -28,23 +43,11 @@ class Deposit(Base):
     amount_cents = Column(Integer, nullable=False)  # Amount in cents for precision
 
     # Deposit method and type
-    method = Column(Enum("stripe", "manual", "bank", name="deposit_method"), nullable=False, default="stripe")
-    deposit_type = Column(Enum("card_payment",
-                               "bank_transfer",
-                               "cash", "other",
-                               name="deposit_type"),
-                          nullable=False,
-                          default="card_payment")
+    method = Column(CEnum(DepositMethod, name="deposit_method", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=DepositMethod.STRIPE)
+    deposit_type = Column(CEnum(DepositType,name="deposit_type", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=DepositType.CARD_PAYMENT)
 
     # Status tracking
-    status = Column(Enum(DepositStatus.PENDING,
-                         DepositStatus.PROCESSING,
-                         DepositStatus.COMPLETED,
-                         DepositStatus.FAILED,
-                         DepositStatus.CANCELLED,
-                         name="deposit_status"),
-                    nullable=False,
-                    default="pending")
+    status = Column(CEnum(DepositStatus, name="deposit_status", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default="pending")
 
     # Stripe integration fields
     stripe_payment_intent_id = Column(String(255), nullable=True, unique=True)  # Stripe payment intent ID

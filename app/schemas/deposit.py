@@ -126,15 +126,24 @@ class DepositHistoryResponse(BaseModel):
     total_amount: float
     pending_amount: float
 
+    class Config:
+        from_attributes = True
+
 
 # Schema for deposit statistics
 class DepositStatsResponse(BaseModel):
     total_deposits: int
     total_amount: float
+    total_pending_amount: float
+    total_withdrawals_amount: float
     completed_deposits: int
     pending_deposits: int
     failed_deposits: int
+    completed_withdrawals: int
     average_amount: float
+
+    class Config:
+        from_attributes = True
 
 
 # Schema for payment intent creation (for new cards)
@@ -163,6 +172,9 @@ class DepositPaymentIntentResponse(BaseModel):
     currency: str
     status: str
     deposit_id: int  # Our internal deposit record ID
+
+    class Config:
+        from_attributes = True
 
 
 # Schema for confirming a deposit

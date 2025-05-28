@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from stripe import CardError
 
+from app.business import UAuth
 from app.business.card_service import CardService
 from app.infrestructure.stripe_service import StripeService
 from app.models.card import Card
@@ -30,6 +31,7 @@ class DepositService:
             deposit_data: DepositPaymentIntentCreate
     ) -> DepositPaymentIntentResponse:
         """Create a payment intent for a new deposit (with new card)"""
+        UAuth.verify_user_can_deposit(user)
         try:
             # Ensure user has Stripe customer
             stripe_customer_id = await CardService.ensure_stripe_customer(db, user)
@@ -132,6 +134,7 @@ class DepositService:
             deposit_data: DepositWithCard
     ) -> DepositPaymentIntentResponse:
         """Create a deposit using an existing saved card"""
+        UAuth.verify_user_can_deposit(user)
         try:
             # Get the card
             card = db.query(Card).filter(
@@ -333,20 +336,25 @@ class DepositService:
     @staticmethod
     def get_deposit_stats(db: Session, user: User) -> DepositStatsResponse:
         """Get deposit statistics for a user"""
-        deposits = db.query(Deposit).filter(Deposit.user_id == user.id).all()
 
-        total_deposits = len(deposits)
-        total_amount = sum(d.amount for d in deposits if d.is_completed)
-        completed_deposits = len([d for d in deposits if d.is_completed])
-        pending_deposits = len([d for d in deposits if d.is_pending])
-        failed_deposits = len([d for d in deposits if d.status == "failed"])
+        total_deposits = len(user.deposits)
+        total_amount = user.total_deposit_amount
+        total_pending_amount = user.total_pending_deposit_amount
+        total_withdrawals_amount = user.total_withdrawal_amount
+        completed_deposits = user.completed_deposits_count
+        pending_deposits = user.pending_deposits_count
+        failed_deposits = user.failed_deposits_count
+        completed_withdrawals = len(user.completed_withdrawals)
         average_amount = total_amount / completed_deposits if completed_deposits > 0 else 0
 
         return DepositStatsResponse(
             total_deposits=total_deposits,
             total_amount=total_amount,
+            total_pending_amount=total_pending_amount,
+            total_withdrawals_amount=total_withdrawals_amount,
             completed_deposits=completed_deposits,
             pending_deposits=pending_deposits,
             failed_deposits=failed_deposits,
+            completed_withdrawals=completed_withdrawals,
             average_amount=average_amount
         )
