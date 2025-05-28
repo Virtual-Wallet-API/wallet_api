@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_user_except_pending_fpr

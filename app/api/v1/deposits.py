@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.business.stripe import *
 from app.business.payment import *
+from app.business.stripe import *
 from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr
 from app.models.user import User
 from app.schemas.deposit import (

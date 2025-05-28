@@ -33,6 +33,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     return UAuth.register(user, db)
 
+
 @router.patch("/", response_model=UserPublicResponse,
               description="Update user details - phone, email, password and avatar")
 def update_user(update_data: UserUpdate,
@@ -50,7 +51,6 @@ def update_user(update_data: UserUpdate,
     :return: The updated user information.
     """
     return UAuth.update_user(db, user, update_data)
-
 
 
 @router.post("/token", response_model=None)
