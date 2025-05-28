@@ -19,11 +19,9 @@ class StripeService:
     async def create_customer(email: str, name: str, metadata: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Create a Stripe customer"""
         try:
-            customer = stripe.Customer.create(
-                email=email,
-                name=name,
-                metadata=metadata or {}
-            )
+            customer = stripe.Customer.create(email=email,
+                                              name=name,
+                                              metadata=metadata or {})
             return customer
         except stripe.error.StripeError as e:
             logger.error(f"Error creating Stripe customer: {e}")
