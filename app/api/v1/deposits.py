@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.business.deposit_service import DepositService
+from app.business.stripe import *
+from app.business.payment import *
 from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr
 from app.models.user import User
 from app.schemas.deposit import (
@@ -19,7 +20,7 @@ async def create_deposit_payment_intent(
         db: Session = Depends(get_db)
 ):
     """Create a payment intent for a new deposit (with new card)"""
-    return await DepositService.create_deposit_payment_intent(db, user, deposit_data)
+    return await StripeDepositService.create_deposit_payment_intent(db, user, deposit_data)
 
 
 @router.post("/with-card", response_model=DepositPaymentIntentResponse)
@@ -29,7 +30,7 @@ async def deposit_with_existing_card(
         db: Session = Depends(get_db)
 ):
     """Create a deposit using an existing saved card"""
-    return await DepositService.deposit_with_existing_card(db, user, deposit_data)
+    return await StripeDepositService.deposit_with_existing_card(db, user, deposit_data)
 
 
 @router.post("/confirm", response_model=DepositResponse)
@@ -39,7 +40,7 @@ async def confirm_deposit(
         db: Session = Depends(get_db)
 ):
     """Confirm a deposit and update user balance"""
-    return await DepositService.confirm_deposit(db, user, confirm_data)
+    return await StripeDepositService.confirm_deposit(db, user, confirm_data)
 
 
 @router.get("/", response_model=DepositHistoryResponse)
