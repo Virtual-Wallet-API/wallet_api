@@ -1,11 +1,9 @@
 from enum import Enum
-from typing import Optional, List, ForwardRef
+from typing import Optional, ForwardRef
 
 from pydantic import BaseModel, EmailStr, field_validator
 
 from app.infrestructure import data_validators
-from app.schemas.contact import ContactResponse
-from app.schemas.transaction import TransactionResponse
 
 ContactPublicResponse = ForwardRef("ContactPublicResponse")
 CardPublicResponse = ForwardRef("CardPublicResponse")

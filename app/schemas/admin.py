@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from app.models import UStatus
 from app.models.transaction import TransactionStatus
 from app.schemas import UserResponse
-from app.schemas.transaction import TransactionResponse
 
 
 class ShortAdminUserResponse(BaseModel):
@@ -31,6 +30,7 @@ class AdminUserResponse(ShortAdminUserResponse):
 
     class Config:
         from_attributes = True
+
 
 class ListAllUsersResponse(BaseModel):
     users: List[AdminUserResponse] = []

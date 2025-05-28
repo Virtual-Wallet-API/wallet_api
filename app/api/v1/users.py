@@ -4,11 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.responses import JSONResponse, RedirectResponse
 
 from app.business import UAuth, UVal
-from app.business.user.user_admin import AdminService
-from app.dependencies import get_db, get_user_except_pending_fpr, get_user_even_with_fpr, get_user_except_fpr
+from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse

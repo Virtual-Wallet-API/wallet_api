@@ -8,7 +8,6 @@ from app.business import UVal, NService, NType
 from app.models import User, UStatus, Transaction
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse
-from frontend.routers.root import transactions
 
 
 class AdminService:

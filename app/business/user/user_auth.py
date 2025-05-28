@@ -1,13 +1,10 @@
-from typing import Dict
-
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.responses import RedirectResponse, JSONResponse
+from starlette.responses import JSONResponse
 
 from app.business.user.user_validators import UserValidators as UVal
-from app.config import BASE_URL
 from app.dependencies import get_db
 from app.infrestructure import generate_token
 from app.models import User, UStatus
