@@ -6,6 +6,7 @@ from app.api.v1.cards import router as cards_router
 from app.api.v1.deposits import router as deposits_router
 from app.api.v1.withdrawals import router as withdrawals_router
 from app.api.v1.transactions import router as transactions_router
+from app.api.v1.admin import router as admin_router
 import frontend.frontend
 
 print("Create all...")
@@ -15,6 +16,7 @@ app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
 
 # Router insertion
 prefix = "/api/v1"
+app.include_router(admin_router, prefix=prefix + "/admin")
 app.include_router(users_router, prefix=prefix + "/users")
 app.include_router(cards_router, prefix=prefix + "/cards")
 app.include_router(deposits_router, prefix=prefix + "/deposits")

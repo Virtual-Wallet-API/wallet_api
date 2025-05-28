@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
 
@@ -6,21 +7,21 @@ router = APIRouter()
 
 
 @router.get("/", response_model=None)
-def read_root(request: Request):
+def root(request: Request):
     data = {"request": request,
-            "page": "index"}
+            "page": "VWallet - Home"}
     return templates.TemplateResponse("index.html", data)
 
 
-@router.get("/overview", response_model=None)
-def read_overview(request: Request):
+@router.get("/account", response_model=None)
+def account_overview(request: Request):
     data = {"request": request,
-            "page": "overview"}
+            "page": "account overview"}
     return templates.TemplateResponse("overview.html", data)
 
 
 @router.get("/cards", response_model=None)
-def read_cards(request: Request):
+def cards(request: Request):
     data = {
         "request": request,
         "page": "cards",
@@ -43,22 +44,38 @@ def read_cards(request: Request):
              "status": "frozen"},
         ]
     }
-    return templates.TemplateResponse("cards.html", data)
+    return templates.TemplateResponse("/cards.html", data)
 
 
 @router.get("/transactions", response_model=None)
-def read_transactions(request: Request):
+def transactions(request: Request):
     data = {"request": request,
             "page": "transactions"}
     return templates.TemplateResponse("payments/transactions.html", data)
 
 
-@router.get("/deposit", response_model=None)
-def read_transactions(request: Request):
+@router.get("/deposits", response_model=None)
+def deposit(request: Request):
     data = {"request": request,
-            "page": "deposit"}
-    return templates.TemplateResponse("payments/deposit.html", data)
+            "page": "deposits"}
+    return templates.TemplateResponse("payments/deposits.html", data)
 
-# @router.get("/logout", response_model=None)
-# def read_logout(request: Request):
-#     return RedirectResponse("/")
+
+@router.get("/withdrawals", response_model=None)
+def withdrawal(request: Request):
+    data = {"request": request,
+            "page": "withdrawals"}
+    return templates.TemplateResponse("payments/withdrawals.html", data)
+
+
+@router.get("/contacts", response_model=None)
+def contacts(request: Request):
+    data = {"request": request,
+            "page": "contacts"}
+    return templates.TemplateResponse("/contacts.html", data)
+
+
+@router.get("/logout", response_model=None)
+def read_logout(request: Request):
+    request.cookies.clear()
+    return RedirectResponse("/fe")
