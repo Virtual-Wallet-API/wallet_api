@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.business.card_service import CardService
+from app.business import StripeCardService, CardService
 from app.config import STRIPE_PUBLISHABLE_KEY
 from app.dependencies import get_db, get_user_except_fpr
 from app.models.user import User
@@ -27,7 +27,7 @@ async def create_setup_intent(
         db: Session = Depends(get_db)
 ):
     """Create a setup intent for saving a payment method without charging"""
-    return await CardService.create_setup_intent(db, user)
+    return await StripeCardService.create_setup_intent(db, user)
 
 
 @router.post("/payment-intent", response_model=PaymentIntentResponse)
@@ -37,7 +37,7 @@ async def create_payment_intent(
         db: Session = Depends(get_db)
 ):
     """Create a payment intent for processing a payment"""
-    return await CardService.create_payment_intent(db, user, payment_data)
+    return await StripeCardService.create_payment_intent(db, user, payment_data)
 
 
 @router.post("/save-payment-method", response_model=CardResponse)
@@ -49,7 +49,7 @@ async def save_payment_method(
         db: Session = Depends(get_db)
 ):
     """Save a payment method as a card after successful setup"""
-    return await CardService.save_card_from_payment_method(
+    return await StripeCardService.save_card_from_payment_method(
         db, user, payment_method_id, cardholder_name, design
     )
 
