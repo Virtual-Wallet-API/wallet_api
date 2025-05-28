@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 from app.infrestructure import data_validators
 from app.schemas.contact import ContactResponse
+from app.schemas.transaction import TransactionResponse
 
 ContactPublicResponse = ForwardRef("ContactPublicResponse")
 CardPublicResponse = ForwardRef("CardPublicResponse")
@@ -96,8 +97,6 @@ class UserPublicResponse(UserPublicBase):
 class UserResponse(UserBase):
     id: int
     balance: float = 0.0
-    contacts: List["ContactResponse"] = []
-    cards: List["CardPublicResponse"] = []
     status: Status = Status.pending
     admin: bool = False
 

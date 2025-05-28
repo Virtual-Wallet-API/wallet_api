@@ -2,8 +2,8 @@ from enum import Enum
 from typing import List
 
 from sqlalchemy import Integer, Column, String, Boolean, Float
-from sqlalchemy.types import Enum as CEnum
 from sqlalchemy.orm import validates, relationship
+from sqlalchemy.types import Enum as CEnum
 
 from app.infrestructure import Base, data_validators
 from app.models import Deposit, Card
@@ -59,6 +59,28 @@ class User(Base):
     @validates("phone_number")
     def validate_phone_number(self, key, v: str) -> str:
         return data_validators.validate_phone_number(v)
+
+    # Relationships properties
+
+    @property
+    def cards_count(self) -> int:
+        return len(self.cards)
+
+    @property
+    def contacts_count(self) -> int:
+        return len(self.contacts)
+
+    @property
+    def categories_count(self) -> int:
+        return len(self.categories)
+
+    @property
+    def deposits_count(self) -> int:
+        return len(self.deposits)
+
+    @property
+    def withdrawals_count(self) -> int:
+        return len(self.withdrawals)
 
     # Deposits and withdrawals properties
 
@@ -151,4 +173,3 @@ class User(Base):
 
     def __repr__(self):
         return f"User(#{self.id}, {self.username}, {self.email})"
-

@@ -1,11 +1,12 @@
+from datetime import datetime
 from typing import Dict
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.business import UVal, NService, NType
-from app.models import User, UStatus
-from app.schemas.admin import UpdateUserStatus
+from app.models import User, UStatus, Transaction
+from app.schemas.admin import UpdateUserStatus, AdminUserResponse
 
 
 class AdminService:
@@ -113,3 +114,150 @@ class AdminService:
         db.refresh(user)
 
         return user
+
+    @classmethod
+    def get_all_users(cls, db: Session, admin: User, search_data: Dict) -> Dict:
+        """
+        Returns a list of all users in the database with pagination and the option to search by username, email or phone number.
+        :param db: database session
+        :param admin: currently logged in admin user
+        :param search_data: the search data provided by the client
+        :return: pagination data with a list of all users per per the criterion
+        """
+        # Pagination setup
+        page = search_data.get("page", 0)
+        page = page - 1 if page > 0 else 0
+        limit = search_data.get("limit", 30)
+        limit = limit if 10 <= limit <= 100 else 30
+        offset = page * limit
+
+        # Search setup
+        search_by = search_data.get("search_by")
+
+        if not search_by:
+            users = db.query(User).offset(offset).limit(limit).all()
+        else:
+            query = search_data.get("search_query", "")
+
+            match search_by:
+                case "username":
+                    users = (db.query(User)
+                             .filter(User.username.ilike(f"%{query}%"))
+                             .offset(offset).limit(limit).all())
+
+                case "email":
+                    users = (db.query(User)
+                             .filter(User.email.ilike(f"%{query}%"))
+                             .offset(offset).limit(limit).all())
+
+                case "phone":
+                    users = (db.query(User)
+                             .filter(User.phone_number.ilike(f"%{query}%"))
+                             .offset(offset).limit(limit).all())
+
+                case _:
+                    raise HTTPException(status_code=400,
+                                        detail=f"Invalid search_by parameter provided: {search_by}")
+
+        # Response setup
+        response = {"results_per_page": limit}
+
+        if not users:
+            response["users"] = []
+            response["page"] = 0
+            response["pages_with_matches"] = 0
+            response["matching_records"] = 0
+        else:
+            response["users"] = [AdminUserResponse.model_validate(user) for user in users]
+            response["page"] = page + 1
+            response["pages_with_matches"] = len(users) // limit + 1 if len(users) % limit > 0 else len(users) // limit
+            response["matching_records"] = len(users)
+
+        return response
+
+    @classmethod
+    def get_user_transactions(cls, db: Session, admin: User, search_data: Dict) -> Dict:
+        # User data setup
+        user = UVal.find_user_with_or_raise_exception("id", search_data.get("user_id"), db)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User with ID {search_data.get("user_id")} not found")
+
+        # Pagination setup
+        page = search_data.get("page", 0)
+        page = page - 1 if page > 0 else 0
+        limit = search_data.get("limit", 30)
+        limit = limit if 10 <= limit <= 100 else 30
+        offset = page * limit
+
+        # Search by setup
+        search_by = search_data.get("search_by")
+        if not search_by:
+            # transactions = db.query(User).offset(offset).limit(limit).all()
+            transactions = user.transactions.offset(offset).limit(limit).all()
+        else:
+            query = search_data.get("search_query", "")
+            transactions = []
+
+            match search_by:
+                case "period":
+                    date_from, date_to = query.split("_")
+                    try:
+                        date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+                        date_to = datetime.strptime(date_to, "%Y-%m-%d").date()
+
+                        if date_to < date_from:
+                            date_from, date_to = date_to, date_from
+                    except ValueError:
+                        raise HTTPException(status_code=400, detail="Invalid date format provided")
+
+                    transactions = (user.transactions.filter(date_from <= Transaction.date <= date_to)
+                                    .offset(offset).limit(limit).all())
+
+                case "sender":
+                    if not query.isnumeric():
+                        raise HTTPException(status_code=400, detail="Invalid sender ID provided")
+
+                    sender = UVal.find_user_with_or_raise_exception("id", int(query), db)
+
+                    transactions = (user.transactions.filter(Transaction.sender_id == sender.id)
+                                    .offset(offset).limit(limit).all())
+
+                case "receiver":
+                    if not query.isnumeric():
+                        raise HTTPException(status_code=400, detail="Invalid receiver ID provided")
+
+                    receiver = UVal.find_user_with_or_raise_exception("id", int(query), db)
+
+                    transactions = (user.transactions.filter(Transaction.receiver_id == receiver.id)
+                                    .offset(offset).limit(limit).all())
+
+                case "direction":
+                    if query not in ("incoming", "outgoing"):
+                        raise HTTPException(status_code=400,
+                                            detail="Invalid direction provided, options are outgoing and incoming")
+
+                    if query == "incoming":
+                        transactions = (user.transactions.filter(Transaction.receiver_id == user.id)
+                                        .offset(offset).limit(limit).all())
+                    else:
+                        transactions = (user.transactions.filter(Transaction.sender_id == user.id)
+                                        .offset(offset).limit(limit).all())
+
+                case _:
+                    raise HTTPException(status_code=400, detail=f"Invalid search_query parameter provided: {search_by}")
+
+        response = {
+            "transactions": transactions,
+            "limit": limit
+        }
+
+        if len(transactions) == 0:
+            response["page"] = 0
+            response["pages_with_matches"] = 0
+            response["matching_records"] = 0
+        else:
+            response["page"] = page + 1
+            response["pages_with_matches"] = len(transactions) // limit + 1 if len(transactions) % limit > 0 else len(transactions) // limit
+            response["matching_records"] = len(transactions)
+
+        return response
