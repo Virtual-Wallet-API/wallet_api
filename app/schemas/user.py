@@ -63,17 +63,10 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
+    phone_number: Optional[str] = None
     password: Optional[str] = None
     email: Optional[str] = None
-    balance: Optional[float] = None
     avatar: Optional[str] = None
-    status: Optional[Status] = None
-    admin: Optional[bool] = None
-
-    @field_validator('username')
-    def validate_username(cls, v: str) -> str:
-        return data_validators.validate_username(v)
 
     @field_validator('password')
     def validate_password(cls, v: str) -> str:

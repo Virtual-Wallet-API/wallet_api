@@ -6,10 +6,10 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from app.business import UAuth, UVal
-from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr
+from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
-from app.schemas.user import UserCreate, UserPublicResponse, UserResponse
+from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
 
 router = APIRouter(tags=["Users"])
 
@@ -32,6 +32,25 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         Newly created user based on the `UserPrivateResponse` schema, excluding the `balance` field.
     """
     return UAuth.register(user, db)
+
+@router.patch("/", response_model=UserPublicResponse,
+              description="Update user details - phone, email, password and avatar")
+def update_user(update_data: UserUpdate,
+                db: Session = Depends(get_db),
+                user: User = Depends(get_user_even_with_fpr)):
+    """
+    Update user details, including phone, email, password, and avatar. This endpoint
+    allows authorized clients to modify specific attributes of the current user
+    in the system.
+
+    :param update_data: An instance of `UserUpdate` containing the new data
+        to update the user with.
+    :param db: The database session used to perform database operations.
+    :param user: The authenticated user object for whom the update will be performed.
+    :return: The updated user information.
+    """
+    return UAuth.update_user(db, user, update_data)
+
 
 
 @router.post("/token", response_model=None)

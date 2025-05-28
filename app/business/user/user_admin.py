@@ -69,9 +69,10 @@ class AdminService:
                 else:
                     user.status = UStatus.BLOCKED
                     reason = update_data.reason
+                    reason = "due to " + reason if reason else ""
                     NService.notify(user, {
                         "title": "Your account has been blocked",
-                        "body": f"Hello, {user.username}! Your account has been blocked {"due to " + reason if reason else ""}. If you would like to appeal our decision, please reply to this email.",
+                        "body": f"Hello, {user.username}! Your account has been blocked {reason}. If you would like to appeal our decision, please reply to this email.",
                         "type": NType.IMPORTANT
                     })
 

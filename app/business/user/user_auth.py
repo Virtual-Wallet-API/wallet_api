@@ -8,7 +8,7 @@ from app.business.user.user_validators import UserValidators as UVal
 from app.dependencies import get_db
 from app.infrestructure import generate_token
 from app.models import User, UStatus
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 
 
 class UserAuthService:
@@ -150,3 +150,14 @@ class UserAuthService:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You have reached your cards limit for a pending account, please await approval"
         )
+
+    @classmethod
+    def update_user(cls, db: Session, user: User, update_data: UserUpdate):
+        """Update user information"""
+        for key, value in update_data.model_dump().items():
+            if value is not None:
+                user.__setattr__(key, value)
+
+        db.commit()
+        db.refresh(user)
+        return user
