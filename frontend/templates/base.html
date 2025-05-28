@@ -442,10 +442,30 @@
             border-color: #bb86fc; /* --accent-color */
             color: var(--accent-color); /* --text-color */
         }
-    </style>
-    <style type="text/css">
-        .p-5 {
-            padding: 1.5rem !important;
+
+        /* View More Button */
+        .btn-outline-primary {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            transition: transform 0.5s ease, box-shadow 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
+        }
+
+        [data-bs-theme="light"] .btn-outline-primary:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border-color: var(--accent-color-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
+        }
+
+        [data-bs-theme="dark"] .btn-outline-primary:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border-color: var(--accent-color-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
         }
     </style>
 
@@ -517,16 +537,16 @@
             {% endblock %}
 
         </div>
-<!--        <div class="container footer-container col-md-9">-->
-<!--            <div class="footer d-flex justify-content-between align-items-center">-->
-<!--                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>-->
-<!--                <div>-->
-<!--                    <a class="ms-3" href="#">Privacy Policy</a>-->
-<!--                    <a class="ms-3" href="#">Terms of Service</a>-->
-<!--                    <a class="ms-3" href="#">Contact Us</a>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+        <!--        <div class="container footer-container col-md-9">-->
+        <!--            <div class="footer d-flex justify-content-between align-items-center">-->
+        <!--                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>-->
+        <!--                <div>-->
+        <!--                    <a class="ms-3" href="#">Privacy Policy</a>-->
+        <!--                    <a class="ms-3" href="#">Terms of Service</a>-->
+        <!--                    <a class="ms-3" href="#">Contact Us</a>-->
+        <!--                </div>-->
+        <!--            </div>-->
+        <!--        </div>-->
     </div>
 </div>
 

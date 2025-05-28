@@ -37,10 +37,27 @@
         border: 1px solid var(--accent-color);
         border-radius: 20px;
         box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
-        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-bottom 0.5s ease-out, padding 0.5s ease-out, background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        will-change: max-height, opacity, margin-bottom, padding;
+        transition-property: max-height, opacity, margin-bottom, padding, background-color, box-shadow, transform;
+        transition-timing-function: ease-out, ease-out, ease-out, ease-out, ease, ease, ease;
+        transition-delay: 0s, 0.2s, 0s, 0s, 0s, 0s, 0s;
         font-family: 'Poppins', sans-serif;
         font-size: 1.4rem;
         z-index: 1000;
+        overflow: hidden;
+    }
+
+    .withdrawal-box.hidden {
+        max-height: 0;
+        opacity: 0;
+        margin-bottom: 0 !important;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .withdrawal-box:not(.hidden) {
+        max-height: none; /* Adjust based on content height, ensures smooth expansion */
     }
 
     [data-bs-theme="light"] .withdrawal-box {
@@ -172,11 +189,38 @@
 
     /* Balance Display */
     .balance-display {
-        font-size: 1.5rem;
-        font-weight: 600;
+        font-size: 2rem;
+        font-weight: 300;
         color: var(--accent-color);
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
         text-align: center;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #balance-amount-loading {
+        position: absolute;
+        font-size: 2.2rem; /* Larger size */
+        opacity: 1;
+        transition: opacity 0.35s ease-in-out;
+    }
+
+    #balance-amount-loading.hidden {
+        opacity: 0;
+    }
+
+    #balance-text, #balance-amount {
+        transition: opacity 0.35s ease-in-out;
+    }
+
+    #balance-text {
+        margin-right: 0.3rem;
+    }
+
+    #balance-amount {
+        margin-left: 0.3rem;
     }
 
     /* Withdraw Button */
@@ -242,7 +286,7 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
-        max-width: 900px !important;
+        /*max-width: 900px;*/
         width: 100%;
     }
 
@@ -260,7 +304,7 @@
     }
 
     .withdrawal-item .date,
-    .withdrawal-item .card,
+    .withdrawal-item .withdrawal-card,
     .withdrawal-item .status {
         font-size: 1.2rem;
         color: var(--text-color);
@@ -326,11 +370,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-bottom: 1rem;
-    }
-
-    .label-button-container label {
-        margin-bottom: -0.1rem;
+        margin-bottom: 0rem;
     }
 
     /* Manage Cards Button */
@@ -345,6 +385,7 @@
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
         box-shadow: 0 2px 4px var(--shadow-color);
+        margin-bottom: 1rem;
     }
 
     .manage-cards-btn:hover {
@@ -360,15 +401,16 @@
 
     /* Header Toggle Styles */
     .header-toggle {
+        color: var(--accent-color) !important;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: pointer;
         width: 100%;
         max-width: 900px;
         padding: 1rem 1.5rem;
         background: var(--balance-bg);
         border-radius: 12px;
-        cursor: pointer;
         font-family: 'Poppins', sans-serif;
         margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.5);
@@ -384,7 +426,7 @@
         margin: 0;
         font-size: 1.5rem;
         font-weight: 600;
-        color: var(--text-color);
+        color: var(--accent-color);
         line-height: 1.5rem;
     }
 
@@ -403,12 +445,14 @@
         width: 100%;
         max-width: 900px;
         overflow: hidden;
-        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        transform: translateY(0);
     }
 
     .transaction-list.list-hidden {
         max-height: 0;
         opacity: 0;
+        transform: translateY(20px);
     }
 
     /* Responsive Adjustments */
@@ -473,7 +517,7 @@
         }
 
         .withdrawal-item .date,
-        .withdrawal-item .card,
+        .withdrawal-item .withdrawal-card,
         .withdrawal-item .status,
         .withdrawal-item .amount {
             font-size: 1rem;
@@ -497,6 +541,69 @@
             font-size: 1.3rem;
         }
     }
+
+    .additional-withdrawals {
+        display: none;
+    }
+
+    .additional-withdrawals.show {
+        display: block;
+    }
+
+        /* Manage Cards Button */
+    .manage-cards-btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .manage-cards-btn:hover {
+        background-color: var(--accent-color-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.4);
+    }
+
+    .manage-cards-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    [data-bs-theme="dark"] .manage-cards-btn {
+        background-color: var(--accent-color);
+        color: white;
+    }
+
+    #withdrawals-list.loaded {
+        /*border-left: 1px solid var(--accent-color);*/
+    }
+
+    #withdrawals-list.loaded {
+        margin-left: 0.6rem;
+        padding-left: 1.7rem;
+        /*border-left: 1px solid var(--accent-color);*/
+        position: relative;
+    }
+
+    #withdrawals-list.transaction-list.loaded::before {
+        background-color: var(--accent-color);
+        margin-left: 0.65rem;
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -6px;
+        width: 1px;
+        box-shadow: -3px 0 8px 1px var(--accent-color);
+        z-index: -1;
+    }
+
 </style>
 {% endblock %}
 
@@ -504,13 +611,15 @@
 <div class="withdrawal-title">Withdraw Cash</div>
 
 <!-- Withdrawal Box -->
-<div class="withdrawal-box" style="max-width: 800px !important;">
+<div class="withdrawal-box" id="withdrawal-box" style="max-width: 800px !important;">
     <div class="alert alert-success" id="success-message" style="display: none;"></div>
     <div class="alert alert-danger" id="error-message" style="display: none;"></div>
 
     <form id="withdrawal-form" method="POST">
         <div class="balance-display" id="balance-display">
-            Available Balance: <span id="balance-amount"><i class="bi bi-arrow-repeat"></i></span>
+            <span id="balance-text" style="opacity: 0;">Available Balance: </span>
+            <span id="balance-amount" style="opacity: 0;">0.0$</span>
+            <span id="balance-amount-loading" class="hidden"><i class="bi bi-arrow-repeat"></i></span>
         </div>
 
         <!-- Card Selection -->
@@ -547,28 +656,28 @@
         </button>
     </form>
 </div>
-
+<hr style="margin-top: 2rem; margin-bottom: 2rem; opacity: 0;">
 <!-- Recent Withdrawals -->
-<div class="header-toggle" id="withdrawals-toggle">
-    <h3>Recent Withdrawals</h3>
-    <i class="bi bi-chevron-down"></i>
-</div>
-<div class="mb-8" style="width: 100%; max-width: 900px; align-self: center; ">
-    <div class="transaction-list" id="withdrawals-list">
-        <div class="container loading-container" id="withdrawals-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
-        <div class="initial-withdrawals" id="initial-withdrawals">
-            <!-- Withdrawal items will be inserted here -->
-        </div>
-        <div class="additional-withdrawals" id="additional-withdrawals">
-            <!-- Additional withdrawal items will be inserted here -->
-        </div>
-        <a class="btn btn-outline-primary view-more-button" href="#" id="view-withdrawals-btn" style="display: none;">View
-            More Withdrawals</a>
+    <div class="header-toggle" id="withdrawals-toggle" style="min-width: 100% !important;">
+        <h3>Recent Withdrawals</h3>
+        <i class="bi bi-chevron-down"></i>
     </div>
-</div>
+    <div class="mb-8 withdrawals-list" style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
+        <div class="transaction-list list-hidden" id="withdrawals-list" style="min-width: 100%;">
+            <div class="container loading-container" id="withdrawals-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+            <div class="initial-withdrawals" id="initial-withdrawals">
+                <!-- Withdrawal items will be inserted here -->
+            </div>
+            <div class="additional-withdrawals" id="additional-withdrawals">
+                <!-- Additional withdrawal items will be inserted here -->
+            </div>
+            <a class="btn btn-outline-primary view-more-button" href="#" id="view-withdrawals-btn" style="display: none;">
+                View More Withdrawals
+            </a>
+        </div>
+    </div>
 {% endblock %}
 
-{% block modals %}
 <!-- Withdrawal Details Modal -->
 <div aria-hidden="true" aria-labelledby="withdrawalModalLabel" class="modal fade" id="withdrawalModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -590,7 +699,140 @@
     </div>
 </div>
 
-<!-- Manage Cards Modal -->
+{% block modals %}
+<style type="text/css">
+    /* Modal Styling */
+    .modal-content {
+        background: var(--balance-bg);
+        border: 1px solid var(--accent-color);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color);
+    }
+
+    [data-bs-theme="light"] .modal-content {
+        background: #f0f2f5;
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background-color: #2a2a2a;
+        border-color: #444;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--accent-color);
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--accent-color);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--accent-color);
+    }
+
+    /* Saved Cards List */
+    .saved-cards-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: var(--balance-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 8px;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        transition: background-color 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .saved-cards-list-item:hover {
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+        box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
+    }
+
+    .saved-cards-list-item .card-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex: 1; /* Ensure card-info takes available space */
+    }
+
+    .saved-cards-list-item .card-icon {
+        font-size: 1.4rem;
+    }
+
+    .saved-cards-list-item .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .saved-cards-list-item .default-badge {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .saved-cards-list-item .remove-card-btn {
+        opacity: 0;
+        transform: translateX(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.3rem 0.3rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .saved-cards-list-item:hover .default-badge {
+        transform: translateX(-10px); /* Slide badge left on hover */
+    }
+
+    .saved-cards-list-item:hover .remove-card-btn {
+        opacity: 1;
+        transform: translateX(0); /* Slide button in from right */
+    }
+
+    [data-bs-theme="dark"] .saved-cards-list-item {
+        background-color: #333;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .modal-title {
+            font-size: 1.4rem;
+        }
+
+        .saved-cards-list-item {
+            font-size: 1rem;
+            padding: 0.8rem;
+        }
+
+        .saved-cards-list-item .card-icon {
+            font-size: 1.2rem;
+        }
+
+        .saved-cards-list-item .default-badge {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+<!-- Modal for Managing Saved Cards -->
 <div aria-hidden="true" aria-labelledby="manageCardsModalLabel" class="modal fade" id="manageCardsModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -611,7 +853,7 @@
         </div>
     </div>
 </div>
-<hr style="margin-top: 1.2rem; margin-bottom: 1.2rem; opacity: 0;">
+<hr style="margin-top: 1.5rem; margin-bottom: 1.5rem; opacity: 0;">
 {% endblock %}
 
 {% block scripts %}
@@ -709,11 +951,10 @@
             withdrawals.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             // Take latest 12
-            const latestWithdrawals = withdrawals.slice(0, 12);
+            const latestWithdrawals = withdrawals.slice(0, 16);
 
             // Generate withdrawal items
             const withdrawalItems = latestWithdrawals.map(withdrawal => {
-                console.log(withdrawal);
                 const date = new Date(withdrawal.created_at).toISOString().split('T')[0];
                 const amount = `-$${Math.abs(withdrawal.amount).toFixed(2)}`;
                 const status = withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1);
@@ -721,7 +962,7 @@
                 return `
                     <div class="withdrawal-item" data-withdrawal-id="${withdrawal.id}" data-date="${date}" data-card="${card}" data-amount="${withdrawal.amount}" data-status="${status}">
                         <span class="date">${date}</span>
-                        <span class="card">${card}</span>
+                        <span class="withdrawal-card">${card}</span>
                         <span class="status">${status}</span>
                         <span class="amount">${amount}</span>
                         <span class="info-icon"><i class="bi bi-info-circle"></i></span>
@@ -737,16 +978,17 @@
             loadingAlert.classList.add('hidden');
             listWithdrawals.classList.add('loaded');
 
-            if (latestWithdrawals.length <= 3 && latestWithdrawals.length > 0) {
+            if (latestWithdrawals.length <= 5 && latestWithdrawals.length > 0) {
                 initialList.innerHTML = withdrawalItems.join('');
                 document.getElementById('view-withdrawals-btn').style.display = 'none';
-            } else if (latestWithdrawals.length > 3) {
-                initialList.innerHTML = withdrawalItems.slice(0, 3).join('');
-                additionalList.innerHTML = withdrawalItems.slice(3).join('');
+            } else if (latestWithdrawals.length > 5) {
+                initialList.innerHTML = withdrawalItems.slice(0, 5).join('');
+                additionalList.innerHTML = withdrawalItems.slice(5).join('');
                 additionalList.classList.remove('show');
                 const viewBtn = document.getElementById('view-withdrawals-btn');
                 viewBtn.textContent = 'View More Withdrawals';
                 viewBtn.style.display = 'block';
+                viewBtn.onclick = null; // Clear previous listeners
                 viewBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     toggleWithdrawals();
@@ -754,6 +996,11 @@
             } else {
                 initialList.innerHTML = "<div class='alert alert-info'>No withdrawals yet.</div>";
                 document.getElementById('view-withdrawals-btn').style.display = 'none';
+            }
+
+            // Update max-height for animation
+            if (!listWithdrawals.classList.contains('list-hidden')) {
+                listWithdrawals.style.maxHeight = listWithdrawals.scrollHeight + 'px';
             }
 
             attachWithdrawalListeners();
@@ -770,7 +1017,13 @@
         const viewBtn = document.getElementById('view-withdrawals-btn');
         additionalList.classList.toggle('show');
         viewBtn.textContent = additionalList.classList.contains('show') ? 'See All' : 'View More Withdrawals';
-        viewBtn.setAttribute('href', '/fe/withdrawals');
+        viewBtn.setAttribute('href', '/fe/all-withdrawals');
+
+        // Update max-height for animation
+        const withdrawalsList = document.getElementById('withdrawals-list');
+        if (!withdrawalsList.classList.contains('list-hidden')) {
+            withdrawalsList.style.maxHeight = withdrawalsList.scrollHeight + 'px';
+        }
     }
 
     // Attach listeners to withdrawal items
@@ -842,26 +1095,49 @@
     // Show error message
     function showError(message) {
         const errorDiv = document.getElementById('error-message');
-        if (errorDiv) {
+        const withdrawalBox = document.getElementById('withdrawal-box');
+        if (errorDiv && withdrawalBox) {
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             errorDiv.setAttribute('role', 'alert');
+
+            // Calculate and update max-height
+            const originalMaxHeight = parseFloat(withdrawalBox.style.maxHeight) || withdrawalBox.scrollHeight;
+            const messageHeight = errorDiv.offsetHeight;
+            withdrawalBox.style.maxHeight = `${originalMaxHeight + messageHeight}px`;
+
             setTimeout(() => {
-                $("#error-message").fadeOut(1000);
+                $("#error-message").fadeOut(1000, () => {
+                    // Restore original max-height after fadeout
+                    withdrawalBox.style.maxHeight = `${originalMaxHeight}px`;
+                });
             }, 10000);
         }
     }
 
+    let maxHeightInitial;
+
     // Show success message
     function showSuccess(message) {
         const successDiv = document.getElementById('success-message');
-        if (successDiv) {
+        const withdrawalBox = document.getElementById('withdrawal-box');
+        if (successDiv && withdrawalBox) {
             successDiv.textContent = message + " Redirecting...";
             successDiv.style.display = 'block';
             successDiv.setAttribute('role', 'alert');
+
+            // Calculate and update max-height
+            const originalMaxHeight = parseFloat(withdrawalBox.style.maxHeight) || withdrawalBox.scrollHeight;
+            const messageHeight = successDiv.offsetHeight;
+            maxHeightInitial = originalMaxHeight + messageHeight;
+            withdrawalBox.style.maxHeight = `${originalMaxHeight + messageHeight}px`;
+
             setTimeout(() => {
                 successDiv.style.display = 'none';
-                window.location.href = `${FE_BASE}/account`;
+                // Restore original max-height before redirect
+                // withdrawalBox.style.maxHeight = `${originalMaxHeight}px`;
+                maxHeightInitial = originalMaxHeight;
+                // window.location.href = `${FE_BASE}/account`;
             }, 5000);
         }
     }
@@ -955,10 +1231,8 @@
             }
 
             showSuccess(`Withdrawal request of $${amount.toFixed(2)} submitted successfully!`);
-            //document.getElementById('withdrawal-form').reset();
             await refreshUserData();
             document.getElementById('balance-amount').innerHTML = `$ ${userData.balance}`;
-            await fetchWithdrawals();
         } catch (error) {
             console.error('Error processing withdrawal:', error);
             showError(error.message || 'Failed to process withdrawal');
@@ -970,14 +1244,19 @@
     // Initialize page
     document.addEventListener("DOMContentLoaded", async function () {
         // Update balance
-        document.getElementById("p5element").classList.remove('p-5');
         const balanceAmount = document.getElementById('balance-amount');
-        if (userData.balance) {
-            balanceAmount.innerHTML = `$ ${userData.balance}`;
-        } else {
+        const balanceText = document.getElementById('balance-text');
+        const balanceLoading = document.getElementById('balance-amount-loading');
+        balanceLoading.classList.remove('hidden');
+        if (!userData.balance) {
             await refreshUserData();
-            balanceAmount.innerHTML = `$ ${userData.balance}`;
         }
+        setTimeout(() => {
+            balanceLoading.classList.add('hidden');
+            balanceAmount.innerHTML = ` ${userData.balance}$`;
+            balanceAmount.style.opacity = '1';
+            balanceText.style.opacity = '1';
+        }, 350); // Match transition duration
 
         // Fix input heights
         const currencyDisplay = document.querySelector('.currency-display');
@@ -1003,27 +1282,58 @@
         }
 
         // Fetch cards and withdrawals
-        await Promise.all([fetchCards(), fetchWithdrawals()]);
+        await Promise.all([fetchCards()]);
+
+        async function loadWithdrawals() {
+            await fetchWithdrawals();
+        }
+
         await removeCardSetup();
 
         // Toggle functionality for withdrawals
-        const withdrawalsToggle = document.getElementById('withdrawals-toggle');
+        const withdrawalBox = document.getElementById('withdrawal-box');
         const withdrawalsList = document.getElementById('withdrawals-list');
+        const withdrawalsToggle = document.getElementById('withdrawals-toggle');
         const withdrawalsArrow = withdrawalsToggle.querySelector('i');
+        // let maxHeightInitial,
+        let firstToggleClick = false;
 
-        // Set initial max-height for animation
-        withdrawalsList.style.maxHeight = withdrawalsList.scrollHeight + 'px';
+        // Set initial state: withdrawals hidden, withdrawal box visible
+        withdrawalsList.classList.add('list-hidden');
+        withdrawalsList.style.maxHeight = '0';
+        withdrawalsList.style.opacity = '0';
+        withdrawalsList.style.transform = 'translateY(20px)';
+        withdrawalBox.classList.remove('hidden');
+        setTimeout(() => {
+            withdrawalBox.style.maxHeight = withdrawalBox.scrollHeight + 'px';
+            maxHeightInitial = parseFloat(withdrawalBox.style.maxHeight); // Store as number
+        }, 0);
 
         withdrawalsToggle.addEventListener('click', () => {
             const isHidden = withdrawalsList.classList.contains('list-hidden');
             withdrawalsList.classList.toggle('list-hidden');
+            withdrawalBox.classList.toggle('hidden');
             withdrawalsArrow.classList.toggle('up');
 
-            // Update max-height for animation
             if (isHidden) {
+                // Show withdrawals, hide withdrawal box
+                if (!firstToggleClick) {
+                    loadWithdrawals();
+                }
                 withdrawalsList.style.maxHeight = withdrawalsList.scrollHeight + 'px';
+                withdrawalsList.style.opacity = '1';
+                withdrawalsList.style.transform = 'translateY(0)';
+                withdrawalBox.style.maxHeight = '0';
+                withdrawalBox.style.opacity = '0';
             } else {
+                // Hide withdrawals, show withdrawal box
                 withdrawalsList.style.maxHeight = '0';
+                withdrawalsList.style.opacity = '0';
+                withdrawalsList.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    withdrawalBox.style.maxHeight = maxHeightInitial + "px";
+                    withdrawalBox.style.opacity = '1';
+                }, 0);
             }
         });
 
@@ -1033,7 +1343,7 @@
                 withdrawalsList.style.maxHeight = withdrawalsList.scrollHeight + 'px';
             }
         });
-        observer.observe(withdrawalsList, { childList: true, subtree: true });
+        observer.observe(withdrawalsList, {childList: true, subtree: true});
     });
 </script>
 {% endblock %}
