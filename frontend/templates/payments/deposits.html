@@ -1166,7 +1166,7 @@
             successDiv.setAttribute('role', 'alert');
             setTimeout(() => {
                 successDiv.style.display = 'none';
-                window.location.href = `${FE_BASE}/overview`;
+                window.location.href = `${FE_BASE}/account`;
             }, 10000);
         }
     }
@@ -1207,11 +1207,11 @@
 
                 console.log(removeAttempt);
                 const attemptResponseCode = removeAttempt.status;
-                const attemptData = await removeAttempt.json();
-                console.log(attemptData);
 
                 if (attemptResponseCode !== 204) {
                     try {
+                        const attemptData = await removeAttempt.json();
+                        console.log(attemptData);
                         const errorMessage = attemptData.detail || "Unknown error";
                         console.error(`Failed to remove card: ${attemptData}`);
                         showModalError(`Failed to remove card: ${errorMessage}`);
