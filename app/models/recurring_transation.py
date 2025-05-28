@@ -34,7 +34,6 @@ class RecurringTransaction(Base):
     def is_executable(self) -> bool:
         return self.transaction.sender.balance >= self.transaction.amount
 
-
     def execute_transaction(self) -> bool | str:
         if not self.is_active: "Recurring transaction is currently paused"
         if not self.transaction.receiver.can_receive_payments:

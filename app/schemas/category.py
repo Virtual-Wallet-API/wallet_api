@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, field_validator
 
-from app.schemas.transaction import TransactionResponse, CategoryTransactionResponse
+from app.schemas.transaction import CategoryTransactionResponse
 
 
 class CategoryBase(BaseModel):

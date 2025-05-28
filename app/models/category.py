@@ -39,7 +39,6 @@ class Category(Base):
     def total_expense(self) -> float:
         return sum([t.amount for t in self.transactions if t.is_expense(self.user_id)])
 
-
     @property
     def total_amount(self) -> float:
         """Return the total amount of money in this category"""
