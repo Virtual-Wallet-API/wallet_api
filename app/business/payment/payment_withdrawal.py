@@ -5,15 +5,13 @@ from typing import Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.infrestructure.stripe_service import StripeService
 from app.models import WStatus, WType
 from app.models.currency import Currency
 from app.models.user import User
 from app.models.withdrawal import Withdrawal
 from app.schemas.withdrawal import (
     WithdrawalCreate, WithdrawalUpdate, WithdrawalResponse,
-    WithdrawalPublicResponse, WithdrawalHistoryResponse, WithdrawalStatsResponse,
-    RefundCreate, RefundResponse
+    WithdrawalPublicResponse, WithdrawalHistoryResponse, WithdrawalStatsResponse
 )
 
 logger = logging.getLogger(__name__)
@@ -23,11 +21,9 @@ class WithdrawalService:
     """Business logic for withdrawal management with comprehensive tracking"""
 
     @staticmethod
-    async def create_withdrawal(
-            db: Session,
-            user: User,
-            withdrawal_request: WithdrawalCreate
-    ) -> WithdrawalResponse:
+    async def create_withdrawal(db: Session,
+                                user: User,
+                                withdrawal_request: WithdrawalCreate) -> WithdrawalResponse:
         """Create a new withdrawal with proper tracking"""
         try:
             # Validate user has sufficient balance
@@ -126,96 +122,10 @@ class WithdrawalService:
             )
 
     @staticmethod
-    async def create_refund(
-            db: Session,
-            user: User,
-            refund_request: RefundCreate
-    ) -> RefundResponse:
-        """Create a refund back to the original payment method with tracking"""
-        try:
-            # Validate user has sufficient balance for refund
-            refund_amount = refund_request.amount_cents / 100  # Convert cents to dollars
-            if user.balance < refund_amount:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Insufficient balance for refund"
-                )
-
-            # Get currency
-            currency = db.query(Currency).filter(Currency.code == "USD").first()
-            if not currency:
-                currency = Currency(code="USD")
-                db.add(currency)
-                db.commit()
-                db.refresh(currency)
-
-            # Create withdrawal record for tracking
-            withdrawal = Withdrawal(
-                user_id=user.id,
-                currency_id=currency.id,
-                amount=refund_amount,
-                amount_cents=refund_request.amount_cents,
-                withdrawal_type="refund",
-                method="card",
-                status="pending",
-                stripe_payment_intent_id=refund_request.stripe_payment_intent_id,
-                description=refund_request.description
-            )
-
-            db.add(withdrawal)
-            db.commit()
-            db.refresh(withdrawal)
-
-            # Create refund through Stripe
-            refund = await StripeService.create_refund(
-                payment_intent_id=refund_request.stripe_payment_intent_id,
-                amount=refund_request.amount_cents,
-                reason=refund_request.reason,
-                metadata={
-                    "user_id": str(user.id),
-                    "withdrawal_id": str(withdrawal.id),
-                    "description": refund_request.description
-                }
-            )
-
-            # Update withdrawal record with Stripe refund ID
-            withdrawal.stripe_refund_id = refund["id"]
-            withdrawal.mark_completed()
-
-            # Update user balance
-            user.balance -= refund_amount
-            db.commit()
-            db.refresh(withdrawal)
-            db.refresh(user)
-
-            logger.info(f"Created refund {refund['id']} for user {user.id}, tracked as withdrawal {withdrawal.id}")
-
-            return RefundResponse(
-                refund_id=refund["id"],
-                amount=refund["amount"],
-                currency=refund["currency"],
-                status=refund["status"],
-                reason=refund["reason"] or refund_request.reason,
-                created_at=datetime.fromtimestamp(refund["created"]),
-                withdrawal_id=withdrawal.id  # Link to our tracking record
-            )
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error(f"Failed to create refund for user {user.id}: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to process refund"
-            )
-
-    @staticmethod
-    def get_user_withdrawals(
-            db: Session,
-            user: User,
-            limit: int = 50,
-            status_filter: Optional[str] = None
-    ) -> WithdrawalHistoryResponse:
+    def get_user_withdrawals(db: Session,
+                             user: User,
+                             limit: int = 50,
+                             status_filter: Optional[str] = None) -> WithdrawalHistoryResponse:
         """Get withdrawal history for a user with filtering"""
         filtered_withdrawals = []
         if status_filter:
@@ -226,38 +136,13 @@ class WithdrawalService:
 
         withdrawal_responses = [WithdrawalPublicResponse.model_validate(w) for w in withdrawals]
 
-        # Unnecessary with SQLAlchemy and pydantic:
-
-        # for withdrawal in withdrawals:
-        #     card_info = None
-        #     if withdrawal.card:
-        #         card_info = {
-        #             "id": withdrawal.card.id,
-        #             "last_four": withdrawal.card.last_four,
-        #             "brand": withdrawal.card.brand
-        #         }
-        #
-        #     withdrawal_dict = {
-        #         "id": withdrawal.id,
-        #         "amount": withdrawal.amount,
-        #         "withdrawal_type": withdrawal.withdrawal_type,
-        #         "method": withdrawal.method,
-        #         "status": withdrawal.status,
-        #         "description": withdrawal.description,
-        #         "estimated_arrival": withdrawal.estimated_arrival,
-        #         "created_at": withdrawal.created_at,
-        #         "completed_at": withdrawal.completed_at,
-        #         "card_info": card_info
-        #     }
-        #     withdrawal_responses.append(WithdrawalPublicResponse(**withdrawal_dict))
-
         total = len(user.withdrawals)
         total_amount = user.total_withdrawal_amount
         pending_amount = user.total_pending_withdrawal_amount
 
         return WithdrawalHistoryResponse(
             withdrawals=withdrawal_responses,
-            total=len(user.withdrawals),
+            total=total,
             total_amount=total_amount,
             pending_amount=pending_amount
         )
@@ -281,12 +166,10 @@ class WithdrawalService:
         return WithdrawalResponse.model_validate(withdrawal)
 
     @staticmethod
-    def update_withdrawal_status(
-            db: Session,
-            user: User,
-            withdrawal_id: int,
-            update_data: WithdrawalUpdate
-    ) -> WithdrawalResponse:
+    def update_withdrawal_status(db: Session,
+                                 user: User,
+                                 withdrawal_id: int,
+                                 update_data: WithdrawalUpdate) -> WithdrawalResponse:
         """Update withdrawal status (admin function)"""
         withdrawal = db.query(Withdrawal).filter(
             Withdrawal.id == withdrawal_id,
@@ -354,10 +237,6 @@ class WithdrawalService:
     @staticmethod
     def cancel_withdrawal(db: Session, user: User, withdrawal_id: int) -> WithdrawalResponse:
         """Cancel a pending withdrawal"""
-        # withdrawal = db.query(Withdrawal).filter(
-        #     Withdrawal.id == withdrawal_id,
-        #     Withdrawal.user_id == user.id
-        # ).first()
         withdrawal = next((w for w in user.withdrawals
                            if w.id == withdrawal_id and w.status == WStatus.PENDING), None)
 

@@ -26,10 +26,23 @@ def read_transactions(db: Session = Depends(get_db),
     return transaction_history
 
 
-@router.post("/", response_model=TransactionResponse)
+@router.post("/", response_model=TransactionResponse,
+             description="Create a new transaction for the authenticated user.")
 def send_transaction(transaction_data: TransactionCreate,
                      db: Session = Depends(get_db),
                      user: User = Depends(get_user_except_pending_fpr)):
+    """
+    Processes a transaction request, saves it to the database, and returns the created transaction.
+
+    This function handles the creation of a new transaction for the user, taking necessary
+    data, dependencies, and ensuring the transaction is saved in the database. It allows
+    to set category_id to None if it's explicitly set as 0 in the input data.
+
+    :param transaction_data: Data required to create the transaction.
+    :param db: The SQLAlchemy session dependency.
+    :param user: The currently authenticated user.
+    :return: The completed and persisted transaction instance.
+    """
     # TODO: Move to services and implement proper balance check and change
     if transaction_data.category_id == 0:
         transaction_data.category_id = None
