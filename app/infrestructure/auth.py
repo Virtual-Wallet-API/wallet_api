@@ -56,6 +56,20 @@ forced_password_reset = HTTPException(
 )
 
 
+def hash_password(password: str) -> str:
+    """
+        Hashes a password using bcrypt.
+    """
+    return pwd_context.hash(password, rounds=12, salt_size=16)
+
+
+def check_hashed_password(plain_password: str, hashed_password: str) -> bool:
+    """
+        Checks if a plain password matches a hashed password.
+    """
+    return pwd_context.verify(plain_password, hashed_password)
+
+
 def verify_token(token: str):
     """
         Verifies the validity of an authentication token.
