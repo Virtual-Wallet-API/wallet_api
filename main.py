@@ -14,6 +14,7 @@ prefix = "/api/v1"
 app.include_router(admin_router, prefix=prefix + "/admin")
 app.include_router(users_router, prefix=prefix + "/users")
 app.include_router(cards_router, prefix=prefix + "/cards")
+app.include_router(categories_router, prefix=prefix + "/categories")
 app.include_router(deposits_router, prefix=prefix + "/deposits")
 app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 app.include_router(transactions_router, prefix=prefix + "/transactions")
