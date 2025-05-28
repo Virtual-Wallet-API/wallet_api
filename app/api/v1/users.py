@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse, RedirectResponse
 
 from app.business import UAuth, UVal
 from app.business.user.user_admin import AdminService
-from app.dependencies import get_db, get_active_user, get_password_reset_user, get_pending_user
+from app.dependencies import get_db, get_user_except_pending_fpr, get_user_even_with_fpr, get_user_except_fpr
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse
@@ -57,7 +57,7 @@ def login(user: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 
 
 @router.get("/me", response_model=UserResponse)
-def get_user(user: User = Depends(get_pending_user)):
+def get_user(user: User = Depends(get_user_except_fpr)):
     """
     Retrieves user details based on the provided access token if the user isn't forced to reset password.
 
@@ -77,7 +77,7 @@ def get_user(user: User = Depends(get_pending_user)):
 
 
 @router.get("/contacts", response_model=List[ContactPublicResponse])
-def get_contacts(db: ContactResponse = Depends(get_db), user: User = Depends(get_active_user)):
+def get_contacts(db: ContactResponse = Depends(get_db), user: User = Depends(get_user_except_pending_fpr)):
     """
     Retrieve a list of contacts associated with the authenticated user.
     """
@@ -87,7 +87,7 @@ def get_contacts(db: ContactResponse = Depends(get_db), user: User = Depends(get
 @router.post("/contacts", response_model=ContactPublicResponse)
 def create_contact(contact: ContactCreate,
                    db: Session = Depends(get_db),
-                   user: User = Depends(get_active_user)):
+                   user: User = Depends(get_user_except_pending_fpr)):
     """
     Creates a new contact for the authenticated user.
     """
@@ -108,7 +108,7 @@ def create_contact(contact: ContactCreate,
 @router.delete("/contacts/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_contact(contact_id: int,
                    db: Session = Depends(get_db),
-                   user: User = Depends(get_active_user)):
+                   user: User = Depends(get_user_except_pending_fpr)):
     """
     Removes a contact from the authenticated user's list of contacts.
     """
