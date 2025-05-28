@@ -1,10 +1,20 @@
 from datetime import datetime
+from enum import Enum
+from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Enum, Boolean, Text
+from pydantic_core import core_schema
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String, Boolean, Text
+from sqlalchemy import Enum as CEnum
 from sqlalchemy.orm import relationship, validates
 
 from app.infrestructure import Base
+
+
+class CardType(str, Enum):
+    CREDIT = "credit"
+    DEBIT = "debit"
+    UNKNOWN = "unknown"
 
 
 class Card(Base):
@@ -26,7 +36,7 @@ class Card(Base):
     cardholder_name = Column(String(255), nullable=False)
 
     # Card metadata
-    type = Column(Enum("credit", "debit", "unknown", name="card_type"), nullable=False, default="unknown")
+    type = Column(CEnum(CardType, name="card_type", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=CardType.UNKNOWN)
     design = Column(Text, nullable=False, default='{"color": "purple"}')  # JSON string for card design
     is_default = Column(Boolean, default=False)  # Whether this is the user's default card
     is_active = Column(Boolean, default=True)  # Whether the card is active

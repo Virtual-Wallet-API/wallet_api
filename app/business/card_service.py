@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.infrestructure.stripe_service import StripeService
 from app.models.card import Card
-from app.models.user import User
+from app.models import User, UStatus
+from app.business import UAuth
 from app.schemas.card import (
     CardUpdate, CardResponse, PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse,
     CardListResponse
@@ -49,6 +50,7 @@ class CardService:
     @staticmethod
     async def create_setup_intent(db: Session, user: User) -> SetupIntentResponse:
         """Create a setup intent for saving a payment method"""
+        UAuth.verify_user_can_add_card(user)
         try:
             # Ensure user has Stripe customer
             stripe_customer_id = await CardService.ensure_stripe_customer(db, user)
@@ -80,6 +82,7 @@ class CardService:
             payment_data: PaymentIntentCreate
     ) -> PaymentIntentResponse:
         """Create a payment intent for processing a payment"""
+        UAuth.verify_user_can_deposit(user)
         try:
             # Ensure user has Stripe customer
             stripe_customer_id = await CardService.ensure_stripe_customer(db, user)
@@ -120,6 +123,7 @@ class CardService:
             design: Optional[str] = None
     ) -> CardResponse:
         """Save a card to database after successful Stripe payment method creation"""
+        UAuth.verify_user_can_add_card(user)
         # Retrieve payment method from Stripe
         payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
         if payment_method["type"] != "card":
@@ -160,8 +164,16 @@ class CardService:
             )
 
             db.add(card)
-            db.commit()
-            db.refresh(card)
+            try:
+                db.commit()
+                db.refresh(card)
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Failed to save card for user {user.id}: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to save card: {e}"
+                )
 
             logger.info(f"Saved card {card.id} for user {user.id}")
 

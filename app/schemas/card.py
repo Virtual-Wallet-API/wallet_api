@@ -58,12 +58,18 @@ class PaymentIntentResponse(BaseModel):
     currency: str
     status: str
 
+    class Config:
+        from_attributes = True
+
 
 # Response schema for setup intent
 class SetupIntentResponse(BaseModel):
     client_secret: str
     setup_intent_id: str
     status: str
+
+    class Config:
+        from_attributes = True
 
 
 # Withdrawal schemas moved to app/schemas/withdrawal.py
@@ -120,7 +126,6 @@ class CardUpdate(BaseModel):
     cardholder_name: Optional[str] = None
     design: Optional[str] = None
     is_default: Optional[bool] = None
-    is_active: Optional[bool] = None
 
 
 # Schema for card deletion/deactivation
@@ -133,6 +138,9 @@ class CardListResponse(BaseModel):
     cards: List[CardResponse]
     total: int
     has_default: bool
+
+    class Config:
+        from_attributes = True
 
 
 CardPublicResponse.model_rebuild()
