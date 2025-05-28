@@ -4,7 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, field_validator
 
 from app.models.withdrawal import WithdrawalType, WithdrawalMethod, WithdrawalStatus
-from app.schemas import CardPublicResponse
+from app.schemas import CardPublicResponse, CardResponse
 
 
 # Schema for refund response
@@ -76,6 +76,7 @@ class WithdrawalResponse(BaseModel):
     id: int
     user_id: int
     card_id: Optional[int]
+    card: CardPublicResponse
     amount: float
     amount_cents: int
     withdrawal_type: WithdrawalType

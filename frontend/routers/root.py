@@ -44,7 +44,7 @@ def cards(request: Request):
              "status": "frozen"},
         ]
     }
-    return templates.TemplateResponse("/cards.html", data)
+    return templates.TemplateResponse("cards.html", data)
 
 
 @router.get("/transactions", response_model=None)
@@ -72,7 +72,7 @@ def withdrawal(request: Request):
 def contacts(request: Request):
     data = {"request": request,
             "page": "contacts"}
-    return templates.TemplateResponse("/contacts.html", data)
+    return templates.TemplateResponse("contacts.html", data)
 
 
 @router.get("/logout", response_model=None)

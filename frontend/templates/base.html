@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>{{ page | capitalize() }} - VWallet</title>
+
+    <!-- JavaScript Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         // API Configuration
         const API_BASE = '/api/v1';
@@ -439,6 +443,11 @@
             color: var(--accent-color); /* --text-color */
         }
     </style>
+    <style type="text/css">
+        .p-5 {
+            padding: 1.5rem !important;
+        }
+    </style>
 
     {% block styles %}
     {% endblock %}
@@ -503,31 +512,27 @@
             </a>
         </div>
         <!-- Main Content -->
-        <div class="col-md-9 main-content p-5">
+        <div class="col-md-9 main-content p-5" id="p5element">
             {% block content %}
             {% endblock %}
 
-            <hr style="margin: 5rem 0; opacity: 0; "/>
         </div>
-        <div class="container footer-container col-md-9">
-            <div class="footer d-flex justify-content-between align-items-center">
-                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>
-                <div>
-                    <a class="ms-3" href="#">Privacy Policy</a>
-                    <a class="ms-3" href="#">Terms of Service</a>
-                    <a class="ms-3" href="#">Contact Us</a>
-                </div>
-            </div>
-        </div>
+<!--        <div class="container footer-container col-md-9">-->
+<!--            <div class="footer d-flex justify-content-between align-items-center">-->
+<!--                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>-->
+<!--                <div>-->
+<!--                    <a class="ms-3" href="#">Privacy Policy</a>-->
+<!--                    <a class="ms-3" href="#">Terms of Service</a>-->
+<!--                    <a class="ms-3" href="#">Contact Us</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
     </div>
 </div>
 
 {% block modals %}
 {% endblock %}
 
-<!-- JavaScript Dependencies -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     console.log(token);
 
@@ -624,6 +629,7 @@
 
 {% block scripts %}
 {% endblock %}
+
 
 </body>
 </html>
