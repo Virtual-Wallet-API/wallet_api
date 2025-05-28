@@ -18,9 +18,9 @@ class Category(Base):
 
     @validates("name")
     def validate_name(self, key, v: str):
-        if len(v) < 2:
+        if len(v) < 3:
             raise HTTPException(status_code=400,
-                                detail="Name must be at least 2 characters long")
+                                detail="Name must be at least 3 characters long")
         return v
 
     @property
@@ -28,7 +28,7 @@ class Category(Base):
         return len(self.transactions)
 
     @property
-    def completed_tranasctions(self) -> int:
+    def completed_transactions(self) -> int:
         return len([t for t in self.transactions if t.is_completed])
 
     @property
