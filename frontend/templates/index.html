@@ -249,11 +249,11 @@
                 <form id="ajax-login" method="post">
                     <div class="mb-3">
                         <label class="form-label" for="username">Username</label>
-                        <input class="form-control" id="username" required type="text" value="Testing">
+                        <input class="form-control" id="username" required type="text" value="test">
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="password">Password</label>
-                        <input class="form-control" id="password" required type="password" value="Testing">
+                        <input class="form-control" id="password" required type="password" value="test">
                     </div>
                 </form>
             </div>
@@ -343,89 +343,100 @@
 </script>
 </body>
 <script type="text/javascript">
-    // Utility function to get cookie by name
-    function getCookie(name) {
-        let value = `; ${document.cookie}`;
-        let parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
-        return null;
+    // Utility function to set a cookie
+    function setCookie(name, value, options = {}) {
+        const defaults = {
+            path: '/',
+            sameSite: 'Lax',
+            secure: false,
+            maxAge: 86400 // Ensure persistence
+        };
+        const config = { ...defaults, ...options };
+        // Avoid double-encoding JWT
+        let cookieString = `${encodeURIComponent(name)}=${value}`; // JWT is already URL-safe
+        if (config.path) cookieString += `; Path=${config.path}`;
+        if (config.sameSite) cookieString += `; SameSite=${config.sameSite}`;
+        if (config.secure) cookieString += `; Secure`;
+        if (config.maxAge) cookieString += `; Max-Age=${config.maxAge}`;
+        console.log('Setting cookie:', cookieString);
+
+        // Set the cookie
+        document.cookie = cookieString;
+
+        // Verify immediately
+        console.log('Document cookie after set:', document.cookie);
     }
 
-    $(document).ready(function (e) {
-        $("#ajax-login").submit(function (e) {
-            console.log("submit");
+    // Utility function to get a cookie by name
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${encodeURIComponent(name)}=`);
+        const result = parts.length === 2 ? decodeURIComponent(parts.pop().split(';').shift()) : null;
+        console.log(`Getting cookie ${name}:`, result);
+        return result;
+    }
+
+    if (getCookie('access_token')) {
+        console.log('Access token already set, redirecting...');
+        window.location.href = '/fe/account';
+    }
+
+    // Utility function to display messages
+    function showMessage(elementId, message, isSuccess) {
+        $(`#${elementId}`)
+            .text(message)
+            .removeClass('alert-success alert-danger d-none')
+            .addClass(isSuccess ? 'alert-success' : 'alert-danger')
+            .show();
+    }
+
+    // Handle form submission
+    $(document).ready(function () {
+        $('#ajax-login').on('submit', function (e) {
             e.preventDefault();
 
-            let username = $("#username").val();
-            let password = $("#password").val();
-            console.log(username, password);
+            const username = $('#username').val().trim();
+            const password = $('#password').val().trim();
 
             if (!username || !password) {
-                alert("Please fill in all fields");
+                showMessage('loginError', 'Please fill in all fields', false);
                 return;
             }
 
-            let data = {"username": username, "password": password};
             $.ajax({
-                url: "/api/v1/users/token",
-                type: "POST",
-                data: data,
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                dataType: "json",
-                success: function (data, textStatus, xhr) {
-                    // Extract token from response body (FastAPI OAuth2 standard)
-                    let token = data.access_token;
-                    let uname = data.username;
-                    if (token && typeof token === "string" && token.trim() !== "") {
-                        // Set token in a cookie
-                        document.cookie = `access_token=${encodeURIComponent(token)}; Path=/; SameSite=Strict`;
-                        console.log('Access token set in cookie');
-                        console.log(getCookie("access_token"))
-                        // Show success message briefly before redirect
-                        $('#loginError')
-                            .text('Login successful, redirecting...')
-                            .removeClass('alert-danger')
-                            .addClass('alert-success')
-                            .removeClass('d-none')
-                            .css('display', 'block');
-                        setTimeout(() => {
-                            window.location.href = "/fe/overview";
-                        }, 1000); // 1-second delay for UX
+                url: '/api/v1/users/token',
+                type: 'POST',
+                data: { username, password },
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                dataType: 'json'
+            })
+                .done(function (data) {
+                    console.log('Login Response:', data);
+                    console.log('Current URL:', window.location.href);
+                    console.log('All cookies:', document.cookie);
+                    const token = getCookie('access_token');
+                    if (token) {
+                        showMessage('loginError', 'Login successful, redirecting...', true);
+                        setTimeout(() => window.location.href = '/fe/account', 1000);
                     } else {
-                        $('#loginError')
-                            .text('Error: No valid token received')
-                            .removeClass('alert-success')
-                            .addClass('alert-danger')
-                            .removeClass('d-none')
-                            .css('display', 'block');
+                        showMessage('loginError', 'Error: Cookie not set', false);
                     }
-                },
-                error: function (xhr, textStatus, errorThrown) {
-                    console.log("Response Headers:", xhr.getAllResponseHeaders());
-                    console.log("Response Text:", xhr.responseText);
+                })
+                .fail(function (xhr) {
+                    console.log('Error Response:', {
+                        headers: xhr.getAllResponseHeaders(),
+                        text: xhr.responseText
+                    });
                     let errorMessage = 'An error occurred. Please try again.';
-                    if (xhr.responseJSON) {
-                        if (xhr.responseJSON.detail) {
-                            // Handle both string and array detail formats
-                            if (Array.isArray(xhr.responseJSON.detail)) {
-                                errorMessage = xhr.responseJSON.detail.map(err => err.msg || JSON.stringify(err)).join('; ');
-                            } else {
-                                errorMessage = xhr.responseJSON.detail;
-                            }
-                        } else {
-                            errorMessage = JSON.stringify(xhr.responseJSON);
-                        }
+                    if (xhr.responseJSON?.detail) {
+                        errorMessage = Array.isArray(xhr.responseJSON.detail)
+                            ? xhr.responseJSON.detail.map(err => err.msg || JSON.stringify(err)).join('; ')
+                            : xhr.responseJSON.detail;
                     } else if (xhr.responseText) {
                         errorMessage = xhr.responseText;
                     }
-                    $('#loginError')
-                        .text(errorMessage)
-                        .removeClass('alert-success')
-                        .addClass('alert-danger')
-                        .removeClass('d-none')
-                        .css('display', 'block');
-                }
-            });
+                    showMessage('loginError', errorMessage, false);
+                });
         });
     });
 </script>
