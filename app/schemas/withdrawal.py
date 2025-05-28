@@ -1,8 +1,10 @@
 from datetime import datetime
-from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_serializer
+
+from app.models.withdrawal import WithdrawalType, WithdrawalMethod, WithdrawalStatus
+from app.schemas import CardPublicResponse
 
 
 # Schema for refund response
@@ -15,26 +17,8 @@ class RefundResponse(BaseModel):
     created_at: datetime
     withdrawal_id: Optional[int] = None  # Link to our tracking record
 
-
-class WithdrawalType(str, Enum):
-    REFUND = "refund"
-    PAYOUT = "payout"
-    BANK_TRANSFER = "bank_transfer"
-
-
-class WithdrawalMethod(str, Enum):
-    CARD = "card"
-    BANK_ACCOUNT = "bank_account"
-    INSTANT = "instant"
-    STANDARD = "standard"
-
-
-class WithdrawalStatus(str, Enum):
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+    class Config:
+        from_attributes = True
 
 
 # Base withdrawal schema
@@ -107,8 +91,9 @@ class WithdrawalResponse(BaseModel):
     completed_at: Optional[datetime]
     failed_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 # Schema for public withdrawal response (limited info)
@@ -122,10 +107,47 @@ class WithdrawalPublicResponse(BaseModel):
     estimated_arrival: Optional[str]
     created_at: datetime
     completed_at: Optional[datetime]
-    card_info: Optional[dict] = None  # Card details if applicable
+    card_info: Optional[CardPublicResponse] = None
 
-    class Config:
-        from_attributes = True
+    # @field_validator('withdrawal_type', mode='before')
+    # @classmethod
+    # def validate_withdrawal_type(cls, v):
+    #     if isinstance(v, str):
+    #         return WithdrawalType(v)
+    #     return v
+    #
+    # @field_validator('method', mode='before')
+    # @classmethod
+    # def validate_method(cls, v):
+    #     if isinstance(v, str):
+    #         return WithdrawalMethod(v)
+    #     return v
+    #
+    # @field_validator('status', mode='before')
+    # @classmethod
+    # def validate_status(cls, v):
+    #     if isinstance(v, str):
+    #         return WithdrawalStatus(v)
+    #     return v
+
+    # @model_serializer
+    # def ser_model(self):
+    #     return {
+    #         "id": self.id,
+    #         "amount": self.amount,
+    #         "withdrawal_type": self.withdrawal_type,
+    #         "method": self.method,
+    #         "status": self.status,
+    #         "description": self.description,
+    #         "estimated_arrival": self.estimated_arrival,
+    #         "created_at": self.created_at,
+    #         "completed_at": self.completed_at,
+    #         "card_info": self.card_info
+    #     }
+
+    model_config = {
+        "from_attributes": True
+    }
 
 
 # Schema for withdrawal history
@@ -134,6 +156,10 @@ class WithdrawalHistoryResponse(BaseModel):
     total: int
     total_amount: float
     pending_amount: float
+
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 # Schema for withdrawal statistics
@@ -148,3 +174,6 @@ class WithdrawalStatsResponse(BaseModel):
     total_payouts: int
     refund_amount: float
     payout_amount: float
+
+    class Config:
+        from_attributes = True

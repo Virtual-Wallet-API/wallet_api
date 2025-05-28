@@ -6,10 +6,10 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrestructure.stripe_service import StripeService
-from app.models.card import Card
 from app.models.currency import Currency
 from app.models.user import User
 from app.models.withdrawal import Withdrawal
+from app.models import WStatus, WType
 from app.schemas.withdrawal import (
     WithdrawalCreate, WithdrawalUpdate, WithdrawalResponse,
     WithdrawalPublicResponse, WithdrawalHistoryResponse, WithdrawalStatsResponse,
@@ -41,11 +41,12 @@ class WithdrawalService:
             # Get the card if specified
             card = None
             if withdrawal_request.card_id:
-                card = db.query(Card).filter(
-                    Card.id == withdrawal_request.card_id,
-                    Card.user_id == user.id,
-                    Card.is_active == True
-                ).first()
+                # card = db.query(Card).filter(
+                #     Card.id == withdrawal_request.card_id,
+                #     Card.user_id == user.id,
+                #     Card.is_active == True
+                # ).first()
+                card = next((c for c in user.cards if c.id == withdrawal_request.card_id and c.is_active), None)
 
                 if not card:
                     raise HTTPException(
@@ -76,7 +77,7 @@ class WithdrawalService:
                 amount_cents=withdrawal_request.amount_cents,
                 withdrawal_type=withdrawal_request.withdrawal_type,
                 method=withdrawal_request.method,
-                status="pending",
+                status=WStatus.PENDING,
                 description=withdrawal_request.description,
                 estimated_arrival="1-3 business days"
             )
@@ -86,9 +87,9 @@ class WithdrawalService:
             db.refresh(withdrawal)
 
             # Process withdrawal based on type
-            if withdrawal_request.withdrawal_type == "payout" and card:
+            if withdrawal_request.withdrawal_type == WType.PAYOUT and card:
                 # For instant payouts (requires Stripe Connect in production)
-                withdrawal.status = "processing"
+                withdrawal.status = WStatus.PROCESSING
                 withdrawal.estimated_arrival = "Instant to 30 minutes"
 
                 # In production, you would create a Stripe payout here
@@ -99,7 +100,7 @@ class WithdrawalService:
 
             elif withdrawal_request.withdrawal_type == "bank_transfer":
                 # For bank transfers
-                withdrawal.status = "processing"
+                withdrawal.status = WStatus.PROCESSING
                 withdrawal.estimated_arrival = "3-5 business days"
 
                 # Simulate bank transfer processing
@@ -216,43 +217,47 @@ class WithdrawalService:
             status_filter: Optional[str] = None
     ) -> WithdrawalHistoryResponse:
         """Get withdrawal history for a user with filtering"""
-        query = db.query(Withdrawal).filter(Withdrawal.user_id == user.id)
-
+        filtered_withdrawals = []
         if status_filter:
-            query = query.filter(Withdrawal.status == status_filter)
+            filtered_withdrawals = [w for w in user.withdrawals
+                                    if w.status == status_filter]
 
-        withdrawals = query.order_by(Withdrawal.created_at.desc()).limit(limit).all()
+        withdrawals = user.withdrawals[:limit] if not status_filter else filtered_withdrawals[:limit]
 
-        withdrawal_responses = []
-        for withdrawal in withdrawals:
-            card_info = None
-            if withdrawal.card:
-                card_info = {
-                    "id": withdrawal.card.id,
-                    "last_four": withdrawal.card.last_four,
-                    "brand": withdrawal.card.brand
-                }
+        withdrawal_responses = [WithdrawalPublicResponse.model_validate(w) for w in withdrawals]
 
-            withdrawal_dict = {
-                "id": withdrawal.id,
-                "amount": withdrawal.amount,
-                "withdrawal_type": withdrawal.withdrawal_type,
-                "method": withdrawal.method,
-                "status": withdrawal.status,
-                "description": withdrawal.description,
-                "estimated_arrival": withdrawal.estimated_arrival,
-                "created_at": withdrawal.created_at,
-                "completed_at": withdrawal.completed_at,
-                "card_info": card_info
-            }
-            withdrawal_responses.append(WithdrawalPublicResponse(**withdrawal_dict))
+        # Unnecessary with SQLAlchemy and pydantic:
 
-        total_amount = sum(w.amount for w in withdrawals if w.is_completed)
-        pending_amount = sum(w.amount for w in withdrawals if w.is_pending)
+        # for withdrawal in withdrawals:
+        #     card_info = None
+        #     if withdrawal.card:
+        #         card_info = {
+        #             "id": withdrawal.card.id,
+        #             "last_four": withdrawal.card.last_four,
+        #             "brand": withdrawal.card.brand
+        #         }
+        #
+        #     withdrawal_dict = {
+        #         "id": withdrawal.id,
+        #         "amount": withdrawal.amount,
+        #         "withdrawal_type": withdrawal.withdrawal_type,
+        #         "method": withdrawal.method,
+        #         "status": withdrawal.status,
+        #         "description": withdrawal.description,
+        #         "estimated_arrival": withdrawal.estimated_arrival,
+        #         "created_at": withdrawal.created_at,
+        #         "completed_at": withdrawal.completed_at,
+        #         "card_info": card_info
+        #     }
+        #     withdrawal_responses.append(WithdrawalPublicResponse(**withdrawal_dict))
+
+        total = len(user.withdrawals)
+        total_amount = user.total_withdrawal_amount
+        pending_amount = user.total_pending_withdrawal_amount
 
         return WithdrawalHistoryResponse(
             withdrawals=withdrawal_responses,
-            total=len(withdrawals),
+            total=len(user.withdrawals),
             total_amount=total_amount,
             pending_amount=pending_amount
         )
@@ -260,10 +265,12 @@ class WithdrawalService:
     @staticmethod
     def get_withdrawal_by_id(db: Session, user: User, withdrawal_id: int) -> WithdrawalResponse:
         """Get a specific withdrawal by ID"""
-        withdrawal = db.query(Withdrawal).filter(
-            Withdrawal.id == withdrawal_id,
-            Withdrawal.user_id == user.id
-        ).first()
+        # withdrawal = db.query(Withdrawal).filter(
+        #     Withdrawal.id == withdrawal_id,
+        #     Withdrawal.user_id == user.id
+        # ).first()
+        withdrawal = next((w for w in user.withdrawals
+                           if w.id == withdrawal_id), None)
 
         if not withdrawal:
             raise HTTPException(
@@ -296,10 +303,10 @@ class WithdrawalService:
         if update_data.status:
             withdrawal.status = update_data.status
 
-            if update_data.status == "completed" and not withdrawal.completed_at:
-                withdrawal.completed_at = datetime.utcnow()
-            elif update_data.status == "failed" and not withdrawal.failed_at:
-                withdrawal.failed_at = datetime.utcnow()
+            if update_data.status == WStatus.COMPLETED and not withdrawal.completed_at:
+                withdrawal.completed_at = datetime.now()
+            elif update_data.status == WStatus.FAILED and not withdrawal.failed_at:
+                withdrawal.failed_at = datetime.now()
 
         if update_data.failure_reason:
             withdrawal.failure_reason = update_data.failure_reason
@@ -318,17 +325,16 @@ class WithdrawalService:
     @staticmethod
     def get_withdrawal_stats(db: Session, user: User) -> WithdrawalStatsResponse:
         """Get withdrawal statistics for a user"""
-        withdrawals = db.query(Withdrawal).filter(Withdrawal.user_id == user.id).all()
 
-        total_withdrawals = len(withdrawals)
-        total_amount = sum(w.amount for w in withdrawals if w.is_completed)
-        completed_withdrawals = len([w for w in withdrawals if w.is_completed])
-        pending_withdrawals = len([w for w in withdrawals if w.is_pending])
-        failed_withdrawals = len([w for w in withdrawals if w.status == "failed"])
+        total_withdrawals = len(user.withdrawals)
+        total_amount = user.total_withdrawal_amount
+        completed_withdrawals = len(user.completed_withdrawals)
+        pending_withdrawals = len(user.pending_withdrawals)
+        failed_withdrawals = len(user.failed_withdrawals)
 
         # Calculate by type
-        refunds = [w for w in withdrawals if w.withdrawal_type == "refund"]
-        payouts = [w for w in withdrawals if w.withdrawal_type == "payout"]
+        refunds = user.refunds
+        payouts = user.payouts
 
         average_amount = total_amount / completed_withdrawals if completed_withdrawals > 0 else 0
 
@@ -348,10 +354,12 @@ class WithdrawalService:
     @staticmethod
     def cancel_withdrawal(db: Session, user: User, withdrawal_id: int) -> WithdrawalResponse:
         """Cancel a pending withdrawal"""
-        withdrawal = db.query(Withdrawal).filter(
-            Withdrawal.id == withdrawal_id,
-            Withdrawal.user_id == user.id
-        ).first()
+        # withdrawal = db.query(Withdrawal).filter(
+        #     Withdrawal.id == withdrawal_id,
+        #     Withdrawal.user_id == user.id
+        # ).first()
+        withdrawal = next((w for w in user.withdrawals
+                           if w.id == withdrawal_id and w.status == WStatus.PENDING), None)
 
         if not withdrawal:
             raise HTTPException(
@@ -366,7 +374,7 @@ class WithdrawalService:
             )
 
         # Cancel withdrawal and refund balance
-        withdrawal.status = "cancelled"
+        withdrawal.status = WStatus.CANCELLED
         user.balance += withdrawal.amount  # Refund the amount
 
         db.commit()
