@@ -182,7 +182,8 @@ class AdminService:
         # User data setup
         user = UVal.find_user_with_or_raise_exception("id", search_data.get("user_id"), db)
         if not user:
-            raise HTTPException(status_code=404, detail=f"User with ID {search_data.get("user_id")} not found")
+            uid = search_data.get("user_id")
+            raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
 
         # Sort setup
         sort_by = search_data.get("order_by", "date_desc")
