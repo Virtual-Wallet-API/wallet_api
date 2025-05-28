@@ -10,6 +10,6 @@ from .transaction import Transaction
 from .user import User
 from .user import UserStatus as UStatus
 from .withdrawal import Withdrawal
+from .withdrawal import WithdrawalMethod as WMethod
 from .withdrawal import WithdrawalStatus as WStatus
 from .withdrawal import WithdrawalType as WType
-from .withdrawal import WithdrawalMethod as WMethod
