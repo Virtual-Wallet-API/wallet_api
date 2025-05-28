@@ -1100,10 +1100,10 @@
             showSuccess(`Deposit successful! $${amount.toFixed(2)} has been added to your wallet.`);
 
             // Reset form
-            // if (isNewCard) card.clear();
-            // document.getElementById('payment-method').value = 'new';
-            // document.getElementById('card-element-group').style.display = 'block';
-            // document.getElementById('saved-card-group').style.display = 'block';
+            if (isNewCard) card.clear();
+            document.getElementById('payment-method').value = 'new';
+            document.getElementById('card-element-group').style.display = 'block';
+            document.getElementById('saved-card-group').style.display = 'block';
 
         } catch (error) {
             console.error('Deposit error:', error);
@@ -1156,19 +1156,23 @@
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             errorDiv.setAttribute('role', 'alert');
+            setTimeout(() => {
+                $("#error-message").fadeOut(1000);
+            }, 10000);
         }
     }
 
     function showSuccess(message) {
+        document.getElementById('error-message').display = "none";
         const successDiv = document.getElementById('success-message');
         if (successDiv) {
-            successDiv.textContent = message;
+            successDiv.textContent = message + " Redirecting...";
             successDiv.style.display = 'block';
             successDiv.setAttribute('role', 'alert');
-            // setTimeout(() => {
-            //     successDiv.style.display = 'none';
-            //     window.location.href = `${FE_BASE}/account`;
-            // }, 10000);
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+                window.location.href = `${FE_BASE}/account`;
+            }, 5000);
         }
     }
 
