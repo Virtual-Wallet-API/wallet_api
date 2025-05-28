@@ -51,13 +51,11 @@ class Transaction(Base):
                                 detail="Amount must be positive")
         return v
 
-
     def is_income(self, user_id) -> bool:
         return self.receiver_id == user_id
 
     def is_expense(self, user_id) -> bool:
         return self.sender_id == user_id
-
 
     @property
     def is_completed(self) -> bool:
@@ -82,4 +80,3 @@ class Transaction(Base):
     @property
     def recurring_interval(self) -> int:
         return self.recurring_transaction.interval if self.is_recurring else None
-

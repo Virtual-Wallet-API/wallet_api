@@ -71,8 +71,8 @@ class DataValidators:
             Validate an email address
             TODO: Add more robust email validation
         """
-        if v.count("@") != 1 or "." not in v or v.endswith("@") or v.startswith("@")\
-                or v.startswith(".") or v.endswith(".") or (v.count("@.") + v.count(".@")) != 0\
+        if v.count("@") != 1 or "." not in v or v.endswith("@") or v.startswith("@") \
+                or v.startswith(".") or v.endswith(".") or (v.count("@.") + v.count(".@")) != 0 \
                 or v.split("@")[1].count(".") == 0:
             raise HTTPException(status_code=400, detail="Email address must be valid")
         return v
