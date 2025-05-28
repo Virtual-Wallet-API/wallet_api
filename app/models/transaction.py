@@ -1,8 +1,9 @@
 from datetime import datetime
+from enum import Enum
 
 from fastapi import HTTPException
-from pydantic_core import core_schema, CoreSchema
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, Float, String
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String
+from sqlalchemy import Enum as CEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 
@@ -15,10 +16,6 @@ class TransactionStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type, handler) -> CoreSchema:
-        return core_schema.str_schema()
-
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -29,12 +26,12 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     description = Column(String, nullable=True)
     date = Column(DateTime, default=datetime.now, nullable=False)
-    status = Column(Enum(TransactionStatus.PENDING,
-                         TransactionStatus.COMPLETED,
-                         TransactionStatus.FAILED,
-                         TransactionStatus.CANCELLED,
-                         name="status"),
-                    default=TransactionStatus.PENDING, nullable=False)
+
+    status = Column(CEnum(TransactionStatus, name="transaction_status",
+                          values_callable=lambda obj: [e.value for e in obj]),
+                    default=TransactionStatus.PENDING,
+                    nullable=False)
+
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
