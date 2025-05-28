@@ -60,14 +60,16 @@ def hash_password(password: str) -> str:
     """
         Hashes a password using bcrypt.
     """
-    return pwd_context.hash(password, rounds=12, salt_size=16)
+    #return pwd_context.hash(password, rounds=12, salt_size=16)
+    return password # TODO disable dev testing
 
 
 def check_hashed_password(plain_password: str, hashed_password: str) -> bool:
     """
         Checks if a plain password matches a hashed password.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    # return pwd_context.verify(plain_password, hashed_password)
+    return plain_password == hashed_password # TODO disable dev testing
 
 
 def verify_token(token: str):
