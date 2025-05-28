@@ -96,158 +96,158 @@ class User(Base):
         return query
 
 
-# Validators
+    # Validators
 
-@validates("username")
-def validate_username(self, key, v: str) -> str:
-    return data_validators.validate_username(v)
-
-
-@validates("email")
-def validate_email(self, key, v: str) -> str:
-    return data_validators.validate_email(v)
+    @validates("username")
+    def validate_username(self, key, v: str) -> str:
+        return data_validators.validate_username(v)
 
 
-@validates("phone_number")
-def validate_phone_number(self, key, v: str) -> str:
-    return data_validators.validate_phone_number(v)
+    @validates("email")
+    def validate_email(self, key, v: str) -> str:
+        return data_validators.validate_email(v)
 
 
-# Relationships properties
-
-@property
-def cards_count(self) -> int:
-    return len(self.cards)
+    @validates("phone_number")
+    def validate_phone_number(self, key, v: str) -> str:
+        return data_validators.validate_phone_number(v)
 
 
-@property
-def contacts_count(self) -> int:
-    return len(self.contacts)
+    # Relationships properties
+
+    @property
+    def cards_count(self) -> int:
+        return len(self.cards)
 
 
-@property
-def categories_count(self) -> int:
-    return len(self.categories)
+    @property
+    def contacts_count(self) -> int:
+        return len(self.contacts)
 
 
-@property
-def deposits_count(self) -> int:
-    return len(self.deposits)
+    @property
+    def categories_count(self) -> int:
+        return len(self.categories)
 
 
-@property
-def withdrawals_count(self) -> int:
-    return len(self.withdrawals)
+    @property
+    def deposits_count(self) -> int:
+        return len(self.deposits)
 
 
-# Deposits and withdrawals properties
-
-@property
-def is_admin(self) -> bool:
-    return self.admin
+    @property
+    def withdrawals_count(self) -> int:
+        return len(self.withdrawals)
 
 
-@property
-def completed_deposits(self) -> List[Deposit]:
-    return [deposit for deposit in self.deposits
-            if deposit.status == DepositStatus.COMPLETED]
+    # Deposits and withdrawals properties
+
+    @property
+    def is_admin(self) -> bool:
+        return self.admin
 
 
-@property
-def completed_deposits_count(self) -> int:
-    return len(self.completed_deposits)
+    @property
+    def completed_deposits(self) -> List[Deposit]:
+        return [deposit for deposit in self.deposits
+                if deposit.status == DepositStatus.COMPLETED]
 
 
-@property
-def completed_withdrawals(self) -> List[Deposit]:
-    return [withdrawal for withdrawal in self.withdrawals if withdrawal.is_completed]
+    @property
+    def completed_deposits_count(self) -> int:
+        return len(self.completed_deposits)
 
 
-@property
-def total_deposit_amount(self) -> float:
-    return sum([deposit.amount for deposit in self.completed_deposits])
+    @property
+    def completed_withdrawals(self) -> List[Deposit]:
+        return [withdrawal for withdrawal in self.withdrawals if withdrawal.is_completed]
 
 
-@property
-def total_withdrawal_amount(self) -> float:
-    return sum([withdrawal.amount for withdrawal in self.completed_withdrawals])
+    @property
+    def total_deposit_amount(self) -> float:
+        return sum([deposit.amount for deposit in self.completed_deposits])
 
 
-@property
-def pending_deposits(self) -> List[Deposit]:
-    return [deposit for deposit in self.deposits
-            if deposit.status == DepositStatus.PENDING]
+    @property
+    def total_withdrawal_amount(self) -> float:
+        return sum([withdrawal.amount for withdrawal in self.completed_withdrawals])
 
 
-@property
-def pending_deposits_count(self) -> int:
-    return len(self.pending_deposits)
+    @property
+    def pending_deposits(self) -> List[Deposit]:
+        return [deposit for deposit in self.deposits
+                if deposit.status == DepositStatus.PENDING]
 
 
-@property
-def pending_withdrawals(self) -> List[Withdrawal]:
-    return [withdrawal for withdrawal in self.withdrawals if withdrawal.status == WithdrawalStatus.PENDING]
+    @property
+    def pending_deposits_count(self) -> int:
+        return len(self.pending_deposits)
 
 
-@property
-def total_pending_withdrawal_amount(self) -> float:
-    return sum([withdrawal.amount for withdrawal in self.pending_withdrawals])
+    @property
+    def pending_withdrawals(self) -> List[Withdrawal]:
+        return [withdrawal for withdrawal in self.withdrawals if withdrawal.status == WithdrawalStatus.PENDING]
 
 
-@property
-def total_pending_deposit_amount(self) -> float:
-    return sum([deposit.amount for deposit in self.pending_deposits])
+    @property
+    def total_pending_withdrawal_amount(self) -> float:
+        return sum([withdrawal.amount for withdrawal in self.pending_withdrawals])
 
 
-@property
-def failed_deposits(self) -> List[Deposit]:
-    return [deposit for deposit in self.deposits
-            if deposit.status in (DepositStatus.FAILED, DepositStatus.CANCELLED)]
+    @property
+    def total_pending_deposit_amount(self) -> float:
+        return sum([deposit.amount for deposit in self.pending_deposits])
 
 
-@property
-def failed_deposits_count(self) -> int:
-    return len(self.failed_deposits)
+    @property
+    def failed_deposits(self) -> List[Deposit]:
+        return [deposit for deposit in self.deposits
+                if deposit.status in (DepositStatus.FAILED, DepositStatus.CANCELLED)]
 
 
-@property
-def total_failed_deposits_amount(self) -> float:
-    return sum([deposit.amount for deposit in self.failed_deposits])
+    @property
+    def failed_deposits_count(self) -> int:
+        return len(self.failed_deposits)
 
 
-@property
-def failed_withdrawals(self) -> List[Withdrawal]:
-    return [withdrawal for withdrawal in self.withdrawals if withdrawal.status == WithdrawalStatus.FAILED]
+    @property
+    def total_failed_deposits_amount(self) -> float:
+        return sum([deposit.amount for deposit in self.failed_deposits])
 
 
-@property
-def total_failed_withdrawal_amount(self) -> float:
-    return sum([withdrawal.amount for withdrawal in self.failed_withdrawals])
+    @property
+    def failed_withdrawals(self) -> List[Withdrawal]:
+        return [withdrawal for withdrawal in self.withdrawals if withdrawal.status == WithdrawalStatus.FAILED]
 
 
-@property
-def active_cards(self) -> List[Card]:
-    return [card for card in self.cards if card.is_active]
+    @property
+    def total_failed_withdrawal_amount(self) -> float:
+        return sum([withdrawal.amount for withdrawal in self.failed_withdrawals])
 
 
-@property
-def deactivated_cards(self) -> List[Card]:
-    return [card for card in self.cards if not card.is_active]
+    @property
+    def active_cards(self) -> List[Card]:
+        return [card for card in self.cards if card.is_active]
 
 
-@property
-def refunds(self) -> list["Withdrawal"]:
-    """Get all refunds for this withdrawal"""
-    return [withdrawal for withdrawal in self.withdrawals
-            if withdrawal.withdrawal_type == WithdrawalType.REFUND]
+    @property
+    def deactivated_cards(self) -> List[Card]:
+        return [card for card in self.cards if not card.is_active]
 
 
-@property
-def payouts(self) -> list["Withdrawal"]:
-    """Get all payouts for this withdrawal"""
-    return [withdrawal for withdrawal in self.withdrawals
-            if withdrawal.withdrawal_type == WithdrawalType.PAYOUT]
+    @property
+    def refunds(self) -> list["Withdrawal"]:
+        """Get all refunds for this withdrawal"""
+        return [withdrawal for withdrawal in self.withdrawals
+                if withdrawal.withdrawal_type == WithdrawalType.REFUND]
 
 
-def __repr__(self):
-    return f"User(#{self.id}, {self.username}, {self.email})"
+    @property
+    def payouts(self) -> list["Withdrawal"]:
+        """Get all payouts for this withdrawal"""
+        return [withdrawal for withdrawal in self.withdrawals
+                if withdrawal.withdrawal_type == WithdrawalType.PAYOUT]
+
+
+    def __repr__(self):
+        return f"User(#{self.id}, {self.username}, {self.email})"

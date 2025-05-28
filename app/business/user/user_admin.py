@@ -3,8 +3,8 @@ from typing import Dict
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
-from app.business import UVal, NService, NType
+from app.business.user import UVal
+from app.business.utils import NService, NType
 from app.models import User, UStatus, Transaction
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse

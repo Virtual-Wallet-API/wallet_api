@@ -64,17 +64,16 @@ class UserCreate(UserBase):
 
 class UserUpdate(BaseModel):
     phone_number: Optional[str] = None
-    password: Optional[str] = None
     email: Optional[str] = None
     avatar: Optional[str] = None
-
-    @field_validator('password')
-    def validate_password(cls, v: str) -> str:
-        return data_validators.validate_password(v)
 
     @field_validator('email')
     def validate_email(cls, v: str) -> str:
         return data_validators.validate_email(v)
+
+    @field_validator('phone_number')
+    def validate_phone_number(cls, v: str) -> str:
+        return data_validators.validate_phone_number(v)
 
 
 class UserPublicResponse(UserPublicBase):
