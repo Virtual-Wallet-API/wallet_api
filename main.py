@@ -1,12 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from app.infrestructure.database import Base, engine
-from app.api.v1.users import router as users_router
-from app.api.v1.cards import router as cards_router
-from app.api.v1.deposits import router as deposits_router
-from app.api.v1.withdrawals import router as withdrawals_router
-from app.api.v1.transactions import router as transactions_router
-from app.api.v1.admin import router as admin_router
+from app import *
 import frontend.frontend
 
 print("Create all...")

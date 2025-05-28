@@ -1,1 +1,2 @@
-from app import dependencies
+from . import dependencies
+from .api import *
