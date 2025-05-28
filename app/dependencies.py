@@ -17,55 +17,56 @@ def get_db():
         db.close()
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def getValidUser(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     """
-        Return an instance of User - the currently logged-in user.
+        Returns an instance of User if the token is valid and the account is not blocked or deactivated.
     """
     username = verify_token(token)
     user = db.query(User).filter(User.username == username).first()
-
     if not user:
         raise invalid_credentials
-
     if user.status == "blocked":
         raise blocked_user
+    if user.status == "deactivated":
+        raise deactivated_user
+    return user
 
+
+def get_active_user(user: User = Depends(getValidUser)):
+    """
+        Return an instance of User - the currently logged-in user if their account status is active
+        and do not require forced password reset.
+    """
+    if user.forced_password_reset:
+        raise forced_password_reset
+    if user.status == "pending":
+        raise pending_user
+
+    return user
+
+
+def get_pending_user(user: User = Depends(getValidUser)):
+    """
+        Return an instance of User - the currently logged-in user
+        if the token is valid and the account is not blocked, deactivated or required to reset password.
+    """
     if user.forced_password_reset:
         raise forced_password_reset
 
     return user
 
 
-def get_current_user_at_password_reset(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def get_password_reset_user(user: User = Depends(getValidUser)):
     """
-        Return an instance of User - the currently logged-in user.
+        Return an instance of User - the currently logged-in user
+        if the token is valid and the account is not blocked or deactivated.
     """
-    username = verify_token(token)
-    user = db.query(User).filter(User.username == username).first()
-
-    if not user:
-        raise invalid_credentials
-
-    if user.status == "blocked":
-        raise blocked_user
-
     return user
 
 
-def get_current_active_user(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def get_current_admin(admin: User = Depends(get_active_user)):
     """
-        Return the User instance of the logged-in user if they are active.
-    """
-    if user.status == "pending":
-        raise pending_user
-    elif user.status == "deactivated":
-        raise deactivated_user
-    return user
-
-
-def get_current_admin(admin: User = Depends(get_current_user)):
-    """
-        Return the User instance of the logged-in user if they are an admin.
+        Return the User instance of the logged-in user if they are an admin and aren't expected to reset their password.
     """
     if not admin.admin:
         raise forbidden_access

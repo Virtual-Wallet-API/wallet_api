@@ -61,6 +61,11 @@ def verify_token(token: str):
         Verifies the validity of an authentication token.
     """
     try:
+        print(type(token))
+
+        if isinstance(token, str):
+            token = token.encode('utf-8')
+
         payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
 
         exp = payload.get("exp")
