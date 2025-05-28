@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from pydantic import BaseModel, field_validator, model_serializer
+from pydantic import BaseModel, field_validator
 
 from app.models.withdrawal import WithdrawalType, WithdrawalMethod, WithdrawalStatus
 from app.schemas import CardPublicResponse

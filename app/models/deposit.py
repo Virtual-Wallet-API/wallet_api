@@ -3,8 +3,8 @@ from enum import Enum
 
 from fastapi import HTTPException
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String, Text
-from sqlalchemy.types import Enum as CEnum
 from sqlalchemy.orm import relationship, validates
+from sqlalchemy.types import Enum as CEnum
 
 from app.infrestructure import Base
 
@@ -44,11 +44,14 @@ class Deposit(Base):
     amount_cents = Column(Integer, nullable=False)  # Amount in cents for precision
 
     # Deposit method and type
-    method = Column(CEnum(DepositMethod, name="deposit_method", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=DepositMethod.STRIPE)
-    deposit_type = Column(CEnum(DepositType,name="deposit_type", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=DepositType.CARD_PAYMENT)
+    method = Column(CEnum(DepositMethod, name="deposit_method", values_callable=lambda obj: [e.value for e in obj]),
+                    nullable=False, default=DepositMethod.STRIPE)
+    deposit_type = Column(CEnum(DepositType, name="deposit_type", values_callable=lambda obj: [e.value for e in obj]),
+                          nullable=False, default=DepositType.CARD_PAYMENT)
 
     # Status tracking
-    status = Column(CEnum(DepositStatus, name="deposit_status", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default="pending")
+    status = Column(CEnum(DepositStatus, name="deposit_status", values_callable=lambda obj: [e.value for e in obj]),
+                    nullable=False, default="pending")
 
     # Stripe integration fields
     stripe_payment_intent_id = Column(String(255), nullable=True, unique=True)  # Stripe payment intent ID

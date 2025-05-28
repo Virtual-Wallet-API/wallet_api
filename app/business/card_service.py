@@ -4,10 +4,10 @@ from typing import Optional, Dict
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.infrestructure.stripe_service import StripeService
-from app.models.card import Card
-from app.models import User, UStatus
 from app.business import UAuth
+from app.infrestructure.stripe_service import StripeService
+from app.models import User
+from app.models.card import Card
 from app.schemas.card import (
     CardUpdate, CardResponse, PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse,
     CardListResponse
