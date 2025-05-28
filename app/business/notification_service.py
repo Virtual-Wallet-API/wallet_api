@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict
-
 from app.models import User
+import httpx
 
 
 class NotificationType(str, Enum):
