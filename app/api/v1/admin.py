@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends
 from fastapi.params import Query
 from sqlalchemy.orm import Session
 
+from app.business import WithdrawalService
 from app.business.user.user_admin import AdminService
 from app.dependencies import get_db, get_current_admin
 from app.models import User
 from app.schemas import UserPublicResponse
 from app.schemas.admin import UpdateUserStatus, ListAllUsersResponse, ListAllUserTransactionsResponse, \
     AdminTransactionResponse
+from app.schemas.withdrawal import WithdrawalResponse, WithdrawalUpdate
 
 router = APIRouter(tags=["Admin"])
 
@@ -123,3 +125,12 @@ def deny_pending_transaction(transaction_id: int,
     :return: The updated transaction object.
     """
     return AdminService.deny_pending_transaction(db, transaction_id, admin)
+
+
+@router.put("/withdrawal", response_model=WithdrawalResponse)
+def update_withdrawal_status(withdrawal_id: int,
+                             update_data: WithdrawalUpdate,
+                             user: User = Depends(get_current_admin),
+                             db: Session = Depends(get_db)):
+    """Update withdrawal status and tracking information"""
+    return WithdrawalService.update_withdrawal_status(db, user, withdrawal_id, update_data)
