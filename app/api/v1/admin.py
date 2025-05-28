@@ -6,7 +6,8 @@ from app.business.user.user_admin import AdminService
 from app.dependencies import get_db, get_current_admin
 from app.models import User
 from app.schemas import UserPublicResponse
-from app.schemas.admin import UpdateUserStatus, ListAllUsersResponse, ListAllUserTransactionsResponse
+from app.schemas.admin import UpdateUserStatus, ListAllUsersResponse, ListAllUserTransactionsResponse, \
+    AdminTransactionResponse
 
 router = APIRouter(tags=["Admin"])
 
@@ -107,3 +108,18 @@ def get_user_transactions(user_id: int,
         "order_by": order_by
     }
     return AdminService.get_user_transactions(db, admin, search_data)
+
+
+@router.put("/transactions/{transaction_id}", response_model=AdminTransactionResponse,
+            description="Update the status of a transaction (approve pending transaction, block or unblock transaction, and deactivate/reactivate transaction).")
+def deny_pending_transaction(transaction_id: int,
+                             db: Session = Depends(get_db),
+                             admin: User = Depends(get_current_admin)):
+    """
+    Update the status of a transaction (approve pending transaction or unblock transaction), block (block transaction) or deactivate (deactivate transaction).
+    :param transaction_id: The ID of the transaction to be updated.
+    :param db: Database session dependency.
+    :param admin: Current authenticated administrator invoking the request.
+    :return: The updated transaction object.
+    """
+    return AdminService.deny_pending_transaction(db, transaction_id, admin)

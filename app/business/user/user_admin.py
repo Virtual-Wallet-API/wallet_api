@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.business import UVal, NService, NType
 from app.models import User, UStatus, Transaction
+from app.models.transaction import TransactionStatus
 from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse
+from frontend.routers.root import transactions
 
 
 class AdminService:
@@ -261,3 +263,18 @@ class AdminService:
             response["matching_records"] = len(transactions)
 
         return response
+
+    @classmethod
+    def deny_pending_transaction(cls, db: Session, transaction_id: int, admin: User):
+        transaction = db.query(Transaction).filter(Transaction.id == transaction_id).first()
+        if not transaction:
+            raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
+
+        if transaction.status == TransactionStatus.PENDING:
+            transaction.status = TransactionStatus.DENIED
+            db.commit()
+            db.refresh(transaction)
+            return transaction
+        else:
+            raise HTTPException(status_code=400,
+                                detail=f"Transaction cannot be denied, current status: {transaction.status}")
