@@ -13,8 +13,7 @@ router = APIRouter(tags=["Transactions"])
 def read_transactions(db: Session = Depends(get_db),
                       user: User = Depends(get_user_except_pending_fpr)):
     # TODO: Move to services
-    transactions = db.query(Transaction).filter(
-        or_(Transaction.sender_id == user.id, Transaction.receiver_id == user.id)).all()
+    transactions = user.get_transactions(db)
 
     transaction_history = {
         "transactions": transactions,

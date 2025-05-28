@@ -4,6 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 from app.models.transaction import TransactionStatus
+from app.schemas.user import ShortUserResponse
 
 
 class TransactionBase(BaseModel):
@@ -26,6 +27,18 @@ class TransactionCreate(BaseModel):
 class TransactionResponse(TransactionBase):
     id: int
     date: datetime
+    status: TransactionStatus
+
+    class Config:
+        from_attributes = True
+
+
+class CategoryTransactionResponse(BaseModel):
+    date: datetime
+    sender: ShortUserResponse
+    receiver: ShortUserResponse
+    amount: float
+    description: Optional[str] = None
     status: TransactionStatus
 
     class Config:

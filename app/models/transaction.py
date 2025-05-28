@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 
 from app.infrestructure import Base
+from app.schemas.user import ShortUserResponse
 
 
 class TransactionStatus(str, Enum):
@@ -49,3 +50,36 @@ class Transaction(Base):
             raise HTTPException(status_code=400,
                                 detail="Amount must be positive")
         return v
+
+
+    def is_income(self, user_id) -> bool:
+        return self.receiver_id == user_id
+
+    def is_expense(self, user_id) -> bool:
+        return self.sender_id == user_id
+
+
+    @property
+    def is_completed(self) -> bool:
+        return self.status == TransactionStatus.COMPLETED
+
+    @property
+    def is_failed(self) -> bool:
+        return self.status in [TransactionStatus.FAILED, TransactionStatus.CANCELLED, TransactionStatus.DENIED]
+
+    @property
+    def sender_info(self) -> ShortUserResponse:
+        return ShortUserResponse.model_validate(self.sender)
+
+    @property
+    def receiver_info(self) -> ShortUserResponse:
+        return ShortUserResponse.model_validate(self.receiver)
+
+    @property
+    def is_recurring(self) -> bool:
+        return self.recurring_transaction is not None
+
+    @property
+    def recurring_interval(self) -> int:
+        return self.recurring_transaction.interval if self.is_recurring else None
+
