@@ -3,11 +3,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from app.business.withdrawal_service import WithdrawalService
+from app.business import StripeWithdrawalService
+from app.business.payment.payment_withdrawal import WithdrawalService
 from app.dependencies import get_db, get_user_except_pending_fpr
 from app.models.user import User
 from app.schemas.withdrawal import (
-    WithdrawalCreate, WithdrawalUpdate, WithdrawalResponse,
+    WithdrawalCreate, WithdrawalResponse,
     WithdrawalHistoryResponse, WithdrawalStatsResponse,
     RefundCreate, RefundResponse
 )
@@ -32,7 +33,7 @@ async def create_refund(
         db: Session = Depends(get_db)
 ):
     """Create a refund back to the original payment method"""
-    return await WithdrawalService.create_refund(db, user, refund_request)
+    return await StripeWithdrawalService.create_refund(db, user, refund_request)
 
 
 @router.get("/", response_model=WithdrawalHistoryResponse)
@@ -64,17 +65,6 @@ def get_withdrawal(
 ):
     """Get a specific withdrawal by ID with full tracking details"""
     return WithdrawalService.get_withdrawal_by_id(db, user, withdrawal_id)
-
-
-@router.put("/{withdrawal_id}", response_model=WithdrawalResponse)
-def update_withdrawal_status(
-        withdrawal_id: int,
-        update_data: WithdrawalUpdate,
-        user: User = Depends(get_user_except_pending_fpr),
-        db: Session = Depends(get_db)
-):
-    """Update withdrawal status and tracking information"""
-    return WithdrawalService.update_withdrawal_status(db, user, withdrawal_id, update_data)
 
 
 @router.post("/{withdrawal_id}/cancel", response_model=WithdrawalResponse)
