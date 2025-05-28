@@ -351,7 +351,7 @@
             secure: false,
             maxAge: 86400 // Ensure persistence
         };
-        const config = { ...defaults, ...options };
+        const config = {...defaults, ...options};
         // Avoid double-encoding JWT
         let cookieString = `${encodeURIComponent(name)}=${value}`; // JWT is already URL-safe
         if (config.path) cookieString += `; Path=${config.path}`;
@@ -406,7 +406,7 @@
             $.ajax({
                 url: '/api/v1/users/token',
                 type: 'POST',
-                data: { username, password },
+                data: {username, password},
                 contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 dataType: 'json'
             })
