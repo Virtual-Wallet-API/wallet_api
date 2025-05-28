@@ -39,6 +39,9 @@ class Transaction(Base):
     recurring_transaction = relationship("RecurringTransaction", back_populates="transaction")
     currency = relationship("Currency", back_populates="transactions")
 
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_transactions")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_transactions")
+
     @validates("amount")
     def validate_amount(self, key, v: float):
         if v < 0:

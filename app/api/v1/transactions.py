@@ -31,6 +31,8 @@ def send_transaction(transaction_data: TransactionCreate,
                      db: Session = Depends(get_db),
                      user: User = Depends(get_user_except_pending_fpr)):
     # TODO: Move to services and implement proper balance check and change
+    if transaction_data.category_id == 0:
+        transaction_data.category_id = None
     transaction = Transaction(sender_id=user.id, **transaction_data.model_dump())
     print(transaction)
     db.add(transaction)

@@ -67,15 +67,21 @@ def update_user_status(update_data: UpdateUserStatus,
     """
     return AdminService.update_user_status(db, update_data, admin)
 
+
 @router.get("/transactions/{user_id}", response_model=ListAllUserTransactionsResponse,
             description="Get a list of all transactions for a specific user with pagination and sorting options.")
 def get_user_transactions(user_id: int,
                           db: Session = Depends(get_db),
                           admin: User = Depends(get_current_admin),
-                          search_by: str = Query(default=None, description="Search by period, receiver, sender, direction.", alias="sb"),
+                          search_by: str = Query(default=None,
+                                                 description="Search by period, receiver, sender, direction.",
+                                                 alias="sb"),
                           search_query: str = Query(default=None, description="Search query", alias="q"),
                           limit: int = Query(default=30, description="Limit the number of results", alias="l"),
-                          page: int = Query(default=1, description="Page number/results offset", alias="p")):
+                          page: int = Query(default=1, description="Page number/results offset", alias="p"),
+                          order_by: str = Query(default="date_dec",
+                                                description="Sort results by date_desc, date_asc, amount_desc, amount_desc",
+                                                alias="ob")):
     """
     Get a list of all transactions for a specific user with pagination and sorting options.
     :param user_id: The ID of the user whose transactions are being queried.
@@ -87,6 +93,8 @@ def get_user_transactions(user_id: int,
                       direction search includes 'outgoing' and 'incoming' transactions.
     :param limit: The maximum number of transactions to retrieve per page.
     :param page: The page number to retrieve results from, for paginated responses.
+    :param order_by: The field to sort the results by. Valid options include
+                      date_desc, date_asc, amount_desc, amount_asc.
     :return: A response containing the list of transactions matching the filters as
              well as pagination details.
     """
@@ -95,6 +103,7 @@ def get_user_transactions(user_id: int,
         "search_by": search_by,
         "search_query": search_query,
         "limit": limit,
-        "page": page
+        "page": page,
+        "order_by": order_by
     }
     return AdminService.get_user_transactions(db, admin, search_data)

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.business import UVal, NService, NType
 from app.models import User, UStatus, Transaction
-from app.schemas.admin import UpdateUserStatus, AdminUserResponse
+from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse
 
 
 class AdminService:
@@ -182,6 +182,10 @@ class AdminService:
         if not user:
             raise HTTPException(status_code=404, detail=f"User with ID {search_data.get("user_id")} not found")
 
+        # Sort setup
+        sort_by = search_data.get("order_by", "date_desc")
+        print(sort_by)
+
         # Pagination setup
         page = search_data.get("page", 0)
         page = page - 1 if page > 0 else 0
@@ -191,9 +195,12 @@ class AdminService:
 
         # Search by setup
         search_by = search_data.get("search_by")
+
+        query_transactions = user.get_transactions(db, order_by=sort_by, offset=offset, limit=limit)
+
         if not search_by:
             # transactions = db.query(User).offset(offset).limit(limit).all()
-            transactions = user.transactions.offset(offset).limit(limit).all()
+            transactions = query_transactions.all()
         else:
             query = search_data.get("search_query", "")
             transactions = []
@@ -210,25 +217,17 @@ class AdminService:
                     except ValueError:
                         raise HTTPException(status_code=400, detail="Invalid date format provided")
 
-                    transactions = (user.transactions.filter(date_from <= Transaction.date <= date_to)
-                                    .offset(offset).limit(limit).all())
+                    # transactions = (user.transactions.filter(date_from <= Transaction.date <= date_to)
+                    #                 .offset(offset).limit(limit).order_by(sort_filter).all())
+
+                    transactions = user.get_transactions(db, date_from, date_to, sort_by, offset, limit).all()
 
                 case "sender":
-                    if not query.isnumeric():
-                        raise HTTPException(status_code=400, detail="Invalid sender ID provided")
-
-                    sender = UVal.find_user_with_or_raise_exception("id", int(query), db)
-
-                    transactions = (user.transactions.filter(Transaction.sender_id == sender.id)
+                    transactions = (query_transactions.filter(Transaction.sender_id == user.id)
                                     .offset(offset).limit(limit).all())
 
                 case "receiver":
-                    if not query.isnumeric():
-                        raise HTTPException(status_code=400, detail="Invalid receiver ID provided")
-
-                    receiver = UVal.find_user_with_or_raise_exception("id", int(query), db)
-
-                    transactions = (user.transactions.filter(Transaction.receiver_id == receiver.id)
+                    transactions = (query_transactions.filter(Transaction.receiver_id == user.id)
                                     .offset(offset).limit(limit).all())
 
                 case "direction":
@@ -237,18 +236,18 @@ class AdminService:
                                             detail="Invalid direction provided, options are outgoing and incoming")
 
                     if query == "incoming":
-                        transactions = (user.transactions.filter(Transaction.receiver_id == user.id)
+                        transactions = (query_transactions.filter(Transaction.receiver_id == user.id)
                                         .offset(offset).limit(limit).all())
                     else:
-                        transactions = (user.transactions.filter(Transaction.sender_id == user.id)
+                        transactions = (query_transactions.filter(Transaction.sender_id == user.id)
                                         .offset(offset).limit(limit).all())
 
                 case _:
                     raise HTTPException(status_code=400, detail=f"Invalid search_query parameter provided: {search_by}")
 
         response = {
-            "transactions": transactions,
-            "limit": limit
+            "transactions": [AdminTransactionResponse.model_validate(t) for t in transactions],
+            "results_per_page": limit
         }
 
         if len(transactions) == 0:
@@ -257,7 +256,8 @@ class AdminService:
             response["matching_records"] = 0
         else:
             response["page"] = page + 1
-            response["pages_with_matches"] = len(transactions) // limit + 1 if len(transactions) % limit > 0 else len(transactions) // limit
+            response["pages_with_matches"] = len(transactions) // limit + 1 if len(transactions) % limit > 0 else len(
+                transactions) // limit
             response["matching_records"] = len(transactions)
 
         return response
