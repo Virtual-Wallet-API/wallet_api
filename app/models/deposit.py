@@ -36,6 +36,7 @@ class Deposit(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     card_id = Column(Integer, ForeignKey("cards.id"), nullable=True)
+    payment_method_last_four = Column(String(4), nullable=False)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
     # Amount and financial details
