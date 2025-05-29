@@ -453,7 +453,7 @@
 </div>
 <div class="mb-8 transactions-list"
      style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
-    <div class="transaction-list list-hidden" id="transactions-list">
+    <div class="transaction-list" id="transactions-list">
         <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i>
         </div>
         <div class="initial-transactions" id="initial-transactions-list">
@@ -474,7 +474,7 @@
 </div>
 <div class="mb-8 transactions-list"
      style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
-    <div class="transaction-list deposit-list list-hidden" id="deposits-list">
+    <div class="transaction-list deposit-list" id="deposits-list">
         <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
         <div class="initial-transactions" id="initial-deposits">
             <!-- Deposit items will be inserted here -->
@@ -719,8 +719,8 @@
             const transactionsList = document.getElementById('transactions-list');
             const transactionsArrow = transactionsToggle.querySelector('i');
 
-            // Initialize as hidden
-            transactionsList.classList.add('list-hidden');
+            // Initialize as shown
+            transactionsList.classList.remove('list-hidden');
 
             transactionsToggle.addEventListener('click', () => {
                 const isHidden = transactionsList.classList.contains('list-hidden');
@@ -762,8 +762,8 @@
             const depositsList = document.getElementById('deposits-list');
             const depositsArrow = depositsToggle.querySelector('i');
 
-            // Initialize as hidden
-            depositsList.classList.add('list-hidden');
+            // Initialize as shown
+            depositsList.classList.remove('list-hidden');
 
             depositsToggle.addEventListener('click', () => {
                 const isHidden = depositsList.classList.contains('list-hidden');

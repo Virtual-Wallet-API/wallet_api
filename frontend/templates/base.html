@@ -145,15 +145,20 @@
             transition: background 0.3s ease;
             z-index: 1000;
             box-shadow: /*inset -4px 0 8px rgba(0, 0, 0, 0.3),*/ 4px 0 8px rgba(0, 0, 0, 0.2);
+            /*padding-left: 1.3rem;*/
+            /*padding-right: 1.3rem;*/
         }
 
         .sidebar .nav-link {
+            min-width: 95% !important;
             font-size: 1.5rem;
             padding: 1.5rem;
             color: white;
             position: relative;
             transition: background-color 0.3s ease;
-            margin-bottom: 0.3rem;
+            margin-inline: auto;
+            margin-bottom: 0.45rem;
+            margin-left: 0.8rem;
         }
 
         .sidebar .nav-link.active {
@@ -169,7 +174,7 @@
         }
 
         .sidebar .nav-link:hover .menu-text {
-            margin-left: 5px;
+            margin-left: 15px;
         }
 
         .sidebar .theme-toggle {
@@ -582,12 +587,12 @@
                     <span class="menu-text">Account Overview</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
-                <a class="nav-link{% if page == 'deposits' %} deposits{% endif %}" href="/fe/deposits">
+                <a class="nav-link{% if page == 'deposits' %} active{% endif %}" href="/fe/deposits">
                     <i class="bi bi-cash"></i>
                     <span class="menu-text">Deposit Cash</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
                 </a>
-                <a class="nav-link{% if page == 'withdrawals' %} withdrawals{% endif %}" href="/fe/withdrawals">
+                <a class="nav-link{% if page == 'withdrawals' %} active{% endif %}" href="/fe/withdrawals">
                     <i class="bi bi-cash"></i>
                     <span class="menu-text">Withdraw Cash</span>
                     <span class="menu-icon"><i class="bi bi-arrow-right"></i></span>
