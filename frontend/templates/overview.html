@@ -4,31 +4,32 @@
 <style type="text/css">
     /* Override base template's display: none for additional-transactions */
     .additional-transactions {
-        display: block !important; /* Override base template */
+        display: block !important;
         max-height: 0;
         opacity: 0;
         overflow: hidden;
-        transition: max-height 1s ease-in-out, opacity 0.7s ease-in-out;
+        transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
     }
 
     .additional-transactions.show {
-        max-height: 2000px; /* Large enough for content */
+        max-height: 2500px;
         opacity: 1;
     }
 
+    /* Loading Container */
     .loading-container {
         font-size: 2.5rem;
         text-align: center;
         width: 100% !important;
+        max-width: 900px !important;
         display: flex;
         color: var(--accent-color);
         justify-content: center;
         align-items: center;
-        margin: 1.5rem;
+        margin: 1.5rem auto;
         max-height: 100px;
         opacity: 1;
-        overflow: hidden;
-        transition: max-height 1s ease-in-out, opacity 0.7s ease-in-out;
+        transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
     }
 
     .loading-container.hidden {
@@ -41,8 +42,6 @@
     .bi-arrow-repeat {
         display: inline-block;
         animation: spin 1.5s linear infinite;
-        -webkit-animation: spin 1.5s linear infinite;
-        -moz-animation: spin 1.5s linear infinite;
     }
 
     @keyframes spin {
@@ -51,24 +50,6 @@
         }
         100% {
             transform: rotate(360deg);
-        }
-    }
-
-    @-webkit-keyframes spin {
-        0% {
-            -webkit-transform: rotate(0deg);
-        }
-        100% {
-            -webkit-transform: rotate(360deg);
-        }
-    }
-
-    @-moz-keyframes spin {
-        0% {
-            -moz-transform: rotate(0deg);
-        }
-        100% {
-            -moz-transform: rotate(360deg);
         }
     }
 
@@ -150,27 +131,46 @@
 
     /* Transaction List */
     .transaction-list {
-        margin-top: 1rem;
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
+        min-width: 100% !important;
+        max-width: 900px;
+        margin-left: 0.6rem;
+        padding-left: 1.7rem;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        max-height: 2500px;
+        opacity: 1;
+        transform: translateY(0);
+        display: block; /* Remove flex to prevent shrinking */
+    }
+
+    .transactions-list .transaction-item:last-child {
+        margin-bottom: 0.6rem;
+    }
+
+    .transactions-list .transaction-item:first-child {
+        margin-top: 0.6rem;
+    }
+
+    .transaction-list.list-hidden {
+        max-height: 0 !important;
+        opacity: 0;
+        transform: translateY(20px);
     }
 
     .transaction-list.loaded {
-        margin-left: 0.6rem;
-        padding-left: 1.7rem;
-        /*border-left: 1px solid var(--accent-color);*/
+        min-width: 99% !important;
+        border-left: 1px solid var(--accent-color);
         position: relative;
     }
 
     .transaction-list.loaded::before {
-        background-color: var(--accent-color);
-        margin-left: 0.65rem;
         content: '';
         position: absolute;
         top: 0;
         bottom: 0;
         left: -6px;
         width: 1px;
+        background-color: var(--accent-color);
         box-shadow: -3px 0 8px 1px var(--accent-color);
         z-index: -1;
     }
@@ -179,17 +179,15 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.5rem;
+        padding: 1.5rem; /* Equal padding on all sides */
         border: 1px solid var(--bs-border-color);
         border-radius: 12px;
-        margin-bottom: 1.2rem;
-        transition: transform 0.5s ease, box-shadow 0.5s ease;
+        margin: 0 0 1rem 0; /* Margin only on bottom */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
-    }
-
-    .transaction-item:last-child {
-        margin-bottom: 0 !important;
+        width: 99% !important;
+        box-sizing: border-box;
     }
 
     [data-bs-theme="light"] .transaction-item {
@@ -202,51 +200,45 @@
 
     .transaction-item:hover {
         transform: translateY(-2px);
-        /*box-shadow: 0 4px 8px rgba(94, 65, 149, 0.4), inset 0 1px 3px rgba(94, 65, 149, 0.3);*/
         box-shadow: 0 3px 8px -2px var(--accent-color);
     }
 
     .transaction-item .date,
+    .transaction-item .status,
     .transaction-item .description {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         color: var(--text-color);
     }
 
     .transaction-item .amount {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 500;
-        min-width: 7rem !important;
-        width: 7rem;
-        align-content: flex-end;
+        color: #dc3545;
+        min-width: 7rem;
         text-align: right;
     }
 
     .transaction-item .amount.positive {
-        color: #28a745;
-    }
-
-    .transaction-item .amount.negative {
-        color: #dc3545 !important;
+        color: #198754; /* Green for positive amounts */
     }
 
     .transaction-item .info-icon {
         font-size: 1.5rem;
         color: var(--accent-color);
-        transition: color 0.5s ease;
+        transition: color 0.3s ease;
     }
 
     .transaction-item .info-icon:hover {
         color: var(--accent-color-hover);
     }
 
+    /* View More Button */
     .transaction-list .view-more-button {
         display: block;
-        margin-top: 1.5rem;
-        margin-bottom: 0;
+        margin: 1.5rem auto;
         text-align: center;
     }
 
-    /* View More Button */
     .btn-outline-primary {
         border-color: var(--accent-color);
         color: var(--accent-color);
@@ -269,6 +261,51 @@
         border-color: var(--accent-color-hover);
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.3);
+    }
+
+    /* Header Toggle */
+    .header-toggle {
+        color: var(--accent-color) !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        width: 100%;
+        max-width: 900px;
+        padding: 1rem 1.5rem;
+        background: var(--balance-bg);
+        border-radius: 12px;
+        font-family: 'Poppins', sans-serif;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.5);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .header-toggle:nth-child(even) {
+        margin-top: 2.5rem;
+    }
+
+    .header-toggle:hover {
+        background-color: rgba(var(--accent-color-rgb), 0.05);
+        box-shadow: 0 3px 6px rgba(var(--accent-color-rgb), 0.15);
+    }
+
+    .header-toggle h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--accent-color);
+        line-height: 1.5rem;
+    }
+
+    .header-toggle i {
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        transition: transform 0.3s ease;
+    }
+
+    .header-toggle i.up {
+        transform: rotate(180deg);
     }
 
     /* Modal */
@@ -315,62 +352,6 @@
         font-size: 1.2rem;
     }
 
-    /* Header Toggle Styles */
-    .header-toggle {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        border-radius: 8px 8px 8px 8px;
-        margin-top: 3rem !important;
-        /*border-bottom: 1px solid var(--accent-color);*/
-        box-shadow: 0 1px 3px 1px var(--accent-color);
-        padding: 1.2rem 1.5rem !important;
-        color: var(--accent-color);
-    }
-
-    .header-toggle:first-child {
-        margin-top: 0;
-    }
-
-    .header-toggle i {
-        color: var(--accent-color);
-        transition: all 0.3s ease;
-    }
-
-    .header-toggle:hover i {
-        font-weight: bold;
-        text-shadow: 0 0 5px var(--accent-color);
-    }
-
-    .header-toggle h3 {
-        margin: 0;
-    }
-
-    .header-toggle i {
-        font-size: 1.5rem;
-        transition: transform 0.3s ease;
-    }
-
-    .header-toggle i.up {
-        transform: rotate(180deg);
-    }
-
-    /* List Toggle Styles */
-    #transactions-list,
-    #deposits-list {
-        transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
-        max-height: 2000px;
-        opacity: 1;
-    }
-
-    #transactions-list.list-hidden,
-    #deposits-list.list-hidden {
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-    }
-
     /* Responsive Adjustments */
     @media (max-width: 768px) {
         .balance-box {
@@ -401,7 +382,7 @@
         .transaction-item .date,
         .transaction-item .description,
         .transaction-item .amount {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
 
         .transaction-item .info-icon {
@@ -419,6 +400,19 @@
 
         .modal-body p {
             font-size: 1rem;
+        }
+
+        .header-toggle h3 {
+            font-size: 1.3rem;
+        }
+
+        .header-toggle i {
+            font-size: 1.3rem;
+        }
+
+        .transaction-list {
+            margin-left: 0;
+            padding-left: 1rem;
         }
     }
 </style>
@@ -453,12 +447,13 @@
 <hr style="margin: 2rem 0; opacity: 0;"/>
 
 <!-- Recent Transactions -->
-<div class="mb-4">
-    <div class="header-toggle" id="transactions-toggle">
-        <h3>Recent Transactions</h3>
-        <i class="bi bi-chevron-down"></i>
-    </div>
-    <div class="transaction-list" id="transactions-list">
+<div class="header-toggle" id="transactions-toggle" style="min-width: 100% !important;" tabindex="0">
+    <h3>Recent Transactions</h3>
+    <i class="bi bi-chevron-down"></i>
+</div>
+<div class="mb-8 transactions-list"
+     style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
+    <div class="transaction-list list-hidden" id="transactions-list">
         <div class="container loading-container" id="transactions-loading-alert"><i class="bi bi-arrow-repeat"></i>
         </div>
         <div class="initial-transactions" id="initial-transactions-list">
@@ -468,18 +463,18 @@
             <!-- Additional transaction items will be inserted here -->
         </div>
         <a class="btn btn-outline-primary view-more-button" href="#" id="view-transactions-btn" style="display: none;">View
-            More
-            Transactions</a>
+            More Transactions</a>
     </div>
 </div>
 
 <!-- Recent Deposits -->
-<div class="mb-4">
-    <div class="header-toggle" id="deposits-toggle">
-        <h3>Recent Deposits</h3>
-        <i class="bi bi-chevron-down"></i>
-    </div>
-    <div class="transaction-list deposit-list" id="deposits-list">
+<div class="header-toggle" id="deposits-toggle" style="min-width: 100% !important;" tabindex="0">
+    <h3>Recent Deposits</h3>
+    <i class="bi bi-chevron-down"></i>
+</div>
+<div class="mb-8 transactions-list"
+     style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
+    <div class="transaction-list deposit-list list-hidden" id="deposits-list">
         <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
         <div class="initial-transactions" id="initial-deposits">
             <!-- Deposit items will be inserted here -->
@@ -497,7 +492,6 @@
 {% endblock %}
 
 {% block modals %}
-<!-- Transaction Modal -->
 <div aria-hidden="true" aria-labelledby="transactionModalLabel" class="modal fade" id="transactionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -572,13 +566,9 @@
             const data = await response.json();
             const transactions = data.transactions;
 
-            // Sort by date descending
             transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            // Take latest 12
             const latestTransactions = transactions.slice(0, 12);
 
-            // Generate transaction items
             const transactionItems = latestTransactions.map(transaction => {
                 const date = new Date(transaction.date).toISOString().split('T')[0];
                 let amount_str, amount_float, amount_class;
@@ -591,23 +581,20 @@
                     amount_float = transaction.amount;
                     amount_class = 'positive';
                 }
-                console.log(`Transaction ${transaction.id} (${amount_str}, ${amount_float}, ${amount_class})`);
                 const description = transaction.status;
                 return `
                     <div class="transaction-item" data-transaction-id="${transaction.id}" data-date="${date}" data-description="${description}" data-amount="${amount_float}">
-                      <span class="date">${date}</span>
-                      <span class="description">${description}</span>
-                      <span class="amount ${amount_class}">${amount_str}</span>
-                      <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                        <span class="date">${date}</span>
+                        <span class="description">${description}</span>
+                        <span class="amount ${amount_class}">${amount_str}</span>
+                        <span class="info-icon"><i class="bi bi-info-circle"></i></span>
                     </div>`;
             });
 
-            // Clear containers
             const initialList = document.getElementById('initial-transactions-list');
             const additionalList = document.getElementById('additional-transactions-list');
             const loadingAlert = document.getElementById('transactions-loading-alert');
             const listTransactions = document.getElementById('transactions-list');
-            console.log(listTransactions, listTransactions.classList);
             additionalList.innerHTML = '';
             loadingAlert.classList.add('hidden');
             listTransactions.classList.add('loaded');
@@ -622,7 +609,7 @@
                 const viewBtn = document.getElementById('view-transactions-btn');
                 viewBtn.textContent = 'View More';
                 viewBtn.style.display = 'block';
-                viewBtn.removeEventListener('click', toggleTransactions); // Prevent duplicate listeners
+                viewBtn.removeEventListener('click', toggleTransactions);
                 viewBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     toggleTransactions();
@@ -654,13 +641,9 @@
             const data = await response.json();
             const deposits = data.deposits;
 
-            // Sort by created_at descending
             deposits.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-            // Take latest 12
             const latestDeposits = deposits.slice(0, 12);
 
-            // Generate deposit items
             const depositItems = latestDeposits.map(deposit => {
                 const date = new Date(deposit.created_at).toISOString().split('T')[0];
                 const amount = `$${deposit.amount.toFixed(2)}`;
@@ -668,14 +651,13 @@
                 const description = `Deposit via ${deposit.method}`;
                 return `
                     <div class="transaction-item" data-deposit-id="${deposit.id}" data-date="${date}" data-description="${description}" data-amount="${amount}">
-                      <span class="date">${date}</span>
-                      <span class="status">${status}</span>
-                      <span class="amount">${amount}</span>
-                      <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                        <span class="date">${date}</span>
+                        <span class="status">${status}</span>
+                        <span class="amount">${amount}</span>
+                        <span class="info-icon"><i class="bi bi-info-circle"></i></span>
                     </div>`;
             });
 
-            // Clear containers
             const initialList = document.getElementById('initial-deposits');
             const additionalList = document.getElementById('additional-deposits');
             const loadingAlert = document.getElementById('deposits-loading-alert');
@@ -694,7 +676,7 @@
                 const viewBtn = document.getElementById('view-deposits-btn');
                 viewBtn.textContent = 'View More Deposits';
                 viewBtn.style.display = 'block';
-                viewBtn.removeEventListener('click', toggleDeposits); // Prevent duplicate listeners
+                viewBtn.removeEventListener('click', toggleDeposits);
                 viewBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     toggleDeposits();
@@ -711,40 +693,132 @@
     }
 
     document.addEventListener("DOMContentLoaded", async function () {
-        // Update balance
-        const balanceAmount = document.getElementById('balance-amount');
-        if (userData.balance) {
-            balanceAmount.innerHTML = `$ ${userData.balance}`;
-        } else {
-            await refreshUserData();
-            balanceAmount.innerHTML = `$ ${userData.balance}`;
+        try {
+            // Update balance
+            const balanceAmount = document.getElementById('balance-amount');
+            if (userData.balance) {
+                balanceAmount.innerHTML = `$ ${userData.balance}`;
+            } else {
+                await refreshUserData();
+                balanceAmount.innerHTML = `$ ${userData.balance}`;
+            }
+
+            // Fetch and populate transactions and deposits
+            if (userData.id) {
+                await Promise.all([fetchTransactions(), fetchDeposits()]);
+            } else {
+                await refreshUserData();
+                await Promise.all([fetchTransactions(), fetchDeposits()]);
+            }
+
+            // Dispatch pageContentLoaded event
+            document.dispatchEvent(new CustomEvent('pageContentLoaded'));
+
+            // Toggle functionality for transactions
+            const transactionsToggle = document.getElementById('transactions-toggle');
+            const transactionsList = document.getElementById('transactions-list');
+            const transactionsArrow = transactionsToggle.querySelector('i');
+
+            // Initialize as hidden
+            transactionsList.classList.add('list-hidden');
+
+            transactionsToggle.addEventListener('click', () => {
+                const isHidden = transactionsList.classList.contains('list-hidden');
+                transactionsList.classList.toggle('list-hidden');
+                transactionsArrow.classList.toggle('up');
+
+                if (isHidden) {
+                    // Expand list
+                    transactionsList.style.maxHeight = transactionsList.scrollHeight + 'px';
+                    transactionsList.style.opacity = '1';
+                    transactionsList.style.transform = 'translateY(0)';
+                    // Reset max-height to allow dynamic content
+                    setTimeout(() => {
+                        transactionsList.style.maxHeight = '2500px';
+                    }, 500); // Match CSS transition duration
+                } else {
+                    // Collapse list
+                    transactionsList.style.maxHeight = transactionsList.scrollHeight + 'px';
+                    transactionsList.offsetHeight; // Trigger reflow
+                    transactionsList.style.maxHeight = '0';
+                    transactionsList.style.opacity = '0';
+                    transactionsList.style.transform = 'translateY(20px)';
+                }
+            });
+
+            // MutationObserver for transactions list
+            const transactionsObserver = new MutationObserver(() => {
+                if (!transactionsList.classList.contains('list-hidden')) {
+                    transactionsList.style.maxHeight = transactionsList.scrollHeight + 'px';
+                    setTimeout(() => {
+                        transactionsList.style.maxHeight = '2500px';
+                    }, 500);
+                }
+            });
+            transactionsObserver.observe(transactionsList, {childList: true, subtree: true});
+
+            // Toggle functionality for deposits
+            const depositsToggle = document.getElementById('deposits-toggle');
+            const depositsList = document.getElementById('deposits-list');
+            const depositsArrow = depositsToggle.querySelector('i');
+
+            // Initialize as hidden
+            depositsList.classList.add('list-hidden');
+
+            depositsToggle.addEventListener('click', () => {
+                const isHidden = depositsList.classList.contains('list-hidden');
+                depositsList.classList.toggle('list-hidden');
+                depositsArrow.classList.toggle('up');
+
+                if (isHidden) {
+                    // Expand list
+                    depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+                    depositsList.style.opacity = '1';
+                    depositsList.style.transform = 'translateY(0)';
+                    // Reset max-height
+                    setTimeout(() => {
+                        depositsList.style.maxHeight = '2500px';
+                    }, 500);
+                } else {
+                    // Collapse list
+                    depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+                    depositsList.offsetHeight; // Trigger reflow
+                    depositsList.style.maxHeight = '0';
+                    depositsList.style.opacity = '0';
+                    depositsList.style.transform = 'translateY(20px)';
+                }
+            });
+
+            // MutationObserver for deposits list
+            const depositsObserver = new MutationObserver(() => {
+                if (!depositsList.classList.contains('list-hidden')) {
+                    depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+                    setTimeout(() => {
+                        depositsList.style.maxHeight = '2500px';
+                    }, 500);
+                }
+            });
+            depositsObserver.observe(depositsList, {childList: true, subtree: true});
+
+            // Keyboard accessibility for toggles
+            transactionsToggle.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    transactionsToggle.click();
+                }
+            });
+
+            depositsToggle.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    depositsToggle.click();
+                }
+            });
+
+        } catch (error) {
+            console.error('Error loading page content:', error);
+            document.dispatchEvent(new CustomEvent('pageContentLoaded'));
         }
-
-        // Fetch and populate transactions and deposits
-        if (userData.id) {
-            await Promise.all([fetchTransactions(), fetchDeposits()]);
-        } else {
-            await refreshUserData();
-            await Promise.all([fetchTransactions(), fetchDeposits()]);
-        }
-
-        // Toggle functionality for transactions
-        const transactionsToggle = document.getElementById('transactions-toggle');
-        const transactionsList = document.getElementById('transactions-list');
-        const transactionsArrow = transactionsToggle.querySelector('i');
-        transactionsToggle.addEventListener('click', () => {
-            transactionsList.classList.toggle('list-hidden');
-            transactionsArrow.classList.toggle('up');
-        });
-
-        // Toggle functionality for deposits
-        const depositsToggle = document.getElementById('deposits-toggle');
-        const depositsList = document.getElementById('deposits-list');
-        const depositsArrow = depositsToggle.querySelector('i');
-        depositsToggle.addEventListener('click', () => {
-            depositsList.classList.toggle('list-hidden');
-            depositsArrow.classList.toggle('up');
-        });
     });
 </script>
 {% endblock %}

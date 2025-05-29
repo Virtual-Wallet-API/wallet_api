@@ -9,8 +9,8 @@
         justify-content: flex-start;
         align-items: center;
         min-height: calc(100vh - 120px);
-        padding: 0;
-        padding-bottom: 4rem;
+        /*padding: 0;*/
+        /*padding-bottom: 4rem;*/
         padding-top: 3.5% !important;
     }
 
@@ -1251,6 +1251,13 @@
         if (!userData.balance) {
             await refreshUserData();
         }
+
+        await Promise.all([
+            fetchCards(),
+            // fetchWithdrawals()
+        ]);
+        document.dispatchEvent(new CustomEvent('pageContentLoaded'));
+
         setTimeout(() => {
             balanceLoading.classList.add('hidden');
             balanceAmount.innerHTML = ` ${userData.balance}$`;

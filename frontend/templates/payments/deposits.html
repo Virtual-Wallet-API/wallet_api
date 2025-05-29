@@ -9,8 +9,8 @@
         justify-content: flex-start;
         align-items: center;
         min-height: calc(100vh - 120px);
-        padding: 0;
-        padding-bottom: 4rem;
+        /*padding: 0;*/
+        /*padding-bottom: 4rem;*/
         padding-top: 3.5% !important;
     }
 
@@ -277,19 +277,25 @@
     /* Message styles */
     #error-message, #success-message {
         max-height: 0;
+        height: 0;
         opacity: 0;
+        padding: 0;
+        margin: 0;
         overflow: hidden;
-        transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+        transition: margin 0.5s ease-in-out, max-height 0.5s ease-out, height 0.5s ease-in-out, opacity 0.5s ease-out, padding 0.5s ease-in-out;
     }
 
     #error-message.visible, #success-message.visible {
+        margin-bottom: 1.5rem;
+        height: auto;
         max-height: auto; /* Adjust to fit your content */
+        padding: 1.2rem 1.5rem;
         opacity: 1;
     }
 
     #success-message.alert {
         color: #28a745;
-        background-color: rgba(40, 167, 69, 0.1);
+        background-color: rgba(40, 167, 69, 0.25);
         border-left: 3px solid #28a745;
     }
 
@@ -705,9 +711,11 @@
     <h3>Recent Deposits</h3>
     <i class="bi bi-chevron-down"></i>
 </div>
-<div class="mb-8 deposits-list" style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
+<div class="mb-8 deposits-list"
+     style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
     <div class="transaction-list list-hidden" id="deposits-list">
-        <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i>
+        </div>
         <div class="initial-deposits" id="initial-deposits">
             <!-- Deposit items will be inserted here -->
         </div>
@@ -719,8 +727,6 @@
     </div>
 </div>
 
-<!-- Add padding to clear fixed footer -->
-<div style="padding-bottom: 80px;"></div>
 {% endblock %}
 
 {% block modals %}
@@ -1540,10 +1546,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-        // Existing initialization code
-        await fetchSavedCards();
-        await initializeStripe();
-        await removeCardSetup();
+        await Promise.all([
+            initializeStripe(),
+            fetchSavedCards(),
+            removeCardSetup()
+        ]);
+        document.dispatchEvent(new CustomEvent('pageContentLoaded'));
 
         const currencyDisplay = document.querySelector('.currency-display');
         const amountInput = document.getElementById('amount');

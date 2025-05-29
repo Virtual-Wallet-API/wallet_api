@@ -72,6 +72,59 @@
             --footer-link-hover: #3700b3;
         }
 
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 25%;
+            width: 75%;
+            height: 100vh;
+            background: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            font-size: 4.5rem;
+            color: var(--accent-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Body and Container */
+        body {
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        .container-fluid {
+            padding: 0;
+            margin: 0;
+            overflow: hidden; /* Contain content */
+        }
+
+        /*!* Fix for main content overlap *!*/
+        /*.main-content {*/
+        /*    margin-left: 25%;*/
+        /*}*/
+
+
         .page-title {
             font-size: 3.5rem !important;
             font-weight: 600;
@@ -141,6 +194,42 @@
             right: 40px;
             opacity: 1;
         }
+
+
+        /* Main Content */
+        .main-content {
+            margin-left: 25%;
+            width: 75%; /* Constrain to remaining width */
+            min-height: 100vh; /* Full viewport height */
+            /*display: flex;*/
+            flex-direction: column;
+            /*justify-content: flex-start;*/
+            /*align-items: center;*/
+            padding: 4rem;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+
+        .main-content.loaded {
+            opacity: 1;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: none;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 2rem 1rem;
+            }
+        }
+
 
         /* Transaction List Styles */
         /*.transaction-list {*/
@@ -365,6 +454,8 @@
             ); /* Slightly higher opacity for visibility on dark background */
         }
 
+
+
         /* Sidebar Logo */
         .sidebar-logo {
             display: flex;
@@ -398,10 +489,6 @@
             background: none;
         }
 
-        /* Fix for main content overlap */
-        .main-content {
-            margin-left: 25%;
-        }
 
         .modal-dialog {
             box-shadow: 0 5px 15px var(--shadow-color), inset 0 1px 2px rgba(var(--accent-color-rgb), 0.2);
@@ -531,33 +618,90 @@
                 <span class="menu-text">Toggle Theme</span>
             </a>
         </div>
+        <!-- Loading Screen -->
+        <div class="loading-screen" id="loading-screen" aria-label="Loading content, please wait">
+            <i class="bi bi-arrow-repeat loading-spinner"></i>
+        </div>
+
         <!-- Main Content -->
-        <div class="col-md-9 main-content p-5" id="p5element">
+        <div class="main-content loading" id="main-content">
             {% block content %}
             {% endblock %}
-
         </div>
-        <!--        <div class="container footer-container col-md-9">-->
-        <!--            <div class="footer d-flex justify-content-between align-items-center">-->
-        <!--                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>-->
-        <!--                <div>-->
-        <!--                    <a class="ms-3" href="#">Privacy Policy</a>-->
-        <!--                    <a class="ms-3" href="#">Terms of Service</a>-->
-        <!--                    <a class="ms-3" href="#">Contact Us</a>-->
-        <!--                </div>-->
-        <!--            </div>-->
-        <!--        </div>-->
+
     </div>
+    <!--        <div class="container footer-container col-md-9">-->
+    <!--            <div class="footer d-flex justify-content-between align-items-center">-->
+    <!--                <p class="mb-0">© 2025 VWallet. All rights reserved.</p>-->
+    <!--                <div>-->
+    <!--                    <a class="ms-3" href="#">Privacy Policy</a>-->
+    <!--                    <a class="ms-3" href="#">Terms of Service</a>-->
+    <!--                    <a class="ms-3" href="#">Contact Us</a>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+</div>
 </div>
 
 {% block modals %}
 {% endblock %}
 
 <script>
-    if (!token) {
-        document.getElementsByClassName('main-content')[0].textContent = 'Please log in to make a deposit';
-        window.location.href = `${FE_BASE}/login?invalid-token`;
+      async function initializeBaseScripts() {
+        try {
+            // Base requirements
+            if (typeof jQuery === 'undefined' || typeof bootstrap === 'undefined') {
+                throw new Error('jQuery or Bootstrap not loaded');
+            }
+
+            if (!token) {
+                document.getElementById('main-content').textContent = 'Please log in to make a deposit';
+                window.location.href = `${FE_BASE}/login?invalid-token`;
+                return;
+            }
+
+            await refreshUserData();
+
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+
+            // Page specific resources
+            const pageContentLoaded = new Promise(resolve => {
+                document.addEventListener('pageContentLoaded', resolve, { once: true });
+                setTimeout(resolve, 5000);
+            });
+
+            await pageContentLoaded;
+
+            // await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Page loaded
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            loadingScreen.classList.add('hidden');
+            mainContent.classList.remove('loading');
+            mainContent.classList.add('loaded');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        } catch (error) {
+            console.error('Error initializing base scripts:', error);
+            const loadingScreen = document.getElementById('loading-screen');
+            const mainContent = document.getElementById('main-content');
+            loadingScreen.classList.add('hidden');
+            mainContent.classList.remove('loading');
+            mainContent.classList.add('loaded');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeBaseScripts();
+    });
+
 
     // User data
     const userData = {};
@@ -632,12 +776,6 @@
             icon.classList.add('bi-moon');
         }
     }
-
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        document.cookie = "access_token=; max-age=0; path=/;";
-        window.location.href = `/fe/`;
-    });
 </script>
 
 {% block scripts %}
