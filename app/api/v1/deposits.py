@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.params import Query
 from sqlalchemy.orm import Session
 
 from app.business.payment import *
@@ -44,11 +45,15 @@ async def confirm_deposit(
 
 
 @router.get("/", response_model=DepositHistoryResponse)
-def get_user_deposits(
-        limit: int = 50,
-        user: User = Depends(get_user_except_fpr),
-        db: Session = Depends(get_db)
-):
+def get_user_deposits(db: Session = Depends(get_db),
+                      user: User = Depends(get_user_except_fpr),
+                      search_by=Query(default=None,
+                                      description="Search user deposits by date_period, amount_range or status"),
+                      search_query:str = Query(default=None, description="The query to look for in the chosen field"),
+                      order_by:str = Query(default="desc",
+                                       description="Sort results by asc (ascending) or desc (descending) - except status"),
+                      limit: int = Query(default=30, gt=10, le=100, description="The maximum number of results per page"),
+                      page: int = Query(default=1, ge=1, description="The page you wish to view")):
     """Get deposit history for the current user"""
     return DepositService.get_user_deposits(db, user, limit)
 

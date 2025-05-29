@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.params import Query
 from sqlalchemy.orm import Session
@@ -9,6 +11,7 @@ from app.models import User
 from app.schemas import UserPublicResponse
 from app.schemas.admin import UpdateUserStatus, ListAllUsersResponse, ListAllUserTransactionsResponse, \
     AdminTransactionResponse
+from app.schemas.router import AdminUserFilter
 from app.schemas.withdrawal import WithdrawalResponse, WithdrawalUpdate
 
 router = APIRouter(tags=["Admin"])
@@ -28,32 +31,19 @@ def admin_root(db: Session = Depends(get_db), admin: User = Depends(get_current_
 
 @router.get("/users", response_model=ListAllUsersResponse,
             description="Get a list of all users in the system and search by phone, email or username.")
-def get_all_users(db: Session = Depends(get_db),
-                  admin: User = Depends(get_current_admin),
-                  search_by: str = Query(default=None, description="Search by phone, email or username", alias="sb"),
-                  search_query: str = Query(default=None, description="Search query", alias="q"),
-                  limit: int = Query(default=30, description="Limit the number of results",
-                                     alias="l"),
-                  page: int = Query(default=1, description="Page number/results offset", alias="p")):
+def get_all_users(search_filter: Annotated[AdminUserFilter, Query()],
+                  db: Session = Depends(get_db),
+                  admin: User = Depends(get_current_admin)):
     """
     Fetches a list of all users in the system, allowing filtering through search functionality by
     phone, email, or username. The results can be paginated and limited in quantity.
 
     :param db: Database session
     :param admin: Current authenticated admin user
-    :param search_by: Filter criteria for the search. Can be one of "phone", "email", or "username"
-    :param search_query: The actual query string to match with the search_by criterion
-    :param limit: Maximum number of user results to be returned in one page. Default is 30
-    :param page: Page number or offset for paginated results. Default is page 1
+    :param search_filter: Query parameters used to filter results and pagination
     :return: A list of users matching the search criteria and information about pagination
     """
-    search_data = {
-        "search_by": search_by,
-        "search_query": search_query,
-        "limit": limit,
-        "page": page
-    }
-    return AdminService.get_all_users(db, admin, search_data)
+    return AdminService.get_all_users(db, admin, search_filter)
 
 
 @router.put("/users/status", response_model=None,

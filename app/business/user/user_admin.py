@@ -8,6 +8,7 @@ from app.business.utils import NService, NType
 from app.models import User, UStatus, Transaction
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse
+from app.schemas.router import AdminUserFilter
 
 
 class AdminService:
@@ -118,29 +119,27 @@ class AdminService:
         return user
 
     @classmethod
-    def get_all_users(cls, db: Session, admin: User, search_data: Dict) -> Dict:
+    def get_all_users(cls, db: Session, admin: User, search_filter: AdminUserFilter) -> Dict:
         """
         Returns a list of all users in the database with pagination and the option to search by username, email or phone number.
         :param db: database session
         :param admin: currently logged in admin user
-        :param search_data: the search data provided by the client
+        :param search_filter: the search data provided by the client
         :return: pagination data with a list of all users per per the criterion
         """
         # Pagination setup
-        page = search_data.get("page", 0)
-        page = page - 1 if page > 0 else 0
-        limit = search_data.get("limit", 30)
-        limit = limit if 10 <= limit <= 100 else 30
-        offset = page * limit
+        page = search_filter.page
+        limit = search_filter.limit
+        offset = (page - 1) * limit
 
         # Search setup
-        search_by = search_data.get("search_by")
+        search_by = search_filter.search_by
+        query = search_filter.search_query
 
-        if not search_by:
+        if not search_by or not query:
             users = db.query(User).offset(offset).limit(limit).all()
-        else:
-            query = search_data.get("search_query", "")
 
+        else:
             match search_by:
                 case "username":
                     users = (db.query(User)
@@ -171,7 +170,7 @@ class AdminService:
             response["matching_records"] = 0
         else:
             response["users"] = [AdminUserResponse.model_validate(user) for user in users]
-            response["page"] = page + 1
+            response["page"] = page
             response["pages_with_matches"] = len(users) // limit + 1 if len(users) % limit > 0 else len(users) // limit
             response["matching_records"] = len(users)
 
@@ -202,8 +201,8 @@ class AdminService:
         query_transactions = user.get_transactions(db, order_by=sort_by, offset=offset, limit=limit)
 
         if not search_by:
-            # transactions = db.query(User).offset(offset).limit(limit).all()
             transactions = query_transactions.all()
+
         else:
             query = search_data.get("search_query", "")
             transactions = []
@@ -211,6 +210,7 @@ class AdminService:
             match search_by:
                 case "period":
                     date_from, date_to = query.split("_")
+
                     try:
                         date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
                         date_to = datetime.strptime(date_to, "%Y-%m-%d").date()
@@ -219,9 +219,6 @@ class AdminService:
                             date_from, date_to = date_to, date_from
                     except ValueError:
                         raise HTTPException(status_code=400, detail="Invalid date format provided")
-
-                    # transactions = (user.transactions.filter(date_from <= Transaction.date <= date_to)
-                    #                 .offset(offset).limit(limit).order_by(sort_filter).all())
 
                     transactions = user.get_transactions(db, date_from, date_to, sort_by, offset, limit).all()
 
