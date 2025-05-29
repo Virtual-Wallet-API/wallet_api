@@ -32,7 +32,10 @@ class DepositService:
         query = db.query(Deposit).filter(Deposit.user_id == user.id)
 
         if not search_by or not search_query:
-            query = query.order_by(Deposit.created_at.desc()).offset(offset).limit(limit)
+            if order_by == "desc":
+                query = query.order_by(Deposit.created_at.desc())
+            else:
+                query = query.order_by(Deposit.created_at.asc())
         else:
             if search_by == "date_period":
                 date_from, date_to = search_query.split("_")
@@ -41,7 +44,7 @@ class DepositService:
                 if date_from > date_to:
                     date_from, date_to = date_to, date_from
 
-                query = (query.filter(Deposit.created_at.between(date_from, date_to)))
+                query = query.filter(Deposit.created_at.between(date_from, date_to))
 
             elif search_by == "amount_range":
                 amounts = search_query.split("_")
@@ -51,13 +54,14 @@ class DepositService:
                     pass
 
             elif search_by == "status" and status in ("failed", "pending", "completed"):
-                query = query.filter(Deposit.status == status).offset(offset).limit(limit)
+                query = query.filter(Deposit.status == status)
 
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                     detail=f"Invalid search filter provided: {search_by}")
 
-        deposits = query.all()
+            query = query.order_by(order_by)
+        deposits = query.offset(offset).limit(limit).all()
 
         return {
             "deposits": [DepositPublicResponse.model_valudate(DepositResponse) for deposit in deposits],
