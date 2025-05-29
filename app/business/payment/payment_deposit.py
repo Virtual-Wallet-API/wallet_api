@@ -19,7 +19,7 @@ class DepositService:
     """Business logic for core deposit management"""
 
     @staticmethod
-    def get_user_deposits(db: Session, user: User, search_queries=UserDepositsFilter) -> dict:
+    def get_user_deposits(db: Session, user: User, search_queries: UserDepositsFilter) -> dict:
         """Get deposit history for a user"""
         search_by = search_queries.search_by
         search_query = search_queries.search_query
@@ -36,35 +36,56 @@ class DepositService:
                 query = query.order_by(Deposit.created_at.desc())
             else:
                 query = query.order_by(Deposit.created_at.asc())
+
         else:
             if search_by == "date_period":
-                date_from, date_to = search_query.split("_")
-                date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to, "%Y-%m-%d")
+                try:
+                    date_from, date_to = search_query.split("_")
+                    date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to, "%Y-%m-%d")
+                except Exception as e:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail="Invalid date range format provided, use YYYY-MM-DD_YYYY-MM-DD")
 
                 if date_from > date_to:
                     date_from, date_to = date_to, date_from
 
                 query = query.filter(Deposit.created_at.between(date_from, date_to))
 
+                if order_by == "desc":
+                    query = query.order_by(Deposit.created_at.desc())
+                else:
+                    query = query.order_by(Deposit.created_at.asc())
+
             elif search_by == "amount_range":
                 amounts = search_query.split("_")
                 try:
                     amount_from = float(amounts[0]); amount_to = float(amounts[1])
-                except ValueError:
-                    pass
+                    query = query.filter(Deposit.amount.between(amount_from, amount_to))
 
-            elif search_by == "status" and status in ("failed", "pending", "completed"):
-                query = query.filter(Deposit.status == status)
+                    if order_by == "desc":
+                        query = query.order_by(Deposit.amount.desc())
+                    else:
+                        query = query.order_by(Deposit.amount.asc())
+
+                except ValueError:
+                    raise HTTPException(status_code=400,
+                                        detail="Invalid search query provided for amount range filtering")
+
+            elif search_by == "status" and search_query in ("failed", "pending", "completed"):
+                query = query.filter(Deposit.status == search_query)
+
+                if order_by == "desc":
+                    query = query.order_by(Deposit.created_at.desc())
+                else:
+                    query = query.order_by(Deposit.created_at.asc())
 
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                    detail=f"Invalid search filter provided: {search_by}")
+                                    detail=f"Invalid search filter provided: {search_by} ({search_query})")
 
-            query = query.order_by(order_by)
         deposits = query.offset(offset).limit(limit).all()
-
         return {
-            "deposits": [DepositPublicResponse.model_valudate(DepositResponse) for deposit in deposits],
+            "deposits": [DepositPublicResponse.model_validate(deposit) for deposit in deposits],
             "total": user.deposits_count,
             "total_amount": user.total_deposit_amount,
             "pending_amount": user.total_pending_deposit_amount
