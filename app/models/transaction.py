@@ -13,6 +13,7 @@ from app.schemas.user import ShortUserResponse
 
 class TransactionStatus(str, Enum):
     PENDING = "pending"
+    AWAITING_ACCEPTANCE = "awaiting_acceptance"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -60,6 +61,10 @@ class Transaction(Base):
     @property
     def is_completed(self) -> bool:
         return self.status == TransactionStatus.COMPLETED
+
+    @property
+    def is_awaiting_acceptance(self) -> bool:
+        return self.status == TransactionStatus.AWAITING_ACCEPTANCE
 
     @property
     def is_failed(self) -> bool:
