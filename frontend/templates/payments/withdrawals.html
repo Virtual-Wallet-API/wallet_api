@@ -1337,6 +1337,16 @@
             }
         });
 
+        const withdrawalBoxObserver = new MutationObserver(() => {
+            if (!withdrawalBox.classList.contains('hidden')) {
+                withdrawalBox.style.maxHeight = withdrawalBox.scrollHeight + 'px';
+                setTimeout(() => {
+                    withdrawalBox.style.maxHeight = '1000px';
+                }, 500);
+            }
+        });
+        withdrawalBoxObserver.observe(withdrawalBox, { childList: true, subtree: true });
+
         // Update max-height on content change
         const observer = new MutationObserver(() => {
             if (!withdrawalsList.classList.contains('list-hidden')) {

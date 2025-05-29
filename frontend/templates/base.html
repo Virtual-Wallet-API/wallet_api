@@ -554,11 +554,9 @@
 {% endblock %}
 
 <script>
-    console.log(token);
-
     if (!token) {
         document.getElementsByClassName('main-content')[0].textContent = 'Please log in to make a deposit';
-        window.location.href = `${FE_BASE}/login`;
+        window.location.href = `${FE_BASE}/login?invalid-token`;
     }
 
     // User data
@@ -567,12 +565,6 @@
     let uname, uid, uemail, uphone, ubalance, uavatar, ustatus;
 
     async function refreshUserData() {
-        if (!token) {
-            alert('Please log in to use the app.');
-            window.location.href = `${fe_base}/login`;
-            return;
-        }
-
         try {
             const userResponse = await fetch(`${API_BASE}/users/me`, {
                 method: 'GET',
@@ -584,15 +576,16 @@
 
             if (!userResponse.ok) {
                 const errorData = await userResponse.json();
-                alert((errorData.detail || 'Failed to get user details') + " Please login again.");
+                console.log(errorData);
+                alert('Failed to fetch user data from database. Please login again.');
                 document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-                window.location.href = `${FE_BASE}/login`;
-                throw new Error(errorData.detail || 'Unknown error');
+                window.location.href = `${FE_BASE}/login?database-error`;
+                throw new Error(errorData.detail);
             }
 
             const udata = await userResponse.json();
             if (!udata || typeof udata.username !== 'string') {
-                throw new Error('Invalid user data format');
+                throw new Error('Invalid user authentication token.');
             }
 
             userData.username = udata.username;
@@ -605,7 +598,7 @@
             console.log(`User data successfully fetched.`);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            alert((error.message || 'Failed to load user data') + " Please login again.");
+            alert(error.message + " Please login again.");
             document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             window.location.href = `${FE_BASE}/login`;
         }

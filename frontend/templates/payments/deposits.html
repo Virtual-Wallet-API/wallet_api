@@ -11,7 +11,7 @@
         min-height: calc(100vh - 120px);
         padding: 0;
         padding-bottom: 4rem;
-        padding-top: 7.5% !important;
+        padding-top: 3.5% !important;
     }
 
     /* Deposit Title */
@@ -25,22 +25,33 @@
         color: var(--text-color);
     }
 
-    /* Deposit Box Styles */
+    /* Deposit Box Styles (your existing styles, with clarification) */
     .deposit-box {
         position: relative;
         width: 100%;
-        max-width: 900px !important;
+        max-width: 800px !important;
         margin: 0 auto;
-        margin-bottom: -4rem !important;
-        padding: 4rem;
+        margin-bottom: 2rem !important;
+        padding: 2.2rem 2.2rem;
         background: var(--balance-bg);
-        border: 1px solid var(--bs-border-color);
+        border: 1px solid var(--accent-color);
         border-radius: 20px;
         box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
-        transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out, margin-bottom 0.5s ease-in-out;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        z-index: 1000;
+        font-size: 1.35rem;
+        z-index: 750;
+        overflow: hidden;
+        max-height: 1000px; /* Default max-height for expanded state */
+    }
+
+    .deposit-box.hidden {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-bottom: 0 !important;
+        overflow: hidden;
     }
 
     [data-bs-theme="light"] .deposit-box {
@@ -130,7 +141,7 @@
         line-height: normal;
         border: 1px solid var(--accent-color);
         font-size: 1.4rem;
-        height: 68px; /* Fixed height as fallback */
+        height: 68px;
     }
 
     .currency-display {
@@ -168,11 +179,11 @@
         position: relative;
         display: flex;
         align-items: center;
-        height: 68px; /* Match fallback height */
+        height: 68px;
     }
 
     .saved-cards-group .form-control {
-        padding: 1rem 2.5rem 1rem 1rem; /* Space for chevron */
+        padding: 1rem 2.5rem 1rem 1rem;
         appearance: none;
     }
 
@@ -181,12 +192,8 @@
         color: var(--text-color);
     }
 
-    [data-bs-theme="dark"] .saved-cards-group .form-control {
-        color: var(--text-color);
-    }
-
     .saved-cards-group::after {
-        content: '\f078'; /* Bootstrap Icons chevron-down */
+        content: '\f078';
         font-family: 'bootstrap-icons';
         position: absolute;
         right: 10px;
@@ -226,10 +233,10 @@
 
     .save-card-checkbox {
         display: flex;
-        align-items: center; /* Vertically align checkbox and label */
+        align-items: center;
         gap: 0.5rem;
-        margin-top: 0; /* Remove top margin to align directly below card element */
-        margin-bottom: 0; /* Remove bottom margin to avoid extra space */
+        margin-top: 0;
+        margin-bottom: 0;
         font-size: 1.2rem;
         padding-left: 0.5rem;
     }
@@ -238,12 +245,12 @@
         width: 1.2rem;
         height: 1.2rem;
         accent-color: var(--accent-color);
-        margin: 0; /* Reset any default margins */
+        margin: 0;
     }
 
     .save-card-checkbox label {
-        margin: 0; /* Ensure label aligns with checkbox */
-        line-height: 1.2rem; /* Match checkbox height for vertical alignment */
+        margin: 0;
+        line-height: 1.2rem;
     }
 
     .confirm-btn {
@@ -254,7 +261,7 @@
         font-size: 1.8rem;
         border-radius: 12px;
         width: 100%;
-        margin-top: 1.5rem; /* Restore original spacing above button */
+        margin-top: 1.5rem;
         transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         box-shadow: 0 4px 8px var(--shadow-color);
         border: none;
@@ -267,27 +274,34 @@
         pointer-events: none;
     }
 
-    .error-message {
-        color: #dc3545;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background-color: rgba(220, 53, 69, 0.1);
-        border-radius: 4px;
-        border-left: 3px solid #dc3545;
+    /* Message styles */
+    #error-message, #success-message {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
     }
 
-    .success-message {
+    #error-message.visible, #success-message.visible {
+        max-height: auto; /* Adjust to fit your content */
+        opacity: 1;
+    }
+
+    #success-message.alert {
         color: #28a745;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
-        padding: 0.5rem;
         background-color: rgba(40, 167, 69, 0.1);
-        border-radius: 4px;
         border-left: 3px solid #28a745;
     }
 
+    #error-message.alert.visible, #success-message.alert.visible {
+        padding: 0.5rem !important; /* Restore padding when visible */
+        margin-top: 0.5rem !important; /* Restore margin when visible */
+        max-height: 100px !important; /* Adjust as needed for content */
+        opacity: 1 !important; /* Fully visible */
+    }
+
     .card-error-message {
+        transition: all 0.35s ease;
         margin-top: 0.5rem;
         padding: 0.3rem;
         padding-left: 1rem;
@@ -309,6 +323,154 @@
     .alert {
         max-width: 900px !important;
         width: 100%;
+    }
+
+    /* Header Toggle */
+    .header-toggle {
+        color: var(--accent-color) !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        width: 100% !important;
+        max-width: 900px !important;
+        padding: 1rem 1.5rem;
+        background: var(--balance-bg);
+        border-radius: 12px;
+        font-family: 'Poppins', sans-serif;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.5);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-sizing: border-box;
+        min-width: 100% !important;
+
+    }
+
+    .header-toggle:hover {
+        background-color: rgba(var(--accent-color-rgb), 0.1);
+        box-shadow: 0 2px 4px rgba(var(--accent-color-rgb), 0.2);
+    }
+
+    .header-toggle h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--accent-color);
+        line-height: 1.5rem;
+    }
+
+    .header-toggle i {
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .header-toggle i.up {
+        transform: rotate(180deg);
+    }
+
+    /* Transaction List */
+    .transaction-list {
+        width: 100%;
+        max-width: 900px;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        transform: translateY(0);
+    }
+
+    .transaction-list.list-hidden {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    /* Deposit Item Styles */
+    .deposit-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 12px;
+        margin-bottom: 1.2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        width: 100%;
+    }
+
+    [data-bs-theme="light"] .deposit-item {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .deposit-item {
+        background-color: #2a2a2a;
+    }
+
+    .deposit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px -2px var(--accent-color);
+    }
+
+    .deposit-item .date,
+    .deposit-item .deposit-card,
+    .deposit-item .status {
+        font-size: 1.2rem;
+        color: var(--text-color);
+    }
+
+    .deposit-item .amount {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #28a745;
+        min-width: 7rem;
+        text-align: right;
+    }
+
+    .deposit-item .info-icon {
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        transition: color 0.3s ease;
+    }
+
+    .deposit-item .info-icon:hover {
+        color: var(--accent-color-hover);
+    }
+
+    /* Loading Container */
+    .loading-container {
+        font-size: 2.5rem;
+        text-align: center;
+        width: 100% !important;
+        max-width: 900px !important;
+        display: flex;
+        color: var(--accent-color);
+        justify-content: center;
+        align-items: center;
+        margin: 1.5rem auto;
+        max-height: 100px;
+        opacity: 1;
+        transition: max-height 1s ease-in-out, opacity 0.7s ease-in-out;
+    }
+
+    .loading-container.hidden {
+        max-height: 0;
+        opacity: 0;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .bi-arrow-repeat {
+        display: inline-block;
+        animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Responsive Adjustments */
@@ -340,7 +502,6 @@
         .currency-display, #amount, .saved-cards-icon, .saved-cards-group .form-control {
             padding: 0.8rem;
             font-size: 1.2rem;
-            /*height: fit-content; !* Fixed height for mobile *!*/
         }
 
         .currency-display, .saved-cards-icon {
@@ -348,35 +509,29 @@
         }
 
         .saved-cards-group {
-            /*height: 40px; !* Match mobile fallback height *!*/
-        }
-
-        .confirm-btn {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: white;
-            padding: 1.25rem 2.5rem;
-            font-size: 1.8rem;
-            border-radius: 12px;
-            width: 100%;
-            margin-top: 0;
-            transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-            box-shadow: 0 4px 8px var(--shadow-color);
-            border: none;
-            cursor: pointer;
-        }
-
-        .save-card-checkbox {
-            margin-top: 0.3rem;
-            margin-bottom: 1.5rem; /* Adjusted for mobile */
-            font-size: 1rem;
-            padding-left: 0.3rem;
+            /* height adjusted for mobile if needed */
         }
 
         .confirm-btn {
             font-size: 1.4rem;
             padding: 1rem 2rem;
-            margin-top: 0; /* Removed for mobile */
+            margin-top: 0;
+        }
+
+        .save-card-checkbox {
+            margin-top: 0.3rem;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            padding-left: 0.3rem;
+        }
+
+        .header-toggle h3 {
+            font-size: 1.4rem;
+        }
+
+        .deposit-item {
+            font-size: 1rem;
+            padding: 1rem;
         }
     }
 
@@ -387,29 +542,20 @@
     }
 
     #card-element-group {
-        display: block;
-        margin-bottom: 2rem; /* Add spacing below the entire group */
+        margin-bottom: 2rem;
     }
 
     #card-element {
-        height: 68px;
-        max-height: 68px !important;
-        margin-bottom: 1rem; /* Add space between card element and checkbox */
-    }
-
-    /* Label and Button Container */
-    .label-button-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end; /* Aligns items to the bottom */
         margin-bottom: 1rem;
     }
 
-    .label-button-container label {
-        margin-bottom: -0.1rem; /* Optional: fine-tune vertical position */
+    .label-button-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 1rem;
     }
 
-    /* Manage Cards Button */
     .manage-cards-btn {
         background-color: var(--accent-color);
         color: white;
@@ -439,6 +585,41 @@
         color: white;
     }
 
+    /* Deposits List Styles */
+    #deposits-list {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: max-height 0.5s ease-out, opacity 0.5s ease-out, transform 0.5s ease-out;
+        overflow: hidden;
+    }
+
+    #deposits-list:not(.list-hidden) {
+        max-height: 1000px; /* Adjust to fit deposits list content */
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #deposits-list.loaded {
+        width: calc(100% - 0.6rem);
+        max-width: calc(100% - 0.6rem);
+        margin-left: 0.6rem;
+        padding-left: 1.7rem;
+        position: relative;
+    }
+
+    #deposits-list.loaded::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 6px;
+        width: 1px;
+        background-color: var(--accent-color);
+        box-shadow: -3px 0 8px 1px var(--accent-color);
+    }
+
+    }
 </style>
 {% endblock %}
 
@@ -448,8 +629,8 @@
 <!-- Deposit Box with Stripe Integration -->
 <div class="deposit-box" id="stripe-box">
     <!-- Messages -->
-    <div class="alert alert-success" id="success-message" style="display: none;"></div>
-    <div class="alert alert-danger" id="error-message" style="display: none;"></div>
+    <div class="alert alert-success" id="success-message"></div>
+    <div class="alert alert-danger" id="error-message"></div>
 
     <form action="#" id="deposit-form" method="POST">
         <!-- Amount Input -->
@@ -487,7 +668,6 @@
             <label for="card-element">Card Information</label>
             <div class="stripe-element" id="card-element">Loading...</div>
             <div class="alert alert-danger card-error-message" id="card-error-message" style="display: none;"></div>
-            <!-- Save Card Option -->
         </div>
 
         <!-- Submit Button -->
@@ -518,6 +698,25 @@
     <button class="confirm-btn" id="submit-button-refresh" style="display: none;" type="submit">
         <span id="stripe-error" style="display: none;">Refresh Page</span>
     </button>
+</div>
+<hr style="margin-top: 2rem; margin-bottom: 2rem; opacity: 0;">
+<!-- Recent Deposits -->
+<div class="header-toggle" id="deposits-toggle" style="min-width: 100% !important;">
+    <h3>Recent Deposits</h3>
+    <i class="bi bi-chevron-down"></i>
+</div>
+<div class="mb-8 deposits-list" style="min-width: 100%; display: flex; justify-content: center; align-items: center;">
+    <div class="transaction-list list-hidden" id="deposits-list">
+        <div class="container loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+        <div class="initial-deposits" id="initial-deposits">
+            <!-- Deposit items will be inserted here -->
+        </div>
+        <div class="additional-deposits" id="additional-deposits">
+            <!-- Additional deposit items will be inserted here -->
+        </div>
+        <a class="btn btn-outline-primary view-more-button" href="#" id="view-deposits-btn" style="display: none;">View
+            More Deposits</a>
+    </div>
 </div>
 
 <!-- Add padding to clear fixed footer -->
@@ -587,7 +786,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        flex: 1; /* Ensure card-info takes available space */
+        flex: 1;
     }
 
     .saved-cards-list-item .card-icon {
@@ -625,12 +824,12 @@
     }
 
     .saved-cards-list-item:hover .default-badge {
-        transform: translateX(-10px); /* Slide badge left on hover */
+        transform: translateX(-10px);
     }
 
     .saved-cards-list-item:hover .remove-card-btn {
         opacity: 1;
-        transform: translateX(0); /* Slide button in from right */
+        transform: translateX(0);
     }
 
     [data-bs-theme="dark"] .saved-cards-list-item {
@@ -678,11 +877,34 @@
         </div>
     </div>
 </div>
+<!-- Deposit Details Modal -->
+<div aria-hidden="true" aria-labelledby="depositModalLabel" class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">Deposit Details</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Card:</strong> <span id="modal-card"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn confirm-btn" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<hr style="margin-top: 1.5rem; margin-bottom: 1.5rem; opacity: 0;">
 {% endblock %}
 
 {% block scripts %}
 <!-- Stripe.js -->
 <script src="https://js.stripe.com/v3/"></script>
+<!-- jQuery (required for Bootstrap modals) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
     // Initialize Stripe
@@ -692,7 +914,6 @@
     let savedCards = [];
 
     async function fetchSavedCards() {
-
         if (!token) {
             document.getElementById('deposit-form').textContent = '';
             showError('Please log in to make a deposit');
@@ -720,13 +941,11 @@
         } catch (error) {
             console.error('Error fetching saved cards:', error);
             showError('Failed to load saved payment methods');
-            savedCards = []; // Ensure savedCards is defined
-            populatePaymentMethods([]); // Populate dropdown anyway
+            savedCards = [];
+            populatePaymentMethods([]);
         }
     }
 
-
-    // New function to show modal error
     function showModalError(message) {
         const modalError = document.getElementById('modal-error-message');
         if (modalError) {
@@ -736,7 +955,6 @@
         }
     }
 
-    // New function to show modal error
     function showModalSuccess(message) {
         const modalError = document.getElementById('modal-success-message');
         if (modalError) {
@@ -746,7 +964,6 @@
         }
     }
 
-    // Handle manage cards button click
     document.getElementById('manage-cards-button')?.addEventListener('click', async () => {
         const modal = new bootstrap.Modal(document.getElementById('manageCardsModal'));
         try {
@@ -758,7 +975,6 @@
     });
 
     function populatePaymentMethods(savedCards) {
-
         if (!token) {
             document.getElementById('deposit-form').textContent = '';
             showError('Please log in to make a deposit');
@@ -783,17 +999,14 @@
             return;
         }
 
-        // Clear existing options
         select.innerHTML = '';
         select.placeholder = "Select a payment method...";
 
-        // Add default "new card" option
         const defaultOption = document.createElement('option');
         defaultOption.value = 'new';
         defaultOption.textContent = 'Use a new card';
         select.appendChild(defaultOption);
 
-        // Populate saved cards
         let defaultCardId = 'new';
         if (savedCards.length > 0) {
             savedCards.forEach(card => {
@@ -814,10 +1027,8 @@
             cardIcon.className = brandIconMap.default;
         }
 
-        // Set the default value
         select.value = defaultCardId;
 
-        // Update saved card icon on change
         select.addEventListener('change', (event) => {
             const cardIcon = document.getElementById("saved-card-icon");
             const selectedCard = savedCards.find(card => card.stripe_payment_method_id === select.value);
@@ -825,11 +1036,9 @@
             cardIcon.className = brandIconMap[selectedCardBrand] || brandIconMap.default;
         });
 
-        // Trigger initial change event to set correct icon
         select.dispatchEvent(new Event('change'));
     }
 
-    // New function to populate modal with saved cards
     function populateModalSavedCards(savedCards) {
         const cardsList = document.getElementById('saved-cards-list');
         const modalError = document.getElementById('modal-error-message');
@@ -870,9 +1079,7 @@
         modalError.style.display = 'none';
     }
 
-    // Initialize Stripe Elements
     async function initializeStripe() {
-
         if (!token) {
             document.getElementById('deposit-form').textContent = '';
             showError('Please log in to make a deposit');
@@ -952,7 +1159,6 @@
         }
     }
 
-    // Handle form submission
     document.getElementById('deposit-form')?.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -965,14 +1171,12 @@
         if (!stripe) {
             showError('Stripe is not initialized. Please refresh the page.');
             return;
-
         }
 
         const amount = parseFloat(document.getElementById('amount')?.value);
         if (isNaN(amount) || amount <= 0 || amount < 0.50) {
             showError('Please enter a valid amount (minimum $0.50)');
             return;
-
         }
 
         setLoading(true);
@@ -985,7 +1189,6 @@
             const saveCard = isNewCard && document.getElementById('save-card')?.checked;
 
             if (isNewCard) {
-                // Create a payment method for new cards
                 const {paymentMethod, error} = await stripe.createPaymentMethod({
                     type: 'card',
                     card: card,
@@ -1000,7 +1203,6 @@
                 paymentMethodId = paymentMethod.id;
                 console.log('Created payment method:', paymentMethodId);
             } else {
-                // Use the selected saved card
                 paymentMethodId = paymentMethodSelect;
                 if (!paymentMethodId.startsWith('pm_')) {
                     showError('Invalid payment method selected');
@@ -1009,7 +1211,6 @@
                 console.log('Using saved payment method:', paymentMethodId);
             }
 
-            // Create payment intent
             const paymentIntentResponse = await fetch(`${API_BASE}/deposits/payment-intent`, {
                 method: 'POST',
                 headers: {
@@ -1035,7 +1236,6 @@
             let confirmResponse;
 
             if (isNewCard) {
-                // Handle new card payment
                 console.log('New card detected');
                 const {
                     error,
@@ -1064,13 +1264,12 @@
                     })
                 });
             } else {
-                // Handle saved card payment
                 console.log('Saved card detected');
                 const {
                     error,
                     paymentIntent: confirmedPaymentIntent
                 } = await stripe.confirmCardPayment(paymentIntent.client_secret, {
-                    payment_method: paymentMethod // Use the saved payment method ID directly
+                    payment_method: paymentMethodId
                 });
 
                 if (error) {
@@ -1085,7 +1284,7 @@
                     },
                     body: JSON.stringify({
                         payment_intent_id: confirmedPaymentIntent.id,
-                        save_card: false, // Saved card already exists, no need to save again
+                        save_card: false,
                         cardholder_name: uname || 'Unnamed wallet User'
                     })
                 });
@@ -1099,7 +1298,6 @@
             const depositResult = await confirmResponse.json();
             showSuccess(`Deposit successful! $${amount.toFixed(2)} has been added to your wallet.`);
 
-            // Reset form
             if (isNewCard) card.clear();
             document.getElementById('payment-method').value = 'new';
             document.getElementById('card-element-group').style.display = 'block';
@@ -1113,7 +1311,6 @@
         }
     });
 
-    // Utility functions
     function setLoading(loading) {
         const submitButton = document.getElementById('submit-button');
         const buttonText = document.getElementById('button-text');
@@ -1152,44 +1349,50 @@
 
     function showError(message) {
         const errorDiv = document.getElementById('error-message');
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            errorDiv.setAttribute('role', 'alert');
-            setTimeout(() => {
-                $("#error-message").fadeOut(1000);
-            }, 10000);
-        }
-    }
-
-    function showSuccess(message) {
-        document.getElementById('error-message').display = "none";
         const successDiv = document.getElementById('success-message');
-        if (successDiv) {
-            successDiv.textContent = message + " Redirecting...";
-            successDiv.style.display = 'block';
-            successDiv.setAttribute('role', 'alert');
+        const stripeBox = document.getElementById('stripe-box');
+        if (errorDiv && stripeBox) {
+            if (successDiv) successDiv.classList.remove('visible');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('visible');
+            errorDiv.setAttribute('role', 'alert');
+            stripeBox.classList.add('has-content');
+
             setTimeout(() => {
-                successDiv.style.display = 'none';
-                window.location.href = `${FE_BASE}/account`;
+                errorDiv.classList.remove('visible');
+                stripeBox.classList.remove('has-content');
             }, 5000);
         }
     }
 
-    // Refresh button handler
+    function showSuccess(message) {
+        const errorDiv = document.getElementById('error-message');
+        const successDiv = document.getElementById('success-message');
+        const stripeBox = document.getElementById('stripe-box');
+        if (successDiv && stripeBox) {
+            if (errorDiv) errorDiv.classList.remove('visible');
+            successDiv.textContent = message + ' Redirecting...';
+            successDiv.classList.add('visible');
+            successDiv.setAttribute('role', 'alert');
+            stripeBox.classList.add('has-content');
+
+            setTimeout(() => {
+                successDiv.classList.remove('visible');
+                stripeBox.classList.remove('has-content');
+                // window.location.href = `${FE_BASE}/account`;
+            }, 5000);
+        }
+    }
+
     document.getElementById('submit-button-refresh')?.addEventListener('click', (event) => {
         event.preventDefault();
         window.location.reload();
     });
 
-    // Handles saved card removal
     async function removeCardSetup() {
         const removeButtons = document.querySelectorAll('.remove-card-btn');
-        console.log(removeButtons);
         removeButtons.forEach(removeButton => {
-            console.log(removeButton);
             removeButton.addEventListener('click', async (event) => {
-                console.log('Removing card ', removeButton.attributes['data-card-id'].value);
                 event.preventDefault();
                 const cardId = removeButton.attributes['data-card-id'].value;
                 if (!cardId) {
@@ -1210,17 +1413,14 @@
                     console.error('Failed to remove card, API request failed:' + removeAttempt.statusText);
                 }
 
-                console.log(removeAttempt);
                 const attemptResponseCode = removeAttempt.status;
 
                 if (attemptResponseCode !== 204) {
                     try {
                         const attemptData = await removeAttempt.json();
-                        console.log(attemptData);
                         const errorMessage = attemptData.detail || "Unknown error";
                         console.error(`Failed to remove card: ${attemptData}`);
                         showModalError(`Failed to remove card: ${errorMessage}`);
-                        console.error(`Failed to remove card: ${errorMessage}`);
                     } catch (error) {
                         console.error('Failed to remove card:', error);
                         showModalError('Failed to remove card: ', error);
@@ -1234,18 +1434,117 @@
                         savedCardElement.remove();
                     }, 1500);
                 }
-            })
+            });
         });
-
     }
 
-    // Initialize when page loads
+    // Fetch and populate deposits
+    async function fetchDeposits() {
+        try {
+            const response = await fetch(`${API_BASE}/deposits`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch deposits');
+            }
+            const data = await response.json();
+            const deposits = data.deposits || [];
+            deposits.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            const latestDeposits = deposits.slice(0, 16);
+
+            const depositItems = latestDeposits.map(deposit => {
+                const date = new Date(deposit.created_at).toISOString().split('T')[0];
+                const amount = `$${deposit.amount.toFixed(2)}`;
+                const status = deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1);
+                const card = `Card ending in ${deposit.card_last_four}`;
+                return `
+                    <div class="deposit-item" data-deposit-id="${deposit.id}" data-date="${date}" data-card="${card}" data-amount="${deposit.amount}" data-status="${status}">
+                        <span class="date">${date}</span>
+                        <span class="deposit-card">${card}</span>
+                        <span class="status">${status}</span>
+                        <span class="amount">${amount}</span>
+                        <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                    </div>`;
+            });
+
+            const initialList = document.getElementById('initial-deposits');
+            const additionalList = document.getElementById('additional-deposits');
+            const loadingAlert = document.getElementById('deposits-loading-alert');
+            const listDeposits = document.getElementById('deposits-list');
+            additionalList.innerHTML = '';
+            loadingAlert.classList.add('hidden');
+            listDeposits.classList.add('loaded');
+
+            if (latestDeposits.length <= 5 && latestDeposits.length > 0) {
+                initialList.innerHTML = depositItems.join('');
+                document.getElementById('view-deposits-btn').style.display = 'none';
+            } else if (latestDeposits.length > 5) {
+                initialList.innerHTML = depositItems.slice(0, 5).join('');
+                additionalList.innerHTML = depositItems.slice(5).join('');
+                additionalList.classList.remove('show');
+                const viewBtn = document.getElementById('view-deposits-btn');
+                viewBtn.textContent = 'View More Deposits';
+                viewBtn.style.display = 'block';
+                viewBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    toggleDeposits();
+                });
+            } else {
+                initialList.innerHTML = "<div class='alert alert-info'>No deposits yet.</div>";
+                document.getElementById('view-deposits-btn').style.display = 'none';
+            }
+
+            if (!listDeposits.classList.contains('list-hidden')) {
+                listDeposits.style.maxHeight = listDeposits.scrollHeight + 'px';
+            }
+
+            attachDepositListeners();
+        } catch (error) {
+            console.error('Error fetching deposits:', error);
+            document.getElementById('initial-deposits').innerHTML = "<div class='alert alert-info'>Error loading deposits.</div>";
+            showError('Failed to load deposits');
+        }
+    }
+
+    function toggleDeposits() {
+        const additionalList = document.getElementById('additional-deposits');
+        const viewBtn = document.getElementById('view-deposits-btn');
+        additionalList.classList.toggle('show');
+        viewBtn.textContent = additionalList.classList.contains('show') ? 'See All' : 'View More Deposits';
+        viewBtn.setAttribute('href', '/fe/all-deposits');
+
+        const depositsList = document.getElementById('deposits-list');
+        if (!depositsList.classList.contains('list-hidden')) {
+            depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+        }
+    }
+
+    function attachDepositListeners() {
+        document.querySelectorAll('.deposit-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const date = this.dataset.date;
+                const card = this.dataset.card;
+                const amount = `$${parseFloat(this.dataset.amount).toFixed(2)}`;
+                const status = this.dataset.status;
+                document.getElementById('modal-date').textContent = date;
+                document.getElementById('modal-card').textContent = card;
+                document.getElementById('modal-amount').textContent = amount;
+                document.getElementById('modal-status').textContent = status;
+                $('#depositModal').modal('show');
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
+        // Existing initialization code
         await fetchSavedCards();
         await initializeStripe();
         await removeCardSetup();
 
-        // Fix height and width of inputs
         const currencyDisplay = document.querySelector('.currency-display');
         const amountInput = document.getElementById('amount');
         const savedCardsIcon = document.getElementById('saved-cards-icon');
@@ -1263,7 +1562,6 @@
         const height = currencyDisplay.offsetHeight;
         const inputLabelWidth = currencyDisplay.offsetWidth;
 
-        // Apply height and box-sizing to all relevant elements
         elements.forEach(({name, value}) => {
             if (value) {
                 value.style.setProperty('height', `${height}px`, 'important');
@@ -1280,7 +1578,80 @@
             cardElement.style.setProperty('max-height', `${height}px`, 'important');
             cardElement.style.setProperty('box-sizing', 'border-box', 'important');
         }
+
+        // Toggle functionality
+        const depositBox = document.getElementById('stripe-box');
+        const depositsList = document.getElementById('deposits-list');
+        const depositsToggle = document.getElementById('deposits-toggle');
+        const depositsArrow = depositsToggle.querySelector('i');
+        let firstToggleClick = false;
+
+        // Ensure deposits list starts hidden
+        depositsList.classList.add('list-hidden');
+        let depositBoxInitialHeight = depositBox.style.height;
+
+        depositsToggle.addEventListener('click', () => {
+            const isHidden = depositsList.classList.contains('list-hidden');
+            depositsList.classList.toggle('list-hidden');
+            depositsArrow.classList.toggle('up');
+
+            if (isHidden) {
+                // Show deposits list, collapse deposit box
+                if (!firstToggleClick) {
+                    fetchDeposits();
+                    firstToggleClick = true;
+                }
+                // Set max-height to current scrollHeight before collapsing
+                depositBox.style.maxHeight = depositBox.scrollHeight + 'px';
+                // Trigger reflow
+                depositBox.offsetHeight;
+                // Apply hidden class to start collapse
+                depositBox.classList.add('hidden');
+                // Show deposits list after collapse
+                setTimeout(() => {
+                    depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+                    depositsList.style.opacity = '1';
+                    depositsList.style.transform = 'translateY(0)';
+                }, 510); // Slightly longer than CSS transition duration (0.5s)
+            } else {
+                // Hide deposits list, show deposit box
+                depositsList.style.maxHeight = '0';
+                depositsList.style.opacity = '0';
+                depositsList.style.transform = 'translateY(20px)';
+                // Remove hidden class to start expansion
+                depositBox.classList.remove('hidden');
+                // Set max-height to 0 initially
+                depositBox.style.maxHeight = '0';
+                // Calculate scrollHeight after reflow
+                setTimeout(() => {
+                    // Force reflow to get correct scrollHeight
+                    depositBox.offsetHeight;
+                    depositBox.style.maxHeight = depositBox.scrollHeight + 'px';
+                    depositBox.style.opacity = '1';
+                    // Reset max-height to large value after transition
+                    setTimeout(() => {
+                        depositBox.style.maxHeight = '1000px';
+                    }, 500); // Match CSS transition duration (0.5s)
+                }, 10); // Small delay to ensure class removal takes effect
+            }
+        });
+
+        const depositBoxObserver = new MutationObserver(() => {
+            if (!depositBox.classList.contains('hidden')) {
+                depositBox.style.maxHeight = depositBox.scrollHeight + 'px';
+                setTimeout(() => {
+                    depositBox.style.maxHeight = '1000px';
+                }, 500);
+            }
+        });
+        depositBoxObserver.observe(depositBox, {childList: true, subtree: true});
+
+        const depositsObserver = new MutationObserver(() => {
+            if (!depositsList.classList.contains('list-hidden')) {
+                depositsList.style.maxHeight = depositsList.scrollHeight + 'px';
+            }
+        });
+        depositsObserver.observe(depositsList, {childList: true, subtree: true});
     });
 </script>
-
 {% endblock %}
