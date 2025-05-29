@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from app.infrestructure.database import Base, engine
 from app import *
 import frontend.frontend
@@ -8,6 +9,9 @@ print("Create all...")
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
+
+# static files for frontend
+app.mount("/static", StaticFiles(directory="frontend/static", check_dir=True), name="static")
 
 # Router insertion
 prefix = "/api/v1"

@@ -1,15 +1,21 @@
+from typing import Dict
+
 from fastapi import APIRouter, Request
+from fastapi.params import Depends
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
+from frontend.services.dependencies import get_valid_user_data
 
 router = APIRouter()
-
 
 @router.get("/", response_model=None)
 def root(request: Request):
     data = {"request": request,
             "page": "VWallet - Home"}
+    tokens = request.cookies
+    print(tokens)
     return templates.TemplateResponse("index.html", data)
 
 
@@ -79,3 +85,8 @@ def contacts(request: Request):
 def read_logout(request: Request):
     request.cookies.clear()
     return RedirectResponse("/fe")
+
+
+@router.get("/authtest", response_model=Dict)
+def test_auth_dependency(username: str = Depends(get_valid_user_data)):
+    return {"username": username}
