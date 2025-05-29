@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -7,8 +8,9 @@ from app.models.deposit import Deposit
 from app.models.user import User
 from app.schemas.deposit import (
     DepositResponse,
-    DepositStatsResponse
+    DepositStatsResponse, DepositPublicResponse
 )
+from app.schemas.router import UserDepositsFilter
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +19,48 @@ class DepositService:
     """Business logic for core deposit management"""
 
     @staticmethod
-    def get_user_deposits(db: Session, user: User, limit: int = 30, page: int = 1) -> dict:
+    def get_user_deposits(db: Session, user: User, search_queries=UserDepositsFilter) -> dict:
         """Get deposit history for a user"""
-        deposits = db.query(Deposit).filter(
-            Deposit.user_id == user.id
-        ).order_by(Deposit.created_at.desc()).offset((page - 1)*limit).limit(limit).all()
+        search_by = search_queries.search_by
+        search_query = search_queries.search_query
+        order_by = search_queries.order_by
+        limit = search_queries.limit
+        page = search_queries.page
+        if order_by not in ("asc", "desc"): order_by = "desc"
+        offset = (page - 1) * limit
+
+        query = db.query(Deposit).filter(Deposit.user_id == user.id)
+
+        if not search_by or not search_query:
+            query = query.order_by(Deposit.created_at.desc()).offset(offset).limit(limit)
+        else:
+            if search_by == "date_period":
+                date_from, date_to = search_query.split("_")
+                date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to, "%Y-%m-%d")
+
+                if date_from > date_to:
+                    date_from, date_to = date_to, date_from
+
+                query = (query.filter(Deposit.created_at.between(date_from, date_to)))
+
+            elif search_by == "amount_range":
+                amounts = search_query.split("_")
+                try:
+                    amount_from = float(amounts[0]); amount_to = float(amounts[1])
+                except ValueError:
+                    pass
+
+            elif search_by == "status" and status in ("failed", "pending", "completed"):
+                query = query.filter(Deposit.status == status).offset(offset).limit(limit)
+
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Invalid search filter provided: {search_by}")
+
+        deposits = query.all()
 
         return {
-            "deposits": deposits,
+            "deposits": [DepositPublicResponse.model_valudate(DepositResponse) for deposit in deposits],
             "total": user.deposits_count,
             "total_amount": user.total_deposit_amount,
             "pending_amount": user.total_pending_deposit_amount

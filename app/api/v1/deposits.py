@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.params import Query
 from sqlalchemy.orm import Session
@@ -10,6 +12,7 @@ from app.schemas.deposit import (
     DepositWithCard, DepositResponse, DepositHistoryResponse, DepositStatsResponse, DepositPaymentIntentCreate,
     DepositPaymentIntentResponse, DepositConfirm
 )
+from app.schemas.router import UserDepositsFilter
 
 router = APIRouter(tags=["Deposits"])
 
@@ -45,17 +48,11 @@ async def confirm_deposit(
 
 
 @router.get("/", response_model=DepositHistoryResponse)
-def get_user_deposits(db: Session = Depends(get_db),
-                      user: User = Depends(get_user_except_fpr),
-                      search_by=Query(default=None,
-                                      description="Search user deposits by date_period, amount_range or status"),
-                      search_query:str = Query(default=None, description="The query to look for in the chosen field"),
-                      order_by:str = Query(default="desc",
-                                       description="Sort results by asc (ascending) or desc (descending) - except status"),
-                      limit: int = Query(default=30, gt=9, le=100, description="The maximum number of results per page"),
-                      page: int = Query(default=1, ge=1, description="The page you wish to view")):
+def get_user_deposits(filter : Annotated[UserDepositsFilter, Query()],
+                      db: Session = Depends(get_db),
+                      user: User = Depends(get_user_except_fpr)):
     """Get deposit history for the current user"""
-    return DepositService.get_user_deposits(db, user, limit, page)
+    return DepositService.get_user_deposits(db, user, filter)
 
 
 @router.get("/stats", response_model=DepositStatsResponse)
