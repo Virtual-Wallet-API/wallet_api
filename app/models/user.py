@@ -29,6 +29,7 @@ class User(Base):
     email = Column(String, nullable=False, index=True, unique=True)
     phone_number = Column(String, nullable=False, unique=True)
     balance = Column(Float, nullable=False, default=0)
+    reserved_balance = Column(Float, nullable=False, default=0)  # For pending transactions
     admin = Column(Boolean, nullable=False, default=False)
     avatar = Column(String, nullable=True)
 
@@ -219,6 +220,58 @@ class User(Base):
         """Get all payouts for this withdrawal"""
         return [withdrawal for withdrawal in self.withdrawals
                 if withdrawal.withdrawal_type == WithdrawalType.PAYOUT]
+
+    # Reserved balance methods for improved transaction flow
+
+    @property
+    def available_balance(self) -> float:
+        """Get available balance (total balance minus reserved balance)"""
+        return self.balance - self.reserved_balance
+
+    def reserve_funds(self, amount: float) -> bool:
+        """
+        Reserve funds for a pending transaction
+        :param amount: Amount to reserve
+        :return: True if successful
+        :raises: ValueError if insufficient available balance
+        """
+        if self.available_balance < amount:
+            raise ValueError(
+                f"Insufficient available balance. Available: ${self.available_balance:.2f}, Required: ${amount:.2f}")
+
+        self.reserved_balance += amount
+        return True
+
+    def release_reserved_funds(self, amount: float) -> bool:
+        """
+        Release reserved funds (when transaction is cancelled or declined)
+        :param amount: Amount to release
+        :return: True if successful
+        """
+        if self.reserved_balance < amount:
+            raise ValueError(
+                f"Cannot release more than reserved. Reserved: ${self.reserved_balance:.2f}, Requested: ${amount:.2f}")
+
+        self.reserved_balance -= amount
+        return True
+
+    def transfer_from_reserved(self, amount: float) -> bool:
+        """
+        Transfer funds from reserved balance to actual balance deduction (when transaction completes)
+        :param amount: Amount to transfer
+        :return: True if successful
+        """
+        if self.reserved_balance < amount:
+            raise ValueError(
+                f"Cannot transfer more than reserved. Reserved: ${self.reserved_balance:.2f}, Requested: ${amount:.2f}")
+
+        if self.balance < amount:
+            raise ValueError(f"Insufficient total balance. Balance: ${self.balance:.2f}, Required: ${amount:.2f}")
+
+        # Remove from both reserved and total balance
+        self.reserved_balance -= amount
+        self.balance -= amount
+        return True
 
     def __repr__(self):
         return f"User(#{self.id}, {self.username}, {self.email})"
