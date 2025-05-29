@@ -36,6 +36,7 @@ class CategoryUpdate(CategoryBase):
     """Schema for updating an existing category"""
     pass
 
+
 class CategoryResponse(CategoryBase):
     id: int
     transactions: List[CategoryTransactionResponse] = []

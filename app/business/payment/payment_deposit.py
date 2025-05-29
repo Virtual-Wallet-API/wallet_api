@@ -21,7 +21,7 @@ class DepositService:
         """Get deposit history for a user"""
         deposits = db.query(Deposit).filter(
             Deposit.user_id == user.id
-        ).order_by(Deposit.created_at.desc()).offset((page - 1)*limit).limit(limit).all()
+        ).order_by(Deposit.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
 
         return {
             "deposits": deposits,
