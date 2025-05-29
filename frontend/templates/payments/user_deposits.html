@@ -1,0 +1,726 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style type="text/css">
+    /* Deposit Title */
+    .deposit-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-align: center;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color, #424770);
+    }
+
+    [data-bs-theme="dark"] .deposit-title {
+        color: var(--text-color, #ffffff);
+    }
+
+    /* Filter Form */
+    .filter-form {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 2rem;
+        padding: 2rem;
+        background: var(--balance-bg, #f0f2f5);
+        border: 1px solid var(--accent-color, #6f42c1);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(94, 65, 149, 0.3);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    [data-bs-theme="dark"] .filter-form {
+        background: var(--balance-bg, #2a2a2a);
+        border-color: var(--accent-color, #444);
+    }
+
+    .filter-form .row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: nowrap;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .form-control {
+        background-color: transparent;
+        border: 1px solid var(--accent-color, #6f42c1);
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1.2rem;
+        color: var(--accent-color, #6f42c1);
+        box-shadow: 0 2px 4px var(--shadow-color, rgba(0, 0, 0, 0.1));
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        width: 100%;
+        min-height: 48px;
+        box-sizing: border-box;
+    }
+
+    .form-control.date-input,
+    .form-control.amount-input {
+        min-width: 200px;
+    }
+
+    .form-control.status-select {
+        min-width: 400px;
+    }
+
+    [data-bs-theme="dark"] .form-control {
+        background-color: #333;
+        color: var(--text-color, #ffffff);
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color-hover, #5a32a3);
+        box-shadow: 0 4px 8px rgba(var(--accent-color-rgb, 111, 66, 193), 0.4);
+        outline: none;
+    }
+
+    .filter-btn {
+        background-color: var(--accent-color, #6f42c1);
+        border: none;
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 4px var(--shadow-color, rgba(0, 0, 0, 0.1));
+        flex: 0 0 180px;
+        min-height: 48px;
+        box-sizing: border-box;
+    }
+
+    .filter-btn:hover {
+        background-color: var(--accent-color-hover, #5a32a3);
+        transform: translateY(-2px);
+    }
+
+    #query-inputs {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #query-inputs.fade {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    /* Transaction List */
+    .transaction-list {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 300px);
+    }
+
+    /* Deposit Item */
+    .deposit-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border: 1px solid rgba(var(--accent-color-rgb, 111, 66, 193), 0.3);
+        border-radius: 12px;
+        margin-bottom: 1.2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 2px 6px rgba(var(--accent-color-rgb, 111, 66, 193), 0.2);
+    }
+
+    [data-bs-theme="light"] .deposit-item {
+        background: linear-gradient(135deg, #f0f2f5, #e6e9ec);
+    }
+
+    [data-bs-theme="dark"] .deposit-item {
+        background-color: #2a2a2a;
+    }
+
+    .deposit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(var(--accent-color-rgb, 111, 66, 193), 0.3);
+    }
+
+    .deposit-item .date,
+    .deposit-item .deposit-card,
+    .deposit-item .status {
+        font-size: 1.2rem;
+        color: var(--text-color, #424770);
+    }
+
+    [data-bs-theme="dark"] .deposit-item .date,
+    [data-bs-theme="dark"] .deposit-item .deposit-card,
+    [data-bs-theme="dark"] .deposit-item .status {
+        color: var(--text-color, #ffffff);
+    }
+
+    .deposit-item .amount {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #28a745;
+        min-width: 7rem;
+        text-align: right;
+    }
+
+    .deposit-item .info-icon {
+        font-size: 1.5rem;
+        color: var(--accent-color, #6f42c1);
+        transition: color 0.3s ease;
+    }
+
+    .deposit-item .info-icon:hover {
+        color: var(--accent-color-hover, #5a32a3);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .pagination button {
+        background-color: var(--accent-color, #6f42c1);
+        border: none;
+        color: white;
+        padding: 1rem 1.5rem;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .pagination button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background-color: var(--accent-color-hover, #5a32a3);
+        transform: translateY(-2px);
+    }
+
+    /* Loading Container */
+    .loading-container {
+        font-size: 2.5rem;
+        text-align: center;
+        width: 100%;
+        display: flex;
+        color: var(--accent-color, #6f42c1);
+        justify-content: center;
+        align-items: center;
+        margin: 1.5rem auto;
+        transition: opacity 0.7s ease-in-out;
+    }
+
+    .loading-container.hidden {
+        opacity: 0;
+        height: 0;
+        margin: 0;
+    }
+
+    .bi-arrow-repeat {
+        display: inline-block;
+        animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Deposit Invitation Box */
+    .deposit-invite-box {
+        width: 100%;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--balance-bg, #f0f2f5);
+        border: 1px solid var(--accent-color, #6f42c1);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        font-family: 'Poppins', sans-serif;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+    }
+
+    [data-bs-theme="dark"] .deposit-invite-box {
+        background: var(--balance-bg, #2a2a2a);
+        border-color: var(--accent-color, #444);
+    }
+
+    .deposit-invite-box:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5);
+    }
+
+    .deposit-invite-box p {
+        font-size: 1.4rem;
+        color: var(--text-color, #424770);
+        margin-bottom: 1.5rem;
+    }
+
+    [data-bs-theme="dark"] .deposit-invite-box p {
+        color: var(--text-color, #ffffff);
+    }
+
+    .deposit-invite-box .confirm-btn {
+        background-color: var(--accent-color, #6f42c1);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.4rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 2px 4px var(--shadow-color, rgba(0, 0, 0, 0.1));
+    }
+
+    .deposit-invite-box .confirm-btn:hover {
+        background-color: var(--accent-color-hover, #5a32a3);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .deposit-title {
+            font-size: 2rem;
+        }
+
+        .filter-form {
+            padding: 1.5rem;
+        }
+
+        .filter-form .row {
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
+        .form-control,
+        .filter-btn {
+            font-size: 1rem;
+            padding: 0.8rem;
+            min-height: 44px;
+        }
+
+        .form-control.date-input,
+        .form-control.amount-input {
+            min-width: 100%;
+        }
+
+        .form-control.status-select {
+            min-width: 100%;
+        }
+
+        .filter-btn {
+            width: 100%;
+        }
+
+        .deposit-item {
+            font-size: 1rem;
+            padding: 1rem;
+        }
+
+        .deposit-invite-box {
+            padding: 1.5rem;
+        }
+
+        .deposit-invite-box p {
+            font-size: 1.2rem;
+        }
+
+        .deposit-invite-box .confirm-btn {
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+        }
+
+        .pagination button {
+            font-size: 1rem;
+            padding: 0.8rem 1rem;
+        }
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background: var(--balance-bg, #f0f2f5);
+        border: 1px solid var(--accent-color, #6f42c1);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5);
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-color, #424770);
+    }
+
+    [data-bs-theme="dark"] .modal-content {
+        background: var(--balance-bg, #2a2a2a);
+        border-color: var(--accent-color, #444);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--accent-color, #6f42c1);
+    }
+
+    .modal-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--accent-color, #6f42c1);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--accent-color, #6f42c1);
+    }
+
+    .modal .confirm-btn {
+        background-color: var(--accent-color, #6f42c1);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .modal .confirm-btn:hover {
+        background-color: var(--accent-color-hover, #5a32a3);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .modal-title {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="deposit-title">Deposit History</div>
+
+<!-- Filter Form -->
+<div class="filter-form">
+    <form id="filter-form">
+        <div class="row">
+            <div class="form-group" style="flex: 0 0 250px;">
+                <select id="search_by" name="search_by" class="form-control">
+                    <option value="">Select Filter</option>
+                    <option value="date_period">Date Period</option>
+                    <option value="amount_range">Amount Range</option>
+                    <option value="status">Status</option>
+                </select>
+            </div>
+            <div class="form-group" id="query-inputs" style="flex: 1 1 auto;">
+                <!-- Dynamic inputs will be inserted here -->
+            </div>
+            <div class="form-group" style="flex: 0 0 180px;">
+                <button type="submit" class="filter-btn">Apply Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Deposits List -->
+<div class="transaction-list" id="deposits-list">
+    <div class="pagination" id="pagination-top" style="display: none;">
+        <button id="prev-page-top" class="btn">Previous</button>
+        <span id="page-info-top"></span>
+        <button id="next-page-top" class="btn">Next</button>
+    </div>
+    <div class="loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
+    <div id="deposits-container">
+        <!-- Deposit items will be inserted here -->
+    </div>
+    <div class="pagination" id="pagination-bottom" style="display: none;">
+        <button id="prev-page-bottom" class="btn">Previous</button>
+        <span id="page-info-bottom"></span>
+        <button id="next-page-bottom" class="btn">Next</button>
+    </div>
+    <div id="deposit-invite" style="display: none;">
+        <div class="deposit-invite-box">
+            <p>Ready to add funds? Make a deposit to keep your wallet active!</p>
+            <a href="/deposit" class="confirm-btn">Make a Deposit</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Deposit Details Modal -->
+<div aria-hidden="true" aria-labelledby="depositModalLabel" class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">Deposit Details</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Card:</strong> <span id="modal-card"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn confirm-btn" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterForm = document.getElementById('filter-form');
+        const searchBySelect = document.getElementById('search_by');
+        const queryInputs = document.getElementById('query-inputs');
+        const depositsContainer = document.getElementById('deposits-container');
+        const loadingAlert = document.getElementById('deposits-loading-alert');
+        const paginationTop = document.getElementById('pagination-top');
+        const paginationBottom = document.getElementById('pagination-bottom');
+        const prevPageTop = document.getElementById('prev-page-top');
+        const nextPageTop = document.getElementById('next-page-top');
+        const pageInfoTop = document.getElementById('page-info-top');
+        const prevPageBottom = document.getElementById('prev-page-bottom');
+        const nextPageBottom = document.getElementById('next-page-bottom');
+        const pageInfoBottom = document.getElementById('page-info-bottom');
+        const depositInvite = document.getElementById('deposit-invite');
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalDeposits = 0;
+
+        function updateQueryInputs() {
+            queryInputs.classList.add('fade');
+            setTimeout(() => {
+                queryInputs.innerHTML = '';
+                const searchBy = searchBySelect.value;
+                if (searchBy === 'date_period') {
+                    queryInputs.innerHTML = `
+                        <div class="row" style="flex-wrap: nowrap; gap: 1rem;">
+                            <div class="form-group">
+                                <input type="date" id="from_date" name="from_date" class="form-control date-input" placeholder="From Date (YYYY-MM-DD)">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" id="to_date" name="to_date" class="form-control date-input" placeholder="To Date (YYYY-MM-DD)">
+                            </div>
+                        </div>
+                    `;
+                } else if (searchBy === 'amount_range') {
+                    queryInputs.innerHTML = `
+                        <div class="row" style="flex-wrap: nowrap; gap: 1rem;">
+                            <div class="form-group">
+                                <input type="number" id="min_amount" name="min_amount" step="0.01" class="form-control amount-input" placeholder="Min Amount (e.g., 10.00)">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="max_amount" name="max_amount" step="0.01" class="form-control amount-input" placeholder="Max Amount (e.g., 100.00)">
+                            </div>
+                        </div>
+                    `;
+                } else if (searchBy === 'status') {
+                    queryInputs.innerHTML = `
+                        <div class="form-group">
+                            <select id="status" name="status" class="form-control status-select">
+                                <option value="Pending">Pending</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Failed">Failed</option>
+                            </select>
+                        </div>
+                    `;
+                }
+                queryInputs.classList.remove('fade');
+            }, 300);
+        }
+
+        function getFilterParams() {
+            const params = new URLSearchParams();
+            const searchBy = searchBySelect.value;
+            if (searchBy) {
+                let searchQuery = '';
+                if (searchBy === 'date_period') {
+                    const fromDate = document.getElementById('from_date')?.value;
+                    const toDate = document.getElementById('to_date')?.value;
+                    if (fromDate && toDate) {
+                        searchQuery = `${fromDate}_${toDate}`;
+                    }
+                } else if (searchBy === 'amount_range') {
+                    const minAmount = document.getElementById('min_amount')?.value;
+                    const maxAmount = document.getElementById('max_amount')?.value;
+                    if (minAmount && maxAmount) {
+                        searchQuery = `${parseFloat(minAmount).toFixed(2)}_${parseFloat(maxAmount).toFixed(2)}`;
+                    }
+                } else if (searchBy === 'status') {
+                    searchQuery = document.getElementById('status')?.value;
+                }
+                if (searchQuery) {
+                    params.set('search_by', searchBy);
+                    params.set('search_query', searchQuery);
+                }
+            }
+            params.set('page', currentPage);
+            params.set('limit', 10);
+            return params;
+        }
+
+        async function fetchDeposits() {
+            loadingAlert.classList.remove('hidden');
+            depositInvite.style.display = 'none';
+            const params = getFilterParams();
+            const url = `${API_BASE}/deposits?${params.toString()}`;
+            console.log('Fetching URL:', url); // Debug log
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('Unauthorized');
+                    throw new Error(`Failed to fetch deposits: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('API Response:', data); // Debug log
+                const deposits = data.deposits || [];
+                totalPages = data.total_pages || Math.ceil((data.total || 0) / 10) || 1;
+                totalDeposits = data.total || 0;
+                console.log(`Current Page: ${currentPage}, Total Pages: ${totalPages}, Total Deposits: ${totalDeposits}`); // Debug log
+                renderDeposits(deposits);
+                updatePagination();
+            } catch (error) {
+                console.error('Error fetching deposits:', error);
+                depositsContainer.innerHTML = `<div class="alert alert-danger">${error.message === 'Unauthorized' ? 'Please log in to view deposits' : 'Error loading deposits'}</div>`;
+                if (error.message === 'Unauthorized') {
+                    setTimeout(() => window.location.href = `${FE_BASE}/login`, 3000);
+                }
+            } finally {
+                loadingAlert.classList.add('hidden');
+            }
+        }
+
+        function renderDeposits(deposits) {
+            if (deposits.length === 0) {
+                depositsContainer.innerHTML = `<div class="alert alert-info">No deposits yet? Kickstart your wallet with your first deposit today!</div>`;
+                paginationTop.style.display = 'none';
+                paginationBottom.style.display = 'none';
+                depositInvite.style.display = 'flex';
+                return;
+            }
+            depositsContainer.innerHTML = deposits.map(deposit => {
+                const date = new Date(deposit.created_at).toISOString().split('T')[0];
+                const amount = `$${deposit.amount.toFixed(2)}`;
+                const status = deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1);
+                const card = `Card ending in ${deposit.card_last_four}`;
+                return `
+                    <div class="deposit-item" data-deposit-id="${deposit.id}" data-date="${date}" data-card="${card}" data-amount="${deposit.amount}" data-status="${status}">
+                        <span class="date">${date}</span>
+                        <span class="deposit-card">${card}</span>
+                        <span class="status">${status}</span>
+                        <span class="amount">${amount}</span>
+                        <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                    </div>
+                `;
+            }).join('');
+            paginationTop.style.display = totalDeposits > 10 ? 'flex' : 'none';
+            paginationBottom.style.display = totalDeposits > 10 ? 'flex' : 'none';
+            depositInvite.style.display = totalDeposits <= 6 ? 'flex' : 'none';
+            attachDepositListeners();
+        }
+
+        function updatePagination() {
+            pageInfoTop.textContent = `Page ${currentPage} of ${totalPages}`;
+            pageInfoBottom.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevPageTop.disabled = currentPage <= 1;
+            nextPageTop.disabled = currentPage >= totalPages;
+            prevPageBottom.disabled = currentPage <= 1;
+            nextPageBottom.disabled = currentPage >= totalPages;
+            console.log(`Pagination Updated: Page ${currentPage}/${totalPages}`); // Debug log
+        }
+
+        function attachDepositListeners() {
+            document.querySelectorAll('.deposit-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const date = item.dataset.date;
+                    const card = item.dataset.card;
+                    const amount = `$${parseFloat(item.dataset.amount).toFixed(2)}`;
+                    const status = item.dataset.status;
+                    document.getElementById('modal-date').textContent = date;
+                    document.getElementById('modal-card').textContent = card;
+                    document.getElementById('modal-amount').textContent = amount;
+                    document.getElementById('modal-status').textContent = status;
+                    $('#depositModal').modal('show');
+                });
+            });
+        }
+
+        searchBySelect.addEventListener('change', updateQueryInputs);
+
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentPage = 1;
+            fetchDeposits();
+        });
+
+        prevPageTop.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                console.log('Previous Page Clicked:', currentPage); // Debug log
+                fetchDeposits();
+            }
+        });
+
+        nextPageTop.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                console.log('Next Page Clicked:', currentPage); // Debug log
+                fetchDeposits();
+            }
+        });
+
+        prevPageBottom.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                console.log('Previous Page Clicked:', currentPage); // Debug log
+                fetchDeposits();
+            }
+        });
+
+        nextPageBottom.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                console.log('Next Page Clicked:', currentPage); // Debug log
+                fetchDeposits();
+            }
+        });
+
+        // Initial load
+        updateQueryInputs();
+        fetchDeposits();
+    });
+</script>
+{% endblock %}

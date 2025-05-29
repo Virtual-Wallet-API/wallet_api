@@ -90,3 +90,8 @@ def read_logout(request: Request):
 @router.get("/authtest", response_model=Dict)
 def test_auth_dependency(username: str = Depends(get_valid_user_data)):
     return {"username": username}
+
+
+@router.get("/all-deposits", response_model=Dict)
+def user_deposits_search(request: Request):
+    return templates.TemplateResponse("payments/user_deposits.html", {"request":request})

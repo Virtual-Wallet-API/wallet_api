@@ -17,20 +17,17 @@ class DepositService:
     """Business logic for core deposit management"""
 
     @staticmethod
-    def get_user_deposits(db: Session, user: User, limit: int = 50) -> dict:
+    def get_user_deposits(db: Session, user: User, limit: int = 30, page: int = 1) -> dict:
         """Get deposit history for a user"""
         deposits = db.query(Deposit).filter(
             Deposit.user_id == user.id
-        ).order_by(Deposit.created_at.desc()).limit(limit).all()
-
-        total_amount = sum(d.amount for d in deposits if d.is_completed)
-        pending_amount = sum(d.amount for d in deposits if d.is_pending)
+        ).order_by(Deposit.created_at.desc()).offset((page - 1)*limit).limit(limit).all()
 
         return {
             "deposits": deposits,
-            "total": len(deposits),
-            "total_amount": total_amount,
-            "pending_amount": pending_amount
+            "total": user.deposits_count,
+            "total_amount": user.total_deposit_amount,
+            "pending_amount": user.total_pending_deposit_amount
         }
 
     @staticmethod

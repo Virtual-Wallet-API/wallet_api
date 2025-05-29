@@ -52,10 +52,10 @@ def get_user_deposits(db: Session = Depends(get_db),
                       search_query:str = Query(default=None, description="The query to look for in the chosen field"),
                       order_by:str = Query(default="desc",
                                        description="Sort results by asc (ascending) or desc (descending) - except status"),
-                      limit: int = Query(default=30, gt=10, le=100, description="The maximum number of results per page"),
+                      limit: int = Query(default=30, gt=9, le=100, description="The maximum number of results per page"),
                       page: int = Query(default=1, ge=1, description="The page you wish to view")):
     """Get deposit history for the current user"""
-    return DepositService.get_user_deposits(db, user, limit)
+    return DepositService.get_user_deposits(db, user, limit, page)
 
 
 @router.get("/stats", response_model=DepositStatsResponse)
