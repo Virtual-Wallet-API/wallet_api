@@ -20,3 +20,5 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")  # Will be set wh
 
 # Mailjet API config
 MAILGUN_API_KEY = "da42b9bd5579054489ca67d71d218399-7c5e3295-ca3aecf8"
+MAILGUN_SANDBOX_DOMAIN = "sandboxf19a484ec51645d0ab033bc4bcbff140.mailgun.org"
+MAILGUN_URL = "https://api.mailgun.net/"
