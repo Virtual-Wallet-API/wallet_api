@@ -1,0 +1,412 @@
+from sqlalchemy.orm import Session
+from typing import Optional
+from fastapi import HTTPException
+from datetime import datetime
+
+from app.models import User, Transaction
+from app.models.transaction import TransactionStatus
+from app.schemas.transaction import TransactionCreate, TransactionResponse, TransactionHistoryResponse
+from .transaction_validators import TransactionValidators
+from .transaction_notifications import TransactionNotificationService
+
+
+class TransactionService:
+    """Business logic for transaction management"""
+
+    @classmethod
+    def create_pending_transaction(cls, db: Session, sender: User, transaction_data: TransactionCreate) -> Transaction:
+        """
+        Create a new pending transaction (no balance changes yet)
+        :param db: Database session
+        :param sender: User sending the transaction
+        :param transaction_data: Transaction creation data
+        :return: Created transaction object
+        """
+        # Validate transaction data
+        validated_amount = TransactionValidators.validate_transaction_amount(transaction_data.amount)
+        receiver = TransactionValidators.validate_receiver_exists(transaction_data.receiver_id, db)
+        TransactionValidators.validate_self_transaction(sender.id, transaction_data.receiver_id)
+        TransactionValidators.validate_sufficient_available_balance(sender, validated_amount)
+
+        # Handle category_id None conversion
+        category_id = None if transaction_data.category_id == 0 else transaction_data.category_id
+
+        # Create pending transaction
+        transaction = Transaction(
+            sender_id=sender.id,
+            receiver_id=transaction_data.receiver_id,
+            amount=validated_amount,
+            description=transaction_data.description,
+            category_id=category_id,
+            currency_id=transaction_data.currency_id,
+            status=TransactionStatus.PENDING
+        )
+
+        db.add(transaction)
+        db.commit()
+        db.refresh(transaction)
+
+        # Send notifications
+        TransactionNotificationService.notify_sender_transaction_created(transaction)
+        TransactionNotificationService.notify_transaction_received(transaction)
+
+        return transaction
+
+    @classmethod
+    def confirm_transaction(cls, db: Session, user: User, transaction_id: int) -> Transaction:
+        """
+        Confirm a pending transaction by reserving funds and changing status to AWAITING_ACCEPTANCE
+        :param db: Database session
+        :param user: User confirming the transaction (sender)
+        :param transaction_id: ID of transaction to confirm
+        :return: Confirmed transaction object
+        """
+        # Validate transaction
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_ownership(transaction, user)
+        TransactionValidators.validate_transaction_confirmable(transaction, user)
+
+        # Re-validate available balance at confirmation time
+        db.refresh(user)  # Refresh user to get latest balance
+        TransactionValidators.validate_sufficient_available_balance(user, transaction.amount)
+
+        try:
+            # Reserve funds from sender's account
+            sender = db.query(User).filter(User.id == transaction.sender_id).first()
+            sender.reserve_funds(transaction.amount)
+
+            # Change status to awaiting acceptance
+            transaction.status = TransactionStatus.AWAITING_ACCEPTANCE
+
+            db.commit()
+            db.refresh(transaction)
+
+            # Send notifications - transaction is now confirmed but awaiting receiver acceptance
+            TransactionNotificationService.notify_sender_transaction_confirmed(transaction)
+            TransactionNotificationService.notify_transaction_awaiting_acceptance(transaction)
+
+            return transaction
+
+        except ValueError as e:
+            db.rollback()
+            # Mark transaction as failed
+            transaction.status = TransactionStatus.FAILED
+            db.commit()
+            db.refresh(transaction)
+
+            # Notify about failure
+            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            db.rollback()
+            # Mark transaction as failed
+            transaction.status = TransactionStatus.FAILED
+            db.commit()
+            db.refresh(transaction)
+
+            # Notify about failure
+            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
+            raise e
+
+    @classmethod
+    def accept_transaction(cls, db: Session, receiver: User, transaction_id: int,
+                           message: Optional[str] = None) -> Transaction:
+        """
+        Accept a pending transaction as a receiver and execute the actual balance transfer
+        :param db: Database session
+        :param receiver: User accepting the transaction (receiver)
+        :param transaction_id: ID of transaction to accept
+        :param message: Optional message from receiver
+        :return: Accepted transaction object
+        """
+        # Validate transaction
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_acceptable(transaction, receiver)
+
+        try:
+            # Execute the balance transfer from reserved funds
+            sender = db.query(User).filter(User.id == transaction.sender_id).first()
+
+            # Refresh both users to get latest balances
+            db.refresh(sender)
+            db.refresh(receiver)
+
+            # Transfer from reserved funds to actual transfer
+            sender.transfer_from_reserved(transaction.amount)
+            receiver.balance += transaction.amount
+            transaction.status = TransactionStatus.COMPLETED
+
+            db.commit()
+            db.refresh(transaction)
+
+            # Send completion notifications
+            TransactionNotificationService.notify_sender_transaction_completed(transaction)
+            TransactionNotificationService.notify_transaction_completed(transaction)
+
+            return transaction
+
+        except ValueError as e:
+            db.rollback()
+            # Mark transaction as failed and release reserved funds
+            transaction.status = TransactionStatus.FAILED
+            sender.release_reserved_funds(transaction.amount)
+            db.commit()
+            db.refresh(transaction)
+
+            # Notify about failure
+            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            db.rollback()
+            # Mark transaction as failed and try to release reserved funds
+            try:
+                transaction.status = TransactionStatus.FAILED
+                sender.release_reserved_funds(transaction.amount)
+            except:
+                pass  # If release fails, we still want to mark as failed
+            db.commit()
+            db.refresh(transaction)
+
+            # Notify about failure
+            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
+            raise e
+
+    @classmethod
+    def decline_transaction(cls, db: Session, receiver: User, transaction_id: int,
+                            reason: Optional[str] = None) -> Transaction:
+        """
+        Decline a pending transaction as a receiver and release reserved funds
+        :param db: Database session
+        :param receiver: User declining the transaction (receiver)
+        :param transaction_id: ID of transaction to decline
+        :param reason: Optional reason for declining
+        :return: Declined transaction object
+        """
+        # Validate transaction
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_declinable(transaction, receiver)
+
+        try:
+            # Release reserved funds back to sender
+            sender = db.query(User).filter(User.id == transaction.sender_id).first()
+            sender.release_reserved_funds(transaction.amount)
+
+            # Mark transaction as denied
+            transaction.status = TransactionStatus.DENIED
+            db.commit()
+            db.refresh(transaction)
+
+            # Send notifications
+            TransactionNotificationService.notify_transaction_declined(transaction, reason)
+
+            return transaction
+
+        except ValueError as e:
+            db.rollback()
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            db.rollback()
+            raise e
+
+    @classmethod
+    def cancel_transaction(cls, db: Session, user: User, transaction_id: int) -> Transaction:
+        """
+        Cancel a pending transaction (only works for PENDING status, not AWAITING_ACCEPTANCE)
+        :param db: Database session
+        :param user: User canceling the transaction
+        :param transaction_id: ID of transaction to cancel
+        :return: Cancelled transaction object
+        """
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_ownership(transaction, user)
+
+        # Only allow cancellation of PENDING transactions (before confirmation)
+        if transaction.status not in [TransactionStatus.PENDING]:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot cancel transaction with status: {transaction.status}. Only pending transactions can be cancelled."
+            )
+
+        # Only sender can cancel their own transaction
+        if transaction.sender_id != user.id:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=403, detail="Only the sender can cancel this transaction")
+
+        transaction.status = TransactionStatus.CANCELLED
+        db.commit()
+        db.refresh(transaction)
+
+        # Send notifications
+        TransactionNotificationService.notify_transaction_cancelled(transaction)
+
+        return transaction
+
+    @classmethod
+    def get_transaction_by_id(cls, db: Session, user: User, transaction_id: int) -> Transaction:
+        """
+        Get a specific transaction by ID (if user has access)
+        :param db: Database session
+        :param user: User requesting the transaction
+        :param transaction_id: ID of transaction to retrieve
+        :return: Transaction object
+        """
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_ownership(transaction, user)
+        return transaction
+
+    @classmethod
+    def get_user_transaction_history(cls, db: Session, user: User,
+                                     limit: Optional[int] = None,
+                                     offset: Optional[int] = None,
+                                     order_by: str = "date_desc",
+                                     # Advanced filtering options
+                                     date_from: Optional[datetime] = None,
+                                     date_to: Optional[datetime] = None,
+                                     sender_id: Optional[int] = None,
+                                     receiver_id: Optional[int] = None,
+                                     direction: Optional[str] = None,  # "in", "out", or None for both
+                                     status: Optional[str] = None) -> TransactionHistoryResponse:
+        """
+        Get transaction history for a user with advanced filtering and sorting
+        :param db: Database session
+        :param user: User requesting transaction history
+        :param limit: Limit number of results
+        :param offset: Offset for pagination
+        :param order_by: Sort order ("date_desc", "date_asc", "amount_desc", "amount_asc")
+        :param date_from: Filter transactions from this date
+        :param date_to: Filter transactions until this date
+        :param sender_id: Filter by specific sender ID
+        :param receiver_id: Filter by specific receiver ID
+        :param direction: Filter by direction ("in" for received, "out" for sent)
+        :param status: Filter by transaction status
+        :return: Transaction history response
+        """
+        # Start with base query for user transactions
+        query = user.get_transactions(db)
+
+        # Apply date range filters
+        if date_from:
+            query = query.filter(Transaction.date >= date_from)
+        if date_to:
+            query = query.filter(Transaction.date <= date_to)
+
+        # Apply sender/receiver filters
+        if sender_id:
+            query = query.filter(Transaction.sender_id == sender_id)
+        if receiver_id:
+            query = query.filter(Transaction.receiver_id == receiver_id)
+
+        # Apply direction filter
+        if direction == "in":
+            query = query.filter(Transaction.receiver_id == user.id)
+        elif direction == "out":
+            query = query.filter(Transaction.sender_id == user.id)
+
+        # Apply status filter
+        if status:
+            try:
+                status_enum = TransactionStatus(status.upper())
+                query = query.filter(Transaction.status == status_enum)
+            except ValueError:
+                # Invalid status, return empty result
+                query = query.filter(False)
+
+        # Apply sorting
+        if order_by == "date_asc":
+            query = query.order_by(Transaction.date.asc())
+        elif order_by == "amount_desc":
+            query = query.order_by(Transaction.amount.desc())
+        elif order_by == "amount_asc":
+            query = query.order_by(Transaction.amount.asc())
+        else:  # default: "date_desc"
+            query = query.order_by(Transaction.date.desc())
+
+        # Apply pagination
+        if offset:
+            query = query.offset(offset)
+        if limit:
+            query = query.limit(limit)
+
+        transactions = query.all()
+
+        # Calculate totals from FILTERED transactions (dynamic totals)
+        # Get all filtered transactions (without pagination) for totals calculation
+        totals_query = user.get_transactions(db)
+
+        # Apply same filters for totals calculation
+        if date_from:
+            totals_query = totals_query.filter(Transaction.date >= date_from)
+        if date_to:
+            totals_query = totals_query.filter(Transaction.date <= date_to)
+        if sender_id:
+            totals_query = totals_query.filter(Transaction.sender_id == sender_id)
+        if receiver_id:
+            totals_query = totals_query.filter(Transaction.receiver_id == receiver_id)
+        if direction == "in":
+            totals_query = totals_query.filter(Transaction.receiver_id == user.id)
+        elif direction == "out":
+            totals_query = totals_query.filter(Transaction.sender_id == user.id)
+        if status:
+            try:
+                status_enum = TransactionStatus(status.upper())
+                totals_query = totals_query.filter(Transaction.status == status_enum)
+            except ValueError:
+                totals_query = totals_query.filter(False)
+
+        # Get all filtered transactions for totals (without pagination)
+        all_filtered_transactions = totals_query.all()
+
+        # Calculate dynamic totals based on filtered results
+        total_count = len(all_filtered_transactions)
+
+        # For financial totals, only include COMPLETED transactions from filtered results
+        completed_filtered = [t for t in all_filtered_transactions if t.status == TransactionStatus.COMPLETED]
+        outgoing_total = sum([t.amount for t in completed_filtered if t.sender_id == user.id])
+        incoming_total = sum([t.amount for t in completed_filtered if t.receiver_id == user.id])
+
+        return TransactionHistoryResponse(
+            transactions=transactions,
+            total=total_count,
+            outgoing_total=outgoing_total,
+            incoming_total=incoming_total
+        )
+
+    @classmethod
+    def get_pending_received_transactions(cls, db: Session, user: User) -> list[Transaction]:
+        """
+        Get all transactions awaiting acceptance where the user is the receiver
+        :param db: Database session
+        :param user: User to get pending transactions for
+        :return: List of transactions awaiting acceptance where user is receiver
+        """
+        return db.query(Transaction).filter(
+            Transaction.receiver_id == user.id,
+            Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE
+        ).all()
+
+    @classmethod
+    def get_pending_sent_transactions(cls, db: Session, user: User) -> list[Transaction]:
+        """
+        Get all pending transactions where the user is the sender (before confirmation)
+        :param db: Database session
+        :param user: User to get pending transactions for
+        :return: List of pending transactions where user is sender
+        """
+        return db.query(Transaction).filter(
+            Transaction.sender_id == user.id,
+            Transaction.status == TransactionStatus.PENDING
+        ).all()
+
+    @classmethod
+    def get_awaiting_acceptance_sent_transactions(cls, db: Session, user: User) -> list[Transaction]:
+        """
+        Get all transactions awaiting acceptance where the user is the sender (after confirmation)
+        :param db: Database session
+        :param user: User to get awaiting acceptance transactions for
+        :return: List of transactions awaiting acceptance where user is sender
+        """
+        return db.query(Transaction).filter(
+            Transaction.sender_id == user.id,
+            Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE
+        ).all()
