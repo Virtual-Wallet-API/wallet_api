@@ -123,6 +123,7 @@ class DepositPublicResponse(BaseModel):
 class DepositHistoryResponse(BaseModel):
     deposits: List[DepositPublicResponse]
     total: int
+    total_matching: int
     total_amount: float
     pending_amount: float
 

@@ -7,8 +7,9 @@ from app.models.deposit import Deposit
 from app.models.user import User
 from app.schemas.deposit import (
     DepositResponse,
-    DepositStatsResponse
+    DepositStatsResponse, DepositPublicResponse
 )
+from app.schemas.router import UserDepositsFilter
 
 logger = logging.getLogger(__name__)
 
@@ -17,15 +18,77 @@ class DepositService:
     """Business logic for core deposit management"""
 
     @staticmethod
-    def get_user_deposits(db: Session, user: User, limit: int = 30, page: int = 1) -> dict:
+    def get_user_deposits(db: Session, user: User, search_queries: UserDepositsFilter) -> dict:
         """Get deposit history for a user"""
-        deposits = db.query(Deposit).filter(
-            Deposit.user_id == user.id
-        ).order_by(Deposit.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+        search_by = search_queries.search_by
+        search_query = search_queries.search_query
+        order_by = search_queries.order_by
+        limit = search_queries.limit
+        page = search_queries.page
+        if order_by not in ("asc", "desc"): order_by = "desc"
+        offset = (page - 1) * limit
 
+        query = db.query(Deposit).filter(Deposit.user_id == user.id)
+
+        if not search_by or not search_query:
+            if order_by == "desc":
+                query = query.order_by(Deposit.created_at.desc())
+            else:
+                query = query.order_by(Deposit.created_at.asc())
+
+        else:
+            if search_by == "date_period":
+                try:
+                    date_from, date_to = search_query.split("_")
+                    date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to,
+                                                                                                     "%Y-%m-%d")
+                except Exception as e:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail="Invalid date range format provided, use YYYY-MM-DD_YYYY-MM-DD")
+
+                if date_from > date_to:
+                    date_from, date_to = date_to, date_from
+
+                query = query.filter(Deposit.created_at.between(date_from, date_to))
+
+                if order_by == "desc":
+                    query = query.order_by(Deposit.created_at.desc())
+                else:
+                    query = query.order_by(Deposit.created_at.asc())
+
+            elif search_by == "amount_range":
+                amounts = search_query.split("_")
+                try:
+                    amount_from = float(amounts[0])
+                    amount_to = float(amounts[1])
+                    query = query.filter(Deposit.amount.between(amount_from, amount_to))
+
+                    if order_by == "desc":
+                        query = query.order_by(Deposit.amount.desc())
+                    else:
+                        query = query.order_by(Deposit.amount.asc())
+
+                except ValueError:
+                    raise HTTPException(status_code=400,
+                                        detail="Invalid search query provided for amount range filtering")
+
+            elif search_by == "status" and search_query in ("failed", "pending", "completed"):
+                query = query.filter(Deposit.status == search_query)
+
+                if order_by == "desc":
+                    query = query.order_by(Deposit.created_at.desc())
+                else:
+                    query = query.order_by(Deposit.created_at.asc())
+
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Invalid search filter provided: {search_by} ({search_query})")
+        total_matching = query.count()
+        deposits = query.offset(offset).limit(limit).all()
         return {
-            "deposits": deposits,
+            "deposits": [DepositPublicResponse.model_validate(deposit) for deposit in deposits],
             "total": user.deposits_count,
+            "total_matching": total_matching,
             "total_amount": user.total_deposit_amount,
             "pending_amount": user.total_pending_deposit_amount
         }
