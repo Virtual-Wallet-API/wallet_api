@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Annotated
 from datetime import datetime
 
 from app.business.transaction import TransactionService
@@ -15,35 +15,14 @@ from app.schemas.transaction import (
     TransactionAccept,
     TransactionDecline
 )
+from app.schemas.router import TransactionHistoryFilter
 
 router = APIRouter(tags=["Transactions"])
 
 
 @router.get("/", response_model=TransactionHistoryResponse)
 def get_transaction_history(
-        # Pagination
-        limit: Optional[int] = Query(None, description="Limit number of results"),
-        offset: Optional[int] = Query(None, description="Offset for pagination"),
-
-        # Sorting
-        order_by: str = Query("date_desc", description="Sort order: date_desc, date_asc, amount_desc, amount_asc"),
-
-        # Date filtering
-        date_from: Optional[datetime] = Query(None, description="Filter transactions from this date (ISO format)"),
-        date_to: Optional[datetime] = Query(None, description="Filter transactions until this date (ISO format)"),
-
-        # User filtering
-        sender_id: Optional[int] = Query(None, description="Filter by specific sender ID"),
-        receiver_id: Optional[int] = Query(None, description="Filter by specific receiver ID"),
-
-        # Direction filtering
-        direction: Optional[str] = Query(None, description="Filter by direction: 'in' for received, 'out' for sent"),
-
-        # Status filtering
-        status: Optional[str] = Query(None,
-                                      description="Filter by transaction status: pending, awaiting_acceptance, completed, denied, cancelled, failed"),
-
-        # Dependencies
+        filter_params: Annotated[TransactionHistoryFilter, Query()],
         db: Session = Depends(get_db),
         user: User = Depends(get_user_except_pending_fpr)
 ):
@@ -65,15 +44,15 @@ def get_transaction_history(
     return TransactionService.get_user_transaction_history(
         db=db,
         user=user,
-        limit=limit,
-        offset=offset,
-        order_by=order_by,
-        date_from=date_from,
-        date_to=date_to,
-        sender_id=sender_id,
-        receiver_id=receiver_id,
-        direction=direction,
-        status=status
+        limit=filter_params.limit,
+        offset=filter_params.offset,
+        order_by=filter_params.order_by,
+        date_from=filter_params.date_from,
+        date_to=filter_params.date_to,
+        sender_id=filter_params.sender_id,
+        receiver_id=filter_params.receiver_id,
+        direction=filter_params.direction,
+        status=filter_params.status
     )
 
 
