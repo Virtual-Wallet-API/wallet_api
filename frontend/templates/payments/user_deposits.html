@@ -61,6 +61,7 @@
         width: 100%;
         min-height: 48px;
         box-sizing: border-box;
+        text-align: center;
     }
 
     .form-control.date-input,
@@ -72,9 +73,15 @@
         min-width: 400px;
     }
 
+    .form-control.limit-select {
+        font-size: 1rem;
+        max-width: 150px;
+        width: auto;
+    }
+
     [data-bs-theme="dark"] .form-control {
         background-color: #333;
-        color: var(--text-color, #ffffff);
+        color: var(--accent-color, #6f42c1);
     }
 
     .form-control:focus {
@@ -83,12 +90,12 @@
         outline: none;
     }
 
-    .filter-btn {
+    .filter-btn, .order-by-btn {
         background-color: var(--accent-color, #6f42c1);
         border: none;
         color: white;
         padding: 1rem 1.5rem;
-        font-size: 1.2rem;
+        font-size: 1rem;
         border-radius: 8px;
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
@@ -96,9 +103,11 @@
         flex: 0 0 180px;
         min-height: 48px;
         box-sizing: border-box;
+        text-align: center;
+        white-space: nowrap;
     }
 
-    .filter-btn:hover {
+    .filter-btn:hover, .order-by-btn:hover {
         background-color: var(--accent-color-hover, #5a32a3);
         transform: translateY(-2px);
     }
@@ -114,6 +123,13 @@
         transform: translateY(10px);
     }
 
+    #query-inputs .no-filter {
+        font-size: 1.2rem;
+        color: var(--accent-color, #6f42c1);
+        text-align: center;
+        line-height: 48px;
+    }
+
     /* Transaction List */
     .transaction-list {
         width: 100%;
@@ -123,6 +139,15 @@
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - 300px);
+        flex: 1;
+    }
+
+    /* Limit Selector */
+    .limit-selector {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 1rem;
     }
 
     /* Deposit Item */
@@ -186,34 +211,78 @@
 
     /* Pagination */
     .pagination {
-        display: flex;
+        display: inline-flex;
         justify-content: center;
         align-items: center;
-        gap: 1rem;
-        margin: 1.5rem 0;
+        margin: 1.5rem auto;
         font-family: 'Poppins', sans-serif;
+        background: var(--balance-bg, #f0f2f5);
+        border: 1px solid var(--accent-color, #6f42c1);
+        border-radius: 8px;
+        overflow: hidden;
+        width: auto;
+    }
+
+    [data-bs-theme="dark"] .pagination {
+        background: var(--balance-bg, #2a2a2a);
+        border-color: var(--accent-color, #444);
     }
 
     .pagination button {
-        background-color: var(--accent-color, #6f42c1);
+        background-color: transparent;
         border: none;
-        color: white;
-        padding: 1rem 1.5rem;
-        font-size: 1.2rem;
-        border-radius: 8px;
+        color: var(--accent-color, #6f42c1);
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        border-right: 1px solid var(--accent-color, #6f42c1);
+    }
+
+    .pagination button:last-child {
+        border-right: none;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background-color: rgba(var(--accent-color-rgb, 111, 66, 193), 0.1);
     }
 
     .pagination button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        transform: none;
+        background-color: var(--accent-color, #6f42c1);
+        color: white;
     }
 
-    .pagination button:hover:not(:disabled) {
-        background-color: var(--accent-color-hover, #5a32a3);
-        transform: translateY(-2px);
+    .pagination .page-number {
+        background-color: transparent;
+        color: var(--accent-color, #6f42c1);
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+        border-right: 1px solid var(--accent-color, #6f42c1);
+    }
+
+    .pagination .page-number:disabled {
+        background-color: var(--accent-color, #6f42c1);
+        color: white;
+        opacity: 0.8;
+        cursor: not-allowed;
+    }
+
+    .pagination .page-number:hover:not(:disabled) {
+        background-color: rgba(var(--accent-color-rgb, 111, 66, 193), 0.1);
+    }
+
+    [data-bs-theme="dark"] .pagination button,
+    [data-bs-theme="dark"] .pagination .page-number {
+        color: var(--accent-color, #6f42c1);
+    }
+
+    [data-bs-theme="dark"] .pagination button:disabled,
+    [data-bs-theme="dark"] .pagination .page-number:disabled {
+        background-color: var(--accent-color, #6f42c1);
+        color: white;
     }
 
     /* Loading Container */
@@ -254,7 +323,7 @@
         background: var(--balance-bg, #f0f2f5);
         border: 1px solid var(--accent-color, #6f42c1);
         border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.5), inset 0 1px 4px rgba(94, 65, 149, 0.4);
+        box-shadow: 0 8px 20px rgba(94, 65, 149, 0.3), inset 0 1px 4px rgba(94, 65, 149, 0.2);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         font-family: 'Poppins', sans-serif;
         text-align: center;
@@ -262,7 +331,6 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        flex-grow: 1;
     }
 
     [data-bs-theme="dark"] .deposit-invite-box {
@@ -272,7 +340,7 @@
 
     .deposit-invite-box:hover {
         transform: scale(1.02);
-        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.6), inset 0 1px 5px rgba(94, 65, 149, 0.5);
+        box-shadow: 0 10px 25px rgba(94, 65, 149, 0.4), inset 0 1px 5px rgba(94, 65, 149, 0.3);
     }
 
     .deposit-invite-box p {
@@ -319,23 +387,23 @@
         }
 
         .form-control,
-        .filter-btn {
+        .filter-btn,
+        .order-by-btn {
             font-size: 1rem;
             padding: 0.8rem;
             min-height: 44px;
         }
 
         .form-control.date-input,
-        .form-control.amount-input {
-            min-width: 100%;
-        }
-
+        .form-control.amount-input,
         .form-control.status-select {
             min-width: 100%;
         }
 
-        .filter-btn {
+        .filter-btn,
+        .order-by-btn {
             width: 100%;
+            flex: 1;
         }
 
         .deposit-item {
@@ -356,9 +424,14 @@
             padding: 0.8rem 1.5rem;
         }
 
-        .pagination button {
-            font-size: 1rem;
-            padding: 0.8rem 1rem;
+        .pagination button,
+        .pagination .page-number {
+            font-size: 0.9rem;
+            padding: 0.6rem 0.8rem;
+        }
+
+        .limit-selector {
+            justify-content: center;
         }
     }
 
@@ -428,14 +501,17 @@
         <div class="row">
             <div class="form-group" style="flex: 0 0 250px;">
                 <select id="search_by" name="search_by" class="form-control">
-                    <option value="">Select Filter</option>
+                    <option value="" disabled selected>Filters</option>
                     <option value="date_period">Date Period</option>
                     <option value="amount_range">Amount Range</option>
                     <option value="status">Status</option>
                 </select>
             </div>
             <div class="form-group" id="query-inputs" style="flex: 1 1 auto;">
-                <!-- Dynamic inputs will be inserted here -->
+                <div class="no-filter">Choose a filter</div>
+            </div>
+            <div class="form-group" style="flex: 0 0 180px;">
+                <button type="button" class="order-by-btn" data-value="desc">Newest</button>
             </div>
             <div class="form-group" style="flex: 0 0 180px;">
                 <button type="submit" class="filter-btn">Apply Filter</button>
@@ -446,20 +522,17 @@
 
 <!-- Deposits List -->
 <div class="transaction-list" id="deposits-list">
-    <div class="pagination" id="pagination-top" style="display: none;">
-        <button id="prev-page-top" class="btn">Previous</button>
-        <span id="page-info-top"></span>
-        <button id="next-page-top" class="btn">Next</button>
+    <div class="limit-selector">
+        <select id="limit-select" class="form-control limit-select">
+            {% for i in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] %}
+                <option value="{{ i }}" {% if i == 10 %}selected{% endif %}>{{ i }} per page</option>
+            {% endfor %}
+        </select>
     </div>
+    <div class="pagination" id="pagination-top" style="display: none;"></div>
     <div class="loading-container" id="deposits-loading-alert"><i class="bi bi-arrow-repeat"></i></div>
-    <div id="deposits-container">
-        <!-- Deposit items will be inserted here -->
-    </div>
-    <div class="pagination" id="pagination-bottom" style="display: none;">
-        <button id="prev-page-bottom" class="btn">Previous</button>
-        <span id="page-info-bottom"></span>
-        <button id="next-page-bottom" class="btn">Next</button>
-    </div>
+    <div id="deposits-container"></div>
+    <div class="pagination" id="pagination-bottom" style="display: none;"></div>
     <div id="deposit-invite" style="display: none;">
         <div class="deposit-invite-box">
             <p>Ready to add funds? Make a deposit to keep your wallet active!</p>
@@ -503,23 +576,23 @@
         const loadingAlert = document.getElementById('deposits-loading-alert');
         const paginationTop = document.getElementById('pagination-top');
         const paginationBottom = document.getElementById('pagination-bottom');
-        const prevPageTop = document.getElementById('prev-page-top');
-        const nextPageTop = document.getElementById('next-page-top');
-        const pageInfoTop = document.getElementById('page-info-top');
-        const prevPageBottom = document.getElementById('prev-page-bottom');
-        const nextPageBottom = document.getElementById('next-page-bottom');
-        const pageInfoBottom = document.getElementById('page-info-bottom');
         const depositInvite = document.getElementById('deposit-invite');
+        const limitSelect = document.getElementById('limit-select');
+        const orderByBtn = document.querySelector('.order-by-btn');
         let currentPage = 1;
         let totalPages = 1;
         let totalDeposits = 0;
+        let filterChanged = false;
+        let orderBy = 'desc';
 
         function updateQueryInputs() {
             queryInputs.classList.add('fade');
             setTimeout(() => {
                 queryInputs.innerHTML = '';
                 const searchBy = searchBySelect.value;
-                if (searchBy === 'date_period') {
+                if (!searchBy) {
+                    queryInputs.innerHTML = `<div class="no-filter">${filterChanged ? 'No Filter' : 'Choose a filter'}</div>`;
+                } else if (searchBy === 'date_period') {
                     queryInputs.innerHTML = `
                         <div class="row" style="flex-wrap: nowrap; gap: 1rem;">
                             <div class="form-group">
@@ -556,6 +629,32 @@
             }, 300);
         }
 
+        function updateSearchByOptions() {
+            if (!filterChanged && searchBySelect.value) {
+                filterChanged = true;
+                searchBySelect.innerHTML = `
+                    <option value="" selected>Clear Filters</option>
+                    <option value="date_period" ${searchBySelect.value === 'date_period' ? 'selected' : ''}>Date Period</option>
+                    <option value="amount_range" ${searchBySelect.value === 'amount_range' ? 'selected' : ''}>Amount Range</option>
+                    <option value="status" ${searchBySelect.value === 'status' ? 'selected' : ''}>Status</option>
+                `;
+            }
+        }
+
+        function toggleOrderBy() {
+            if (orderBy === 'desc') {
+                orderBy = 'asc';
+                orderByBtn.textContent = 'Oldest';
+                orderByBtn.dataset.value = 'asc';
+            } else {
+                orderBy = 'desc';
+                orderByBtn.textContent = 'Newest';
+                orderByBtn.dataset.value = 'desc';
+            }
+            currentPage = 1;
+            fetchDeposits();
+        }
+
         function getFilterParams() {
             const params = new URLSearchParams();
             const searchBy = searchBySelect.value;
@@ -582,7 +681,8 @@
                 }
             }
             params.set('page', currentPage);
-            params.set('limit', 10);
+            params.set('limit', limitSelect.value);
+            params.set('order_by', orderBy);
             return params;
         }
 
@@ -607,10 +707,14 @@
                 const data = await response.json();
                 console.log('API Response:', data); // Debug log
                 const deposits = data.deposits || [];
-                totalPages = data.total_pages || Math.ceil((data.total || 0) / 10) || 1;
+                totalPages = data.total_pages || Math.ceil((data.total_matching || 0) / parseInt(limitSelect.value)) || 1;
                 totalDeposits = data.total || 0;
-                console.log(`Current Page: ${currentPage}, Total Pages: ${totalPages}, Total Deposits: ${totalDeposits}`); // Debug log
-                renderDeposits(deposits);
+                // Ensure currentPage is valid
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                }
+                console.log(`Current Page: ${currentPage}, Total Pages: ${totalPages}, Total Deposits: ${totalDeposits}, Total Matching: ${data.total_matching || 0}`); // Debug log
+                renderDeposits(deposits, data.total_matching || 0);
                 updatePagination();
             } catch (error) {
                 console.error('Error fetching deposits:', error);
@@ -623,12 +727,13 @@
             }
         }
 
-        function renderDeposits(deposits) {
+        function renderDeposits(deposits, total_matching) {
             if (deposits.length === 0) {
-                depositsContainer.innerHTML = `<div class="alert alert-info">No deposits yet? Kickstart your wallet with your first deposit today!</div>`;
+                const message = searchBySelect.value ? 'No deposits matching the selected filters found.' : 'No deposits yet? Kickstart your wallet with your first deposit today!';
+                depositsContainer.innerHTML = `<div class="alert alert-info">${message}</div>`;
                 paginationTop.style.display = 'none';
                 paginationBottom.style.display = 'none';
-                depositInvite.style.display = 'flex';
+                depositInvite.style.display = searchBySelect.value ? 'none' : 'flex';
                 return;
             }
             depositsContainer.innerHTML = deposits.map(deposit => {
@@ -646,19 +751,61 @@
                     </div>
                 `;
             }).join('');
-            paginationTop.style.display = totalDeposits > 10 ? 'flex' : 'none';
-            paginationBottom.style.display = totalDeposits > 10 ? 'flex' : 'none';
-            depositInvite.style.display = totalDeposits <= 6 ? 'flex' : 'none';
+            paginationTop.style.display = parseInt(limitSelect.value) < total_matching ? 'flex' : 'none';
+            paginationBottom.style.display = parseInt(limitSelect.value) < total_matching ? 'flex' : 'none';
+            depositInvite.style.display = totalDeposits <= 6 && !searchBySelect.value ? 'flex' : 'none';
             attachDepositListeners();
         }
 
+        function renderPagination(container) {
+            container.innerHTML = '';
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '<';
+            prevButton.disabled = currentPage <= 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    console.log('Previous Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                }
+            });
+
+            // Add nearby page numbers (±2)
+            const pages = [];
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'page-number';
+                pageBtn.textContent = i;
+                pageBtn.disabled = i === currentPage;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    console.log('Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                });
+                pages.push(pageBtn);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '>';
+            nextButton.disabled = currentPage >= totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    console.log('Next Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                }
+            });
+
+            container.appendChild(prevButton);
+            pages.forEach(page => container.appendChild(page));
+            container.appendChild(nextButton);
+        }
+
         function updatePagination() {
-            pageInfoTop.textContent = `Page ${currentPage} of ${totalPages}`;
-            pageInfoBottom.textContent = `Page ${currentPage} of ${totalPages}`;
-            prevPageTop.disabled = currentPage <= 1;
-            nextPageTop.disabled = currentPage >= totalPages;
-            prevPageBottom.disabled = currentPage <= 1;
-            nextPageBottom.disabled = currentPage >= totalPages;
+            renderPagination(paginationTop);
+            renderPagination(paginationBottom);
             console.log(`Pagination Updated: Page ${currentPage}/${totalPages}`); // Debug log
         }
 
@@ -678,7 +825,10 @@
             });
         }
 
-        searchBySelect.addEventListener('change', updateQueryInputs);
+        searchBySelect.addEventListener('change', () => {
+            updateSearchByOptions();
+            updateQueryInputs();
+        });
 
         filterForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -686,37 +836,12 @@
             fetchDeposits();
         });
 
-        prevPageTop.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                console.log('Previous Page Clicked:', currentPage); // Debug log
-                fetchDeposits();
-            }
+        limitSelect.addEventListener('change', () => {
+            currentPage = 1;
+            fetchDeposits();
         });
 
-        nextPageTop.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                console.log('Next Page Clicked:', currentPage); // Debug log
-                fetchDeposits();
-            }
-        });
-
-        prevPageBottom.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                console.log('Previous Page Clicked:', currentPage); // Debug log
-                fetchDeposits();
-            }
-        });
-
-        nextPageBottom.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                console.log('Next Page Clicked:', currentPage); // Debug log
-                fetchDeposits();
-            }
-        });
+        orderByBtn.addEventListener('click', toggleOrderBy);
 
         // Initial load
         updateQueryInputs();

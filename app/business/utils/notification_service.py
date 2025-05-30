@@ -11,10 +11,10 @@ from app.models import User
 
 def send_mail() -> Response:
     return requests.post(
-        url="https://api.mailgun.net/v3/sandboxf19a484ec51645d0ab033bc4bcbff140.mailgun.org/messages",
+        url="https://api.mailgun.net/v3/vwallet.ninja/messages",
         auth=("api", os.getenv(MAILGUN_API_KEY, MAILGUN_API_KEY)),
         data={
-            "from": "Mailgun Sandbox <postmaster@sandboxf19a484ec51645d0ab033bc4bcbff140.mailgun.org>",
+            "from": "VWallet Notification <admin@vwallet.ninja>",
             "to": "Steliyan Svetoslavov Slavov <steliyan.slavov31@icloud.com>",
             "subject": "Hello Steliyan Svetoslavov Slavov",
             "text": "Congratulations Steliyan Svetoslavov Slavov, you just sent an email with Mailgun! You are truly awesome!"
@@ -34,8 +34,8 @@ class NotificationService:
     @classmethod
     def notify(cls, user: User, message: Dict[str, str]) -> bool:
         """Send a notification to a user"""
-        # response = send_mail()
-        # print(response.json())
+        response = send_mail()
+        print(response.json())
         pass
 
     @classmethod

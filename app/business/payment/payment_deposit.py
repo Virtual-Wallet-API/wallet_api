@@ -41,7 +41,8 @@ class DepositService:
             if search_by == "date_period":
                 try:
                     date_from, date_to = search_query.split("_")
-                    date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to, "%Y-%m-%d")
+                    date_from, date_to = datetime.strptime(date_from, "%Y-%m-%d"), datetime.strptime(date_to,
+                                                                                                     "%Y-%m-%d")
                 except Exception as e:
                     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                         detail="Invalid date range format provided, use YYYY-MM-DD_YYYY-MM-DD")
@@ -59,7 +60,8 @@ class DepositService:
             elif search_by == "amount_range":
                 amounts = search_query.split("_")
                 try:
-                    amount_from = float(amounts[0]); amount_to = float(amounts[1])
+                    amount_from = float(amounts[0])
+                    amount_to = float(amounts[1])
                     query = query.filter(Deposit.amount.between(amount_from, amount_to))
 
                     if order_by == "desc":
@@ -82,11 +84,12 @@ class DepositService:
             else:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                     detail=f"Invalid search filter provided: {search_by} ({search_query})")
-
+        total_matching = query.count()
         deposits = query.offset(offset).limit(limit).all()
         return {
             "deposits": [DepositPublicResponse.model_validate(deposit) for deposit in deposits],
             "total": user.deposits_count,
+            "total_matching": total_matching,
             "total_amount": user.total_deposit_amount,
             "pending_amount": user.total_pending_deposit_amount
         }
