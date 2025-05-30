@@ -51,22 +51,22 @@ class User(Base):
 
     # Transactions logic
 
-    sent_transactions = relationship("Transaction", foreign_keys="Transaction.sender_id", back_populates="sender")
+    sent_transactions = relationship("Transaction", foreign_keys="Transaction.sender_id", back_populates="sender", lazy='dynamic')
     received_transactions = relationship("Transaction", foreign_keys="Transaction.receiver_id",
-                                         back_populates="receiver")
+                                         back_populates="receiver", lazy='dynamic')
 
     @hybrid_property
     def transactions(self):
-        transactions = self.sent_transactions
-        for t in self.received_transactions:
-            transactions.append(t)
-        return transactions
+        return self.sent_transactions.union(self.received_transactions).order_by(Transaction.date.desc()).all()
+
+    @hybrid_property
+    def transactions_query(self):
+        return self.sent_transactions.union(self.received_transactions)
 
     @transactions.expression
     def transactions(cls):
-        return select(Transaction).where(
-            or_(Transaction.sender_id == cls.id, Transaction.receiver_id == cls.id)
-        )
+        return (select(Transaction)
+                .where(or_(Transaction.sender_id == cls.id, Transaction.receiver_id == cls.id)))
 
     def get_transactions(self, db: Session,
                          date_from: date = None,
@@ -75,10 +75,8 @@ class User(Base):
                          offset=None,
                          limit=None) -> Query:
 
-        query = db.query(Transaction).filter(
-            or_(Transaction.sender_id == self.id, Transaction.receiver_id == self.id)
-        )
-        print("Model order_by " + order_by)
+        query = self.transactions_query
+
         if order_by == "date_asc":
             query = query.order_by(Transaction.date.asc())
         elif order_by == "date_desc":
