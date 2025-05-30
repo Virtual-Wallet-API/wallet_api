@@ -3,6 +3,6 @@ from starlette.staticfiles import StaticFiles
 
 from frontend.jinja_utils import jenv
 
-templates_dir = "frontend/templates"
+templates_dir = "frontend/templates-v0"
 templates = Jinja2Templates(env=jenv, auto_reload=True)
 

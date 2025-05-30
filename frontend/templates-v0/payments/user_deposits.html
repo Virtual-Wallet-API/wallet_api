@@ -1,0 +1,1047 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style type="text/css">
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* Main Content Container */
+    .main-content {
+        padding: 2rem;
+        background-color: var(--background-color); /* Use theme variable */
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
+        color: var(--text-color); /* Use theme variable */
+    }
+
+    /* Deposit Title */
+    .deposit-title {
+        font-size: 2.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-align: left;
+        color: var(--accent-color); /* Use theme variable */
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.025em;
+    }
+
+    .deposit-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-color); /* Use theme variable, adjust opacity if needed */
+        opacity: 0.7;
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+    }
+
+    /* Filter Form */
+    .filter-form {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto 2.5rem;
+        padding: 2rem;
+        background: var(--balance-bg); /* Use theme variable */
+        border: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color); /* Use theme variable */
+        font-family: 'Inter', sans-serif;
+        transition: all 0.3s ease;
+    }
+
+    .filter-form:hover {
+        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color); /* Use theme variable */
+        transform: translateY(-1px);
+    }
+
+    .filter-form .row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: nowrap;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .form-control {
+        background-color: var(--background-color); /* Use theme variable */
+        border: 2px solid rgba(var(--accent-color-rgb), 0.3); /* Use theme variable */
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        color: var(--text-color); /* Use theme variable */
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        width: 100%;
+        min-height: 52px;
+        box-sizing: border-box;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+    }
+
+    [data-bs-theme="dark"] .form-control {
+        background-color: #2a2a2a; /* Slightly different from --background-color for depth */
+        border-color: rgba(var(--accent-color-rgb), 0.4);
+    }
+
+
+    .form-control.date-input,
+    .form-control.amount-input {
+        min-width: 200px;
+    }
+
+    .form-control.status-select {
+        min-width: 400px;
+    }
+
+    .form-control.limit-select {
+        font-size: 0.875rem;
+        max-width: 160px;
+        width: auto;
+        padding: 0.75rem 1rem;
+        min-height: 44px;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color); /* Use theme variable */
+        box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15); /* Use theme variable */
+        outline: none;
+    }
+
+    [data-bs-theme="dark"] .form-control:focus {
+         background-color: #333; /* Slightly different from --background-color for depth */
+    }
+
+
+    .filter-btn, .order-by-btn {
+        background: var(--accent-color); /* Use theme variable */
+        border: none;
+        color: var(--background-color); /* Contrasting text color */
+        padding: 1rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px var(--shadow-color); /* Use theme variable */
+        flex: 0 0 140px;
+        min-height: 52px;
+        box-sizing: border-box;
+        text-align: center;
+        white-space: nowrap;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 0.025em;
+    }
+
+    [data-bs-theme="dark"] .filter-btn,
+    [data-bs-theme="dark"] .order-by-btn {
+        color: var(--text-color); /* Ensure good contrast on dark theme */
+    }
+
+
+    .filter-btn:hover, .order-by-btn:hover {
+        background: var(--accent-color-hover); /* Use theme variable */
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px -2px var(--shadow-color); /* Use theme variable */
+    }
+
+    .filter-btn:active, .order-by-btn:active {
+        transform: translateY(0);
+    }
+
+    #query-inputs {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #query-inputs.fade {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    #query-inputs .no-filter {
+        font-size: 1rem;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.6;
+        text-align: center;
+        line-height: 52px;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+    /* Transaction List */
+    .transaction-list {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 400px);
+        flex: 1;
+    }
+
+    /* Limit Selector */
+    .limit-selector {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .limit-selector label {
+        margin-right: 0.75rem;
+        font-weight: 500;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.7;
+        font-size: 0.875rem;
+    }
+
+    /* Deposit Item */
+    .deposit-item {
+        display: grid;
+        grid-template-columns: 120px 1fr 120px 120px 40px;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem 2rem;
+        background: var(--balance-bg); /* Use theme variable */
+        border: 1px solid rgba(var(--accent-color-rgb), 0.15); /* Use theme variable */
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        box-shadow: var(--transaction-shadow); /* Use theme variable */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .deposit-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--accent-color); /* Use theme variable */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .deposit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color); /* Use theme variable */
+        border-color: rgba(var(--accent-color-rgb), 0.3); /* Use theme variable */
+    }
+
+    .deposit-item:hover::before {
+        opacity: 1;
+    }
+
+    .deposit-item .date {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.8;
+        letter-spacing: 0.025em;
+    }
+
+    .deposit-item .deposit-card {
+        font-size: 0.875rem;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.7;
+        font-weight: 500;
+    }
+
+    .deposit-item .status {
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        text-align: center;
+        /* Status specific colors - can be kept or adapted if theme has status colors */
+        background: #dcfce7; /* Light green for completed */
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+    [data-bs-theme="dark"] .deposit-item .status {
+        background: rgba(34, 197, 94, 0.15); /* Dark theme green for completed */
+        color: #4ade80;
+        border-color: rgba(34, 197, 94, 0.25);
+    }
+
+
+    .deposit-item .amount {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #059669; /* Positive amount color - can be themed if needed */
+        text-align: right;
+        letter-spacing: -0.025em;
+    }
+    [data-bs-theme="dark"] .deposit-item .amount {
+        color: #10b981;
+    }
+
+    .deposit-item .info-icon {
+        font-size: 1.25rem;
+        color: var(--accent-color); /* Use theme variable */
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .deposit-item .info-icon:hover {
+        color: var(--accent-color-hover); /* Use theme variable */
+        transform: scale(1.1);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem auto;
+        font-family: 'Inter', sans-serif;
+        background: var(--balance-bg); /* Use theme variable */
+        border: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        border-radius: 12px;
+        overflow: hidden;
+        width: auto;
+        box-shadow: 0 4px 6px -1px var(--shadow-color); /* Use theme variable */
+    }
+
+    .pagination button {
+        background-color: transparent;
+        border: none;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.7;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-right: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        min-width: 44px;
+    }
+
+    .pagination button:last-child {
+        border-right: none;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background-color: rgba(var(--accent-color-rgb), 0.1); /* Use theme variable */
+        color: var(--accent-color); /* Use theme variable */
+        opacity: 1;
+    }
+
+    .pagination button:disabled {
+        background-color: var(--accent-color); /* Use theme variable */
+        color: var(--background-color); /* Contrasting text */
+        cursor: not-allowed;
+        font-weight: 600;
+        opacity: 1;
+    }
+    [data-bs-theme="dark"] .pagination button:disabled {
+        color: var(--text-color); /* Ensure good contrast on dark theme */
+    }
+
+
+    .pagination .page-number {
+        background-color: transparent;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.7;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-right: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        min-width: 44px;
+        transition: all 0.2s ease;
+    }
+
+    .pagination .page-number:disabled {
+        background-color: var(--accent-color); /* Use theme variable */
+        color: var(--background-color); /* Contrasting text */
+        cursor: not-allowed;
+        font-weight: 600;
+        opacity: 1;
+    }
+    [data-bs-theme="dark"] .pagination .page-number:disabled {
+         color: var(--text-color); /* Ensure good contrast on dark theme */
+    }
+
+    .pagination .page-number:hover:not(:disabled) {
+        background-color: rgba(var(--accent-color-rgb), 0.1); /* Use theme variable */
+        color: var(--accent-color); /* Use theme variable */
+        opacity: 1;
+    }
+
+    /* Loading Container */
+    .loading-container {
+        font-size: 2rem;
+        text-align: center;
+        width: 100%;
+        display: flex;
+        color: var(--accent-color); /* Use theme variable */
+        justify-content: center;
+        align-items: center;
+        margin: 3rem auto;
+        transition: opacity 0.7s ease-in-out;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .loading-container.hidden {
+        opacity: 0;
+        height: 0;
+        margin: 0;
+    }
+
+    .loading-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.7;
+    }
+
+    .bi-arrow-repeat {
+        display: inline-block;
+        animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Deposit Invitation Box */
+    .deposit-invite-box {
+        width: 100%;
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 3rem 2rem;
+        background: rgba(var(--accent-color-rgb), 0.05); /* Use theme variable */
+        border: 2px dashed rgba(var(--accent-color-rgb), 0.3); /* Use theme variable */
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        font-family: 'Inter', sans-serif;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .deposit-invite-box::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(var(--accent-color-rgb), 0.03), transparent); /* Use theme variable */
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .deposit-invite-box:hover {
+        transform: scale(1.02);
+        border-color: rgba(var(--accent-color-rgb), 0.5); /* Use theme variable */
+        background: rgba(var(--accent-color-rgb), 0.08); /* Use theme variable */
+    }
+
+    .deposit-invite-box .invite-icon {
+        font-size: 3rem;
+        color: var(--accent-color); /* Use theme variable */
+        margin-bottom: 1.5rem;
+    }
+
+    .deposit-invite-box p {
+        font-size: 1.25rem;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.9;
+        margin-bottom: 2rem;
+        font-weight: 500;
+        line-height: 1.6;
+        position: relative;
+        z-index: 1;
+    }
+
+    .deposit-invite-box .confirm-btn {
+        background: var(--accent-color); /* Use theme variable */
+        border: none;
+        color: var(--background-color); /* Contrasting text */
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px var(--shadow-color); /* Use theme variable */
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.025em;
+    }
+    [data-bs-theme="dark"] .deposit-invite-box .confirm-btn {
+        color: var(--text-color); /* Ensure good contrast on dark theme */
+    }
+
+    .deposit-invite-box .confirm-btn:hover {
+        background: var(--accent-color-hover); /* Use theme variable */
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px -2px var(--shadow-color); /* Use theme variable */
+    }
+
+    /* Alert Styling */
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 1.5rem;
+        font-weight: 500;
+        margin: 2rem 0;
+        box-shadow: 0 4px 6px -1px var(--shadow-color); /* Use theme variable */
+    }
+
+    .alert-info {
+        background: rgba(var(--accent-color-rgb), 0.1); /* Use theme variable */
+        color: var(--accent-color); /* Use theme variable */
+        border-left: 4px solid var(--accent-color); /* Use theme variable */
+    }
+
+    .alert-danger {
+        /* Assuming red for danger, can be themed if specific danger colors exist */
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border-left: 4px solid #ef4444;
+    }
+    [data-bs-theme="dark"] .alert-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 1rem;
+        }
+
+        .deposit-title {
+            font-size: 2.25rem;
+            text-align: center;
+        }
+
+        .filter-form {
+            padding: 1.5rem;
+        }
+
+        .filter-form .row {
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 1rem;
+        }
+
+        .form-control,
+        .filter-btn,
+        .order-by-btn {
+            font-size: 1rem;
+            padding: 0.875rem 1rem;
+            min-height: 48px;
+        }
+
+        .form-control.date-input,
+        .form-control.amount-input,
+        .form-control.status-select {
+            min-width: 100%;
+        }
+
+        .filter-btn,
+        .order-by-btn {
+            width: 100%;
+            flex: 1;
+        }
+
+        .deposit-item {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .deposit-item .amount {
+            text-align: center;
+            font-size: 1.25rem;
+        }
+
+        .deposit-invite-box {
+            padding: 2rem 1.5rem;
+            margin: 2rem auto;
+        }
+
+        .deposit-invite-box p {
+            font-size: 1.125rem;
+        }
+
+        .deposit-invite-box .confirm-btn {
+            font-size: 1rem;
+            padding: 0.875rem 2rem;
+        }
+
+        .pagination button,
+        .pagination .page-number {
+            font-size: 0.875rem;
+            padding: 0.625rem 0.75rem;
+            min-width: 40px;
+        }
+
+        .limit-selector {
+            justify-content: center;
+        }
+    }
+
+    /* Modal Styling */
+    .modal-content {
+        background: var(--background-color); /* Use theme variable */
+        border: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color); /* Use theme variable */
+        font-family: 'Inter', sans-serif;
+        color: var(--text-color); /* Use theme variable */
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        padding: 1.5rem 2rem 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color); /* Use theme variable */
+        margin: 0;
+    }
+
+    .modal-body {
+        padding: 1.5rem 2rem;
+    }
+
+    .modal-body p {
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--text-color); /* Use theme variable */
+    }
+
+    .modal-body strong {
+        font-weight: 600;
+        color: var(--text-color); /* Use theme variable */
+        opacity: 0.9;
+        display: inline-block;
+        min-width: 80px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(var(--accent-color-rgb), 0.2); /* Use theme variable */
+        padding: 1rem 2rem 1.5rem;
+    }
+
+    .modal .confirm-btn {
+        background: var(--accent-color); /* Use theme variable */
+        border: none;
+        color: var(--background-color); /* Contrasting text */
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px var(--shadow-color); /* Use theme variable */
+    }
+    [data-bs-theme="dark"] .modal .confirm-btn {
+        color: var(--text-color); /* Ensure good contrast on dark theme */
+    }
+
+    .modal .confirm-btn:hover {
+        background: var(--accent-color-hover); /* Use theme variable */
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px var(--shadow-color); /* Use theme variable */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="deposit-title">Deposit History</div>
+<div class="deposit-subtitle">Track and manage all your deposit transactions</div>
+
+<!-- Filter Form -->
+<div class="filter-form">
+    <form id="filter-form">
+        <div class="row">
+            <div class="form-group" style="flex: 0 0 250px;">
+                <select id="search_by" name="search_by" class="form-control">
+                    <option value="" disabled selected>Filters</option>
+                    <option value="date_period">Date Period</option>
+                    <option value="amount_range">Amount Range</option>
+                    <option value="status">Status</option>
+                </select>
+            </div>
+            <div class="form-group" id="query-inputs" style="flex: 1 1 auto;">
+                <div class="no-filter">Choose a filter</div>
+            </div>
+            <div class="form-group" style="flex: 0 0 140px;">
+                <button type="button" class="order-by-btn" data-value="desc">Newest</button>
+            </div>
+            <div class="form-group" style="flex: 0 0 140px;">
+                <button type="submit" class="filter-btn">Apply Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Deposits List -->
+<div class="transaction-list" id="deposits-list">
+    <div class="limit-selector">
+        <label for="limit-select">Show:</label>
+        <select id="limit-select" class="form-control limit-select">
+            {% for i in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] %}
+                <option value="{{ i }}" {% if i == 10 %}selected{% endif %}>{{ i }} per page</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="pagination" id="pagination-top" style="display: none;"></div>
+    <div class="loading-container" id="deposits-loading-alert">
+        <i class="bi bi-arrow-repeat"></i>
+        <div class="loading-text">Loading your deposits...</div>
+    </div>
+    <div id="deposits-container"></div>
+    <div class="pagination" id="pagination-bottom" style="display: none;"></div>
+    <div id="deposit-invite" style="display: none;">
+        <div class="deposit-invite-box">
+            <div class="invite-icon">💳</div>
+            <p>Ready to add funds? Make a deposit to keep your wallet active!</p>
+            <a href="/deposit" class="confirm-btn">Make a Deposit</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Deposit Details Modal -->
+<div aria-hidden="true" aria-labelledby="depositModalLabel" class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">Deposit Details</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Card:</strong> <span id="modal-card"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn confirm-btn" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // JavaScript remains unchanged
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterForm = document.getElementById('filter-form');
+        const searchBySelect = document.getElementById('search_by');
+        const queryInputs = document.getElementById('query-inputs');
+        const depositsContainer = document.getElementById('deposits-container');
+        const loadingAlert = document.getElementById('deposits-loading-alert');
+        const paginationTop = document.getElementById('pagination-top');
+        const paginationBottom = document.getElementById('pagination-bottom');
+        const depositInvite = document.getElementById('deposit-invite');
+        const limitSelect = document.getElementById('limit-select');
+        const orderByBtn = document.querySelector('.order-by-btn');
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalDeposits = 0;
+        let filterChanged = false;
+        let orderBy = 'desc';
+
+        function updateQueryInputs() {
+            queryInputs.classList.add('fade');
+            setTimeout(() => {
+                queryInputs.innerHTML = '';
+                const searchBy = searchBySelect.value;
+                if (!searchBy) {
+                    queryInputs.innerHTML = `<div class="no-filter">${filterChanged ? 'No Filter' : 'Choose a filter'}</div>`;
+                } else if (searchBy === 'date_period') {
+                    queryInputs.innerHTML = `
+                        <div class="row" style="flex-wrap: nowrap; gap: 1rem;">
+                            <div class="form-group">
+                                <input type="date" id="from_date" name="from_date" class="form-control date-input" placeholder="From Date (YYYY-MM-DD)">
+                            </div>
+                            <div class="form-group">
+                                <input type="date" id="to_date" name="to_date" class="form-control date-input" placeholder="To Date (YYYY-MM-DD)">
+                            </div>
+                        </div>
+                    `;
+                } else if (searchBy === 'amount_range') {
+                    queryInputs.innerHTML = `
+                        <div class="row" style="flex-wrap: nowrap; gap: 1rem;">
+                            <div class="form-group">
+                                <input type="number" id="min_amount" name="min_amount" step="0.01" class="form-control amount-input" placeholder="Min Amount (e.g., 10.00)">
+                            </div>
+                            <div class="form-group">
+                                <input type="number" id="max_amount" name="max_amount" step="0.01" class="form-control amount-input" placeholder="Max Amount (e.g., 100.00)">
+                            </div>
+                        </div>
+                    `;
+                } else if (searchBy === 'status') {
+                    queryInputs.innerHTML = `
+                        <div class="form-group">
+                            <select id="status" name="status" class="form-control status-select">
+                                <option value="Pending">Pending</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Failed">Failed</option>
+                            </select>
+                        </div>
+                    `;
+                }
+                queryInputs.classList.remove('fade');
+            }, 300);
+        }
+
+        function updateSearchByOptions() {
+            if (!filterChanged && searchBySelect.value) {
+                filterChanged = true;
+                searchBySelect.innerHTML = `
+                    <option value="" selected>Clear Filters</option>
+                    <option value="date_period" ${searchBySelect.value === 'date_period' ? 'selected' : ''}>Date Period</option>
+                    <option value="amount_range" ${searchBySelect.value === 'amount_range' ? 'selected' : ''}>Amount Range</option>
+                    <option value="status" ${searchBySelect.value === 'status' ? 'selected' : ''}>Status</option>
+                `;
+            }
+        }
+
+        function toggleOrderBy() {
+            if (orderBy === 'desc') {
+                orderBy = 'asc';
+                orderByBtn.textContent = 'Oldest';
+                orderByBtn.dataset.value = 'asc';
+            } else {
+                orderBy = 'desc';
+                orderByBtn.textContent = 'Newest';
+                orderByBtn.dataset.value = 'desc';
+            }
+            currentPage = 1;
+            fetchDeposits();
+        }
+
+        function getFilterParams() {
+            const params = new URLSearchParams();
+            const searchBy = searchBySelect.value;
+            if (searchBy) {
+                let searchQuery = '';
+                if (searchBy === 'date_period') {
+                    const fromDate = document.getElementById('from_date')?.value;
+                    const toDate = document.getElementById('to_date')?.value;
+                    if (fromDate && toDate) {
+                        searchQuery = `${fromDate}_${toDate}`;
+                    }
+                } else if (searchBy === 'amount_range') {
+                    const minAmount = document.getElementById('min_amount')?.value;
+                    const maxAmount = document.getElementById('max_amount')?.value;
+                    if (minAmount && maxAmount) {
+                        searchQuery = `${parseFloat(minAmount).toFixed(2)}_${parseFloat(maxAmount).toFixed(2)}`;
+                    }
+                } else if (searchBy === 'status') {
+                    searchQuery = document.getElementById('status')?.value;
+                }
+                if (searchQuery) {
+                    params.set('search_by', searchBy);
+                    params.set('search_query', searchQuery);
+                }
+            }
+            params.set('page', currentPage);
+            params.set('limit', limitSelect.value);
+            params.set('order_by', orderBy);
+            return params;
+        }
+
+        async function fetchDeposits() {
+            loadingAlert.classList.remove('hidden');
+            depositInvite.style.display = 'none';
+            const params = getFilterParams();
+            const url = `${API_BASE}/deposits?${params.toString()}`;
+            console.log('Fetching URL:', url); // Debug log
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) {
+                    if (response.status === 401) throw new Error('Unauthorized');
+                    throw new Error(`Failed to fetch deposits: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('API Response:', data); // Debug log
+                const deposits = data.deposits || [];
+                totalPages = data.total_pages || Math.ceil((data.total_matching || 0) / parseInt(limitSelect.value)) || 1;
+                totalDeposits = data.total || 0;
+                // Ensure currentPage is valid
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                }
+                console.log(`Current Page: ${currentPage}, Total Pages: ${totalPages}, Total Deposits: ${totalDeposits}, Total Matching: ${data.total_matching || 0}`); // Debug log
+                renderDeposits(deposits, data.total_matching || 0);
+                updatePagination();
+            } catch (error) {
+                console.error('Error fetching deposits:', error);
+                depositsContainer.innerHTML = `<div class="alert alert-danger">${error.message === 'Unauthorized' ? 'Please log in to view deposits' : 'Error loading deposits'}</div>`;
+                if (error.message === 'Unauthorized') {
+                    setTimeout(() => window.location.href = `${FE_BASE}/login`, 3000);
+                }
+            } finally {
+                loadingAlert.classList.add('hidden');
+            }
+        }
+
+        function renderDeposits(deposits, total_matching) {
+            if (deposits.length === 0) {
+                const message = searchBySelect.value ? 'No deposits matching the selected filters found.' : 'No deposits yet? Kickstart your wallet with your first deposit today!';
+                depositsContainer.innerHTML = `<div class="alert alert-info">${message}</div>`;
+                paginationTop.style.display = 'none';
+                paginationBottom.style.display = 'none';
+                depositInvite.style.display = searchBySelect.value ? 'none' : 'flex';
+                return;
+            }
+            depositsContainer.innerHTML = deposits.map(deposit => {
+                const date = new Date(deposit.created_at).toISOString().split('T')[0];
+                const amount = `$${deposit.amount.toFixed(2)}`;
+                const status = deposit.status.charAt(0).toUpperCase() + deposit.status.slice(1);
+                const card = `Card ending in ${deposit.card_last_four}`;
+                return `
+                    <div class="deposit-item" data-deposit-id="${deposit.id}" data-date="${date}" data-card="${card}" data-amount="${deposit.amount}" data-status="${status}">
+                        <span class="date">${date}</span>
+                        <span class="deposit-card">${card}</span>
+                        <span class="status">${status}</span>
+                        <span class="amount">${amount}</span>
+                        <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+                    </div>
+                `;
+            }).join('');
+            paginationTop.style.display = parseInt(limitSelect.value) < total_matching ? 'flex' : 'none';
+            paginationBottom.style.display = parseInt(limitSelect.value) < total_matching ? 'flex' : 'none';
+            depositInvite.style.display = totalDeposits <= 6 && !searchBySelect.value ? 'flex' : 'none';
+            attachDepositListeners();
+        }
+
+        function renderPagination(container) {
+            container.innerHTML = '';
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '<';
+            prevButton.disabled = currentPage <= 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    console.log('Previous Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                }
+            });
+
+            // Add nearby page numbers (±2)
+            const pages = [];
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'page-number';
+                pageBtn.textContent = i;
+                pageBtn.disabled = i === currentPage;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    console.log('Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                });
+                pages.push(pageBtn);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '>';
+            nextButton.disabled = currentPage >= totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    console.log('Next Page Clicked:', currentPage); // Debug log
+                    fetchDeposits();
+                }
+            });
+
+            container.appendChild(prevButton);
+            pages.forEach(page => container.appendChild(page));
+            container.appendChild(nextButton);
+        }
+
+        function updatePagination() {
+            renderPagination(paginationTop);
+            renderPagination(paginationBottom);
+            console.log(`Pagination Updated: Page ${currentPage}/${totalPages}`); // Debug log
+        }
+
+        function attachDepositListeners() {
+            document.querySelectorAll('.deposit-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const date = item.dataset.date;
+                    const card = item.dataset.card;
+                    const amount = `$${parseFloat(item.dataset.amount).toFixed(2)}`;
+                    const status = item.dataset.status;
+                    document.getElementById('modal-date').textContent = date;
+                    document.getElementById('modal-card').textContent = card;
+                    document.getElementById('modal-amount').textContent = amount;
+                    document.getElementById('modal-status').textContent = status;
+                    $('#depositModal').modal('show');
+                });
+            });
+        }
+
+        searchBySelect.addEventListener('change', () => {
+            updateSearchByOptions();
+            updateQueryInputs();
+        });
+
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentPage = 1;
+            fetchDeposits();
+        });
+
+        limitSelect.addEventListener('change', () => {
+            currentPage = 1;
+            fetchDeposits();
+        });
+
+        orderByBtn.addEventListener('click', toggleOrderBy);
+
+        // Initial load
+        updateQueryInputs();
+        fetchDeposits();
+    });
+</script>
+{% endblock %}
