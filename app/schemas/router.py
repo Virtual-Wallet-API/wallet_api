@@ -1,5 +1,5 @@
 from typing import Optional, Literal
-
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -30,3 +30,26 @@ class UserDepositsFilter(BaseModel):
 
     limit: int = Field(30, gt=9, le=100, description="The maximum number of results per page")
     page: int = Field(1, ge=1, description="The page you wish to view")
+
+class TransactionHistoryFilter(BaseModel):
+    # Pagination
+    limit: Optional[int] = Field(None, description="Limit number of results")
+    offset: Optional[int] = Field(None, description="Offset for pagination")
+
+    # Sorting
+    order_by: str = Field("date_desc", description="Sort order: date_desc, date_asc, amount_desc, amount_asc")
+
+    # Date filtering
+    date_from: Optional[datetime] = Field(None, description="Filter transactions from this date (ISO format)")
+    date_to: Optional[datetime] = Field(None, description="Filter transactions until this date (ISO format)")
+
+    # User filtering
+    sender_id: Optional[int] = Field(None, description="Filter by specific sender ID")
+    receiver_id: Optional[int] = Field(None, description="Filter by specific receiver ID")
+
+    # Direction filtering
+    direction: Optional[str] = Field(None, description="Filter by direction: 'in' for received, 'out' for sent")
+
+    # Status filtering
+    status: Optional[str] = Field(None,
+                                  description="Filter by transaction status: pending, awaiting_acceptance, completed, denied, cancelled, failed")
