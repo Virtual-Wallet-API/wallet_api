@@ -5,6 +5,7 @@ from .category import Category
 from .contact import Contact
 from .currency import Currency
 from .deposit import Deposit
+from .recurring_transaction_history import RecurringTransactionHistory
 from .recurring_transation import RecurringTransaction
 from .transaction import Transaction
 from .user import User
@@ -13,4 +14,3 @@ from .withdrawal import Withdrawal
 from .withdrawal import WithdrawalMethod as WMethod
 from .withdrawal import WithdrawalStatus as WStatus
 from .withdrawal import WithdrawalType as WType
-from .recurring_transaction_history import RecurringTransactionHistory
