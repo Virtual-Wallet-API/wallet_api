@@ -24,10 +24,34 @@ class TransactionCreate(BaseModel):
     currency_id: int
 
 
+class TransactionConfirm(BaseModel):
+    """Schema for confirming a transaction"""
+    pass  # No additional data needed for confirmation
+
+
+class TransactionAccept(BaseModel):
+    """Schema for receiver accepting a pending transaction"""
+    message: Optional[str] = None  # Optional message from receiver
+
+
+class TransactionDecline(BaseModel):
+    """Schema for receiver declining a pending transaction"""
+    reason: Optional[str] = None  # Optional reason for declining
+
+
 class TransactionResponse(TransactionBase):
     id: int
     date: datetime
     status: TransactionStatus
+
+    class Config:
+        from_attributes = True
+
+
+class TransactionDetailResponse(TransactionResponse):
+    """Extended transaction response with sender/receiver info"""
+    sender: ShortUserResponse
+    receiver: ShortUserResponse
 
     class Config:
         from_attributes = True

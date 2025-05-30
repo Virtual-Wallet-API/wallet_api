@@ -13,3 +13,4 @@ from .withdrawal import Withdrawal
 from .withdrawal import WithdrawalMethod as WMethod
 from .withdrawal import WithdrawalStatus as WStatus
 from .withdrawal import WithdrawalType as WType
+from .recurring_transaction_history import RecurringTransactionHistory
