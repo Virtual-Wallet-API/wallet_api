@@ -34,8 +34,8 @@ class NotificationService:
     @classmethod
     def notify(cls, user: User, message: Dict[str, str]) -> bool:
         """Send a notification to a user"""
-        response = send_mail()
-        print(response.json())
+        # response = send_mail()
+        # print(response.json())
         pass
 
     @classmethod

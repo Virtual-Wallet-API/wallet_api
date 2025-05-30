@@ -14,7 +14,7 @@ class RecurringTransaction(Base):
     is_active = Column(Integer, nullable=False, default=True)
 
     transaction = relationship("Transaction", back_populates="recurring_transaction")
-    recurring_transaction_history = relationship("RecurringTransactionHistory", back_populates="recurring_transaction")
+    history = relationship("RecurringTransactionHistory", back_populates="recurring_transaction")
 
     # TODO add recurring transaction history table to track how many times and when the transaction goes through
 
