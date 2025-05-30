@@ -2,7 +2,7 @@ from enum import Enum
 
 from jinja2 import Environment, FileSystemLoader
 
-jenv = Environment(loader=FileSystemLoader("frontend/templates"))
+jenv = Environment(loader=FileSystemLoader("frontend/templates-v0"))
 
 
 class CardStatuses(Enum):
