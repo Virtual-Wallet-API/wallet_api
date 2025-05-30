@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from app.business import UAuth, UVal
-from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr
+from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr, \
+    get_current_admin
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
@@ -137,3 +138,7 @@ def remove_contact(contact_id: int,
     db.delete(db_contact)
     db.commit()
     return status.HTTP_204_NO_CONTENT
+
+@router.get("/test")
+def test(db: Session = Depends(get_db), user: User = Depends(get_current_admin)):
+    return user.transactions
