@@ -46,9 +46,10 @@ def get_all_users(search_filter: Annotated[AdminUserFilter, Query()],
     return AdminService.get_all_users(db, admin, search_filter)
 
 
-@router.put("/users/status", response_model=None,
+@router.put("/users/{user_id}/status", response_model=None,
             description="Update the status of a user (approve pending user, block or unblock user, and deactivate/reactivate user).")
-def update_user_status(update_data: UpdateUserStatus,
+def update_user_status(user_id: int,
+                       update_data: UpdateUserStatus,
                        admin=Depends(get_current_admin),
                        db: Session = Depends(get_db)):
     """
@@ -58,7 +59,7 @@ def update_user_status(update_data: UpdateUserStatus,
     :param db: database sessions (automatically fetched)
     :return: the updated user object
     """
-    return AdminService.update_user_status(db, update_data, admin)
+    return AdminService.update_user_status(db, user_id, update_data, admin)
 
 
 @router.get("/transactions/{user_id}", response_model=ListAllUserTransactionsResponse,

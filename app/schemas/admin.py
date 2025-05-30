@@ -44,7 +44,6 @@ class ListAllUsersResponse(BaseModel):
 
 
 class UpdateUserStatus(BaseModel):
-    user: int
     status: UStatus
     reason: Optional[str] = None
 

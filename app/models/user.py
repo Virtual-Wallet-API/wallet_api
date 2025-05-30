@@ -10,6 +10,7 @@ from sqlalchemy.types import Enum as CEnum
 from app.infrestructure import Base, data_validators
 from app.models import Deposit, Card, Transaction
 from app.models.deposit import DepositStatus
+from app.models.transaction import TransactionStatus
 from app.models.withdrawal import Withdrawal, WithdrawalType, WithdrawalStatus
 
 
@@ -62,6 +63,10 @@ class User(Base):
     @hybrid_property
     def transactions_query(self):
         return self.sent_transactions.union(self.received_transactions)
+
+    @property
+    def pending_received_transactions(self):
+        return self.received_transactions.filter(Transaction.status == TransactionStatus.PENDING).all()
 
     @transactions.expression
     def transactions(cls):

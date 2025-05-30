@@ -44,16 +44,8 @@ def get_transaction_history(
     return TransactionService.get_user_transaction_history(
         db=db,
         user=user,
-        limit=filter_params.limit,
-        offset=filter_params.offset,
-        order_by=filter_params.order_by,
-        date_from=filter_params.date_from,
-        date_to=filter_params.date_to,
-        sender_id=filter_params.sender_id,
-        receiver_id=filter_params.receiver_id,
-        direction=filter_params.direction,
-        status=filter_params.status
-    )
+        **filter_params.model_dump()
+        )
 
 
 @router.get("/pending/received", response_model=List[TransactionResponse])

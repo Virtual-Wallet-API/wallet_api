@@ -30,7 +30,7 @@ class AdminService:
         return True
 
     @classmethod
-    def update_user_status(cls, db: Session, update_data: UpdateUserStatus, admin: User) -> Dict:
+    def update_user_status(cls, db: Session, user: int | str | User, update_data: UpdateUserStatus, admin: User) -> Dict:
         """
         Approve a pending user account
         :param db: database session
@@ -38,7 +38,6 @@ class AdminService:
         :param admin: Admin's user object
         """
         cls.verify_admin(db, admin)
-        user = update_data.user
 
         if isinstance(user, str):
             user = UVal.find_user_with_or_raise_exception("username", user, db)

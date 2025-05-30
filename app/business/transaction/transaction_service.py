@@ -330,38 +330,11 @@ class TransactionService:
 
         transactions = query.all()
 
-        # Calculate totals from FILTERED transactions (dynamic totals)
-        # Get all filtered transactions (without pagination) for totals calculation
-        totals_query = user.get_transactions(db)
-
-        # Apply same filters for totals calculation
-        if date_from:
-            totals_query = totals_query.filter(Transaction.date >= date_from)
-        if date_to:
-            totals_query = totals_query.filter(Transaction.date <= date_to)
-        if sender_id:
-            totals_query = totals_query.filter(Transaction.sender_id == sender_id)
-        if receiver_id:
-            totals_query = totals_query.filter(Transaction.receiver_id == receiver_id)
-        if direction == "in":
-            totals_query = totals_query.filter(Transaction.receiver_id == user.id)
-        elif direction == "out":
-            totals_query = totals_query.filter(Transaction.sender_id == user.id)
-        if status:
-            try:
-                status_enum = TransactionStatus(status.upper())
-                totals_query = totals_query.filter(Transaction.status == status_enum)
-            except ValueError:
-                totals_query = totals_query.filter(False)
-
-        # Get all filtered transactions for totals (without pagination)
-        all_filtered_transactions = totals_query.all()
-
         # Calculate dynamic totals based on filtered results
-        total_count = len(all_filtered_transactions)
+        total_count = len(transactions)
 
         # For financial totals, only include COMPLETED transactions from filtered results
-        completed_filtered = [t for t in all_filtered_transactions if t.status == TransactionStatus.COMPLETED]
+        completed_filtered = [t for t in transactions if t.status == TransactionStatus.COMPLETED]
         outgoing_total = sum([t.amount for t in completed_filtered if t.sender_id == user.id])
         incoming_total = sum([t.amount for t in completed_filtered if t.receiver_id == user.id])
 
@@ -380,10 +353,7 @@ class TransactionService:
         :param user: User to get pending transactions for
         :return: List of transactions awaiting acceptance where user is receiver
         """
-        return db.query(Transaction).filter(
-            Transaction.receiver_id == user.id,
-            Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE
-        ).all()
+        return user.pending_received_transactions
 
     @classmethod
     def get_pending_sent_transactions(cls, db: Session, user: User) -> list[Transaction]:
