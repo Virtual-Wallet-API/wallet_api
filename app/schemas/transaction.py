@@ -34,13 +34,13 @@ class TransactionCreate(BaseModel):
 
     @field_validator('category_id')
     def category_id_must_be_positive(cls, v):
-        if v < 1:
+        if isinstance(v, int) and v < 1:
             return None
         return v
 
     @field_validator("currency_id")
     def currency_id_null(cls, v):
-        if v == 0:
+        if isinstance(v, int) and v == 0:
             return 1
         return v
 

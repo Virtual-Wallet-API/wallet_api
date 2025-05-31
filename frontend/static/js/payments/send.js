@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     // Initialize variables
     const sendForm = document.getElementById('send-form');
     const receiverInput = document.getElementById('receiver-identifier');
@@ -28,12 +28,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const awaitingToggle = document.getElementById('awaiting-toggle');
     const awaitingContent = document.getElementById('awaiting-transactions-list-content');
 
-    // Set initial state of transaction lists
-    pendingContent.style.maxHeight = '0';
-    pendingContent.style.opacity = '0';
-    awaitingContent.style.maxHeight = '0';
-    awaitingContent.style.opacity = '0';
-
     // Check for receiver query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const receiverParam = urlParams.get('receiver');
@@ -46,28 +40,47 @@ document.addEventListener('DOMContentLoaded', async function() {
         await auth.refreshUserData();
     }
 
-    // Load categories
-    loadCategories();
+    let originalPendingContentHeight;
+    let originalAwaitingContentHeight;
 
-    // Load initial transactions
-    loadTransactions('pending');
-    loadTransactions('awaiting_acceptance');
+    pendingContent.style.opacity = '0';
+    awaitingContent.style.opacity = '0';
 
-    // Update balance display
-    updateBalanceDisplay();
+    Promise.all([
+        loadCategories(),
+        loadTransactions('pending'),
+        loadTransactions('awaiting_acceptance'),
+        updateBalanceDisplay()
+    ]).then(() => {
+        document.dispatchEvent(new Event('pageContentLoaded'));
+        originalPendingContentHeight = pendingContent.scrollHeight * 1.4;
+        pendingContent.setAttribute("originalHeight", originalPendingContentHeight)
+
+        originalAwaitingContentHeight = awaitingContent.scrollHeight * 1.4;
+        awaitingContent.setAttribute("originalHeight", originalAwaitingContentHeight)
+
+        pendingContent.style.maxHeight = '0';
+        awaitingContent.style.maxHeight = '0';
+    })
 
     // Event Listeners
     sendForm.addEventListener('submit', handleFormSubmit);
     recurringCheckbox.addEventListener('change', toggleIntervalGroup);
+    toggleIntervalGroup();
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     awaitingToggle.addEventListener('click', () => toggleSection(awaitingToggle, awaitingContent));
     document.getElementById('confirm-transaction-btn').addEventListener('click', confirmTransaction);
 
     // Functions
-    function updateBalanceDisplay() {
+    async function updateBalanceDisplay() {
+        if (!userData || !userData.balance) {
+            await auth.refreshUserData();
+        }
         balanceText.style.opacity = '1';
         balanceAmount.textContent = `$${userData.balance.toFixed(2)}`;
-        balanceAmount.style.opacity = '1';
+        balanceAmount.style.opacity = '1'
+        balanceAmountLoading.style.opacity = '0';
+        return true;
     }
 
     async function loadCategories() {
@@ -78,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
             const data = await response.json();
-            
+
             if (data.categories && data.categories.length > 0) {
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
@@ -194,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${auth.getToken()}`
                 },
-                body: JSON.stringify({ action: 'cancel' })
+                body: JSON.stringify({action: 'cancel'})
             });
 
             if (response.ok) {
@@ -203,10 +216,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 loadTransactions('pending');
                 loadTransactions('awaiting_acceptance');
                 await auth.refreshUserData();
-                updateBalanceDisplay();
+                await updateBalanceDisplay();
             } else {
                 const data = await response.json();
-                showError(data.message || 'Failed to cancel transaction');
+                showError(data.detail || 'Failed to cancel transaction');
             }
         } catch (error) {
             showError('An error occurred while cancelling the transaction');
@@ -218,27 +231,23 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     function toggleIntervalGroup() {
         if (recurringCheckbox.checked) {
-            intervalGroup.style.display = 'block';
             intervalGroup.style.maxHeight = intervalGroup.scrollHeight + 'px';
             intervalGroup.style.opacity = '1';
         } else {
             intervalGroup.style.maxHeight = '0';
             intervalGroup.style.opacity = '0';
-            setTimeout(() => {
-                intervalGroup.style.display = 'none';
-            }, 300);
         }
     }
 
     function toggleSection(toggle, content) {
         const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', !isExpanded);
-        
+
         if (!isExpanded) {
             content.style.display = 'block';
             // Force a reflow
             content.offsetHeight;
-            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.maxHeight = content.getAttribute("originalHeight") + 'px';
             content.style.opacity = '1';
             content.classList.add('show');
         } else {
@@ -246,22 +255,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             content.style.opacity = '0';
             content.classList.remove('show');
             setTimeout(() => {
-                content.style.display = 'none';
+                // content.style.display = 'none';
             }, 300);
         }
-        
+
         toggle.querySelector('i').className = isExpanded ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
     }
 
     async function handleFormSubmit(e) {
         e.preventDefault();
-        
+
         // Clear any existing messages
         successMessage.style.display = 'none';
         successMessage.classList.remove('visible');
         errorMessage.style.display = 'none';
         errorMessage.classList.remove('visible');
-        
+
         // Validate amount
         const amount = parseFloat(amountInput.value);
         if (amount > userData.balance) {
@@ -311,11 +320,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 // Reset form
                 sendForm.reset();
-                intervalGroup.style.display = 'none';
                 intervalGroup.style.maxHeight = '0';
                 intervalGroup.style.opacity = '0';
             } else {
-                showError(data.message || 'Failed to create transaction');
+                showError(data.detail || 'Failed to create transaction');
             }
         } catch (error) {
             showError('An error occurred while creating the transaction');
@@ -337,7 +345,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${auth.getToken()}`
                 },
-                body: JSON.stringify({ action: 'confirm' })
+                body: JSON.stringify({action: 'confirm'})
             });
 
             if (response.ok) {
@@ -346,10 +354,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 loadTransactions('pending');
                 loadTransactions('awaiting_acceptance');
                 await auth.refreshUserData();
-                updateBalanceDisplay();
+                await updateBalanceDisplay();
             } else {
                 const data = await response.json();
-                showError(data.message || 'Failed to confirm transaction');
+                showError(data.detail || 'Failed to confirm transaction');
             }
         } catch (error) {
             showError('An error occurred while confirming the transaction');

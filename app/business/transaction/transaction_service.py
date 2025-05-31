@@ -110,6 +110,7 @@ class TransactionService:
         TransactionNotificationService.notify_transaction_failed(transaction, str(error))
 
         if isinstance(error, ValueError):
+            print("line 113")
             raise HTTPException(status_code=400, detail=str(error))
         raise error
 
@@ -232,6 +233,7 @@ class TransactionService:
             # Simple error handling without changing transaction status
             db.rollback()
             if isinstance(e, ValueError):
+                print("line 236")
                 raise HTTPException(status_code=400, detail=str(e))
             raise e
 

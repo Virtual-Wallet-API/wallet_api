@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/payments/send.css') }}">
+<link rel="stylesheet" type="text/css" href="/static/css/payments/send.css">
 {% endblock %}
 
 {% block content %}
@@ -24,7 +24,7 @@
             <div class="form-group">
                 <label for="receiver-identifier">Receiver</label>
                 <div class="input-group">
-                    <span class="input-group-text-custom">@</span>
+                    <span class="input-group-text-custom"><i class="bi bi-people"></i></span>
                     <input type="text" class="form-control" id="receiver-identifier" placeholder="Enter username" required>
                 </div>
             </div>
@@ -32,21 +32,27 @@
             <div class="form-group">
                 <label for="send-amount">Amount</label>
                 <div class="input-group">
-                    <span class="input-group-text-custom">$</span>
+                    <span class="input-group-text-custom">USD</span>
                     <input type="number" class="form-control" id="send-amount" placeholder="0.00" step="0.01" min="0.01" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="description">Description</label>
-                <input type="text" class="form-control" id="description" placeholder="Enter description">
+                <div class="input-group">
+                    <span class="input-group-text-custom"><i class="bi bi-blockquote-left"></i></span>
+                    <input type="text" class="form-control" id="description" placeholder="Enter description">
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="category-select">Category</label>
-                <select class="form-select" id="category-select">
-                    <option value="" selected>Select a category</option>
-                </select>
+                <div class="input-group">
+                    <span class="input-group-text-custom"><i class="bi bi-archive"></i></span>
+                    <select class="form-select" id="category-select">
+                        <option value="" selected>Select a category</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
@@ -58,13 +64,12 @@
                 </div>
             </div>
 
-            <div id="interval-group" class="form-group" style="display: none;">
+            <div id="interval-group" class="form-group">
                 <label for="interval-select">Interval</label>
                 <select class="form-select" id="interval-select">
-                    <option value="1">Daily</option>
-                    <option value="7">Weekly</option>
-                    <option value="30">Monthly</option>
-                    <option value="365">Yearly</option>
+                    <option value="day">Daily</option>
+                    <option value="week">Weekly</option>
+                    <option value="month">Monthly</option>
                 </select>
             </div>
 
@@ -79,7 +84,7 @@
 
     <div class="transactions-section">
         <div class="section-toggle" id="pending-toggle" aria-expanded="false">
-            <h2>Pending Transactions</h2>
+            <h3>Pending Transactions</h3>
             <i class="bi bi-chevron-down"></i>
         </div>
         <div id="pending-transactions-list-content" class="transactions-list-content">
@@ -95,7 +100,7 @@
         </div>
 
         <div class="section-toggle" id="awaiting-toggle" aria-expanded="false">
-            <h2>Awaiting Acceptance</h2>
+            <h3>Awaiting Acceptance</h3>
             <i class="bi bi-chevron-down"></i>
         </div>
         <div id="awaiting-transactions-list-content" class="transactions-list-content">
@@ -162,5 +167,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/payments/send.js') }}"></script>
+<script src="/static/js/payments/send.js"></script>
 {% endblock %} 
