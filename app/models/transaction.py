@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, String, Boolean
 from sqlalchemy import Enum as CEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
@@ -41,6 +41,7 @@ class Transaction(Base):
                           values_callable=lambda obj: [e.value for e in obj]),
                     default=TransactionStatus.PENDING,
                     nullable=False)
+    recurring = Column(Boolean, default=False, nullable=False)
 
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)

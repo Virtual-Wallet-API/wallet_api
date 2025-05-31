@@ -48,8 +48,13 @@ class TransactionService:
             status=TransactionStatus.PENDING
         )
 
+        cls.make_transaction_recurring(db, transaction, transaction_data.interval)
         db.add(transaction)
         db.commit()
+
+        if transaction_data.recurring:
+            cls.make_transaction_recurring(db, transaction, transaction_data.interval)
+
         db.refresh(transaction)
 
         # Send notifications
@@ -121,6 +126,9 @@ class TransactionService:
         TransactionValidators.validate_transaction_ownership(transaction, user)
         TransactionValidators.validate_transaction_confirmable(transaction, user)
 
+        if transaction.recurring:
+            return cls.confirm_recurring_transaction(db, user, transaction)
+
         # Re-validate available balance at confirmation time
         db.refresh(user)  # Refresh user to get latest balance
         TransactionValidators.validate_sufficient_available_balance(user, transaction.amount)
@@ -161,6 +169,9 @@ class TransactionService:
         transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
         TransactionValidators.validate_transaction_acceptable(transaction, receiver)
 
+        if transaction.recurring:
+            return cls.accept_recurring_transaction(db, receiver, transaction)
+
         try:
             # Refresh both users to get latest balances
             db.refresh(transaction.sender)
@@ -181,7 +192,8 @@ class TransactionService:
             return transaction
 
         except (ValueError, Exception) as e:
-            return cls._handle_status_update_error(db, transaction, e, release_funds=True, sender=sender)
+            return cls._handle_status_update_error(db, transaction, e,
+                                                   release_funds=True, sender=transaction.sender)
 
     @classmethod
     def decline_transaction(cls, db: Session, receiver: User, transaction_id: int,
@@ -197,6 +209,9 @@ class TransactionService:
         # Validate transaction
         transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
         TransactionValidators.validate_transaction_declinable(transaction, receiver)
+
+        if transaction.recurring:
+            return cls.cancel_recurring_transaction(db, receiver, transaction)
 
         try:
             # Release reserved funds back to sender
@@ -230,6 +245,9 @@ class TransactionService:
         """
         transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
         TransactionValidators.validate_transaction_ownership(transaction, user)
+
+        if transaction.recurring:
+            return cls.cancel_recurring_transaction(db, user, transaction)
 
         # Only sender can cancel their own transaction
         if transaction.sender_id != user.id:
@@ -374,3 +392,19 @@ class TransactionService:
         :return: List of transactions awaiting acceptance where user is sender
         """
         return user.awaiting_acceptance_sent_transactions
+
+    @classmethod
+    def make_transaction_recurring(cls, db, transaction, interval):
+        pass
+
+    @classmethod
+    def confirm_recurring_transaction(cls, db, user, transaction):
+        pass
+
+    @classmethod
+    def accept_recurring_transaction(cls, db, user, transaction):
+        pass
+
+    @classmethod
+    def cancel_recurring_transaction(cls, db, user, transaction):
+        pass

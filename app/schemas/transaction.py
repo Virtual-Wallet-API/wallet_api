@@ -29,6 +29,8 @@ class TransactionCreate(BaseModel):
     description: Optional[str] = None
     category_id: Optional[int] = None
     currency_id: int
+    recurring: bool = False
+    interval: Optional[int] = 1
 
     @field_validator('category_id')
     def category_id_must_be_positive(cls, v):
