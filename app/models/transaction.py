@@ -20,6 +20,13 @@ class TransactionStatus(str, Enum):
     DENIED = "denied"
 
 
+class TransactionUpdateStatus(str, Enum):
+    CONFIRM = "confirm"
+    ACCEPT = "accept"
+    DECLINE = "decline"
+    CANCEL = "cancel"
+
+
 class Transaction(Base):
     __tablename__ = "transactions"
 

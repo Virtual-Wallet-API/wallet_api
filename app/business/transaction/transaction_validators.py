@@ -1,10 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
 
+from app.business.user import UVal
 from app.models import User, Transaction
 from app.models.transaction import TransactionStatus
-from app.business.user import UVal
 
 
 class TransactionValidators:
@@ -128,14 +127,14 @@ class TransactionValidators:
         :return: True if confirmable
         :raises HTTPException: If transaction cannot be confirmed
         """
+        if transaction.sender_id != user.id:
+            raise HTTPException(status_code=403, detail="Only the sender can confirm this transaction")
+
         if transaction.status != TransactionStatus.PENDING:
             raise HTTPException(
                 status_code=400,
                 detail=f"Transaction cannot be confirmed. Current status: {transaction.status}"
             )
-
-        if transaction.sender_id != user.id:
-            raise HTTPException(status_code=403, detail="Only the sender can confirm this transaction")
 
         return True
 

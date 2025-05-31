@@ -1,18 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize section toggles
-    initializeSectionToggle('contacts-toggle', 'contacts-list-content');
-    initializeSectionToggle('add-contact-toggle', 'add-contact-box');
-    
-    // Initialize form submission
-    initializeFormSubmission();
-    
-    // Initialize search functionality
-    initializeSearch();
-    
-    // Load initial contacts
-    loadContacts();
-
-    document.dispatchEvent(new Event('pageContentLoaded'));
+    Promise.all([
+        initializeSectionToggle('contacts-toggle', 'contacts-list-content'),
+        initializeSectionToggle('add-contact-toggle', 'add-contact-box'),
+        initializeFormSubmission(),
+        initializeSearch(),
+        loadContacts()
+    ]).then(() => {
+        document.dispatchEvent(new Event('pageContentLoaded'));
+    });
 });
 
 // Section Toggle Functionality
@@ -65,6 +61,7 @@ function initializeSectionToggle(toggleId, contentId) {
             icon.classList.add('up');
         }
     });
+    return true;
 }
 
 // Form Submission
@@ -157,6 +154,7 @@ function initializeFormSubmission() {
             spinner.style.display = 'none';
         });
     });
+    return true;
 }
 
 // Search Functionality
@@ -187,6 +185,7 @@ function initializeSearch() {
             }
         });
     });
+    return true;
 }
 
 // Load Contacts
@@ -236,6 +235,7 @@ function loadContacts() {
         loadingContainer.classList.add('hidden');
         initialContainer.innerHTML = '<p class="text-center text-danger">Error loading contacts. Please try again later.</p>';
     });
+    return true;
 }
 
 // Render Contacts

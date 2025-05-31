@@ -13,7 +13,7 @@ from app.schemas.transaction import (
     TransactionConfirm,
     TransactionDetailResponse,
     TransactionAccept,
-    TransactionDecline
+    TransactionDecline, TransactionStatusUpdate
 )
 from app.schemas.router import TransactionHistoryFilter
 
@@ -93,6 +93,18 @@ def create_transaction(transaction_data: TransactionCreate,
     :return: The created pending transaction instance.
     """
     return TransactionService.create_pending_transaction(db, user, transaction_data)
+
+
+@router.post("/status/{transaction_id}", response_model=TransactionResponse,
+             description="Update the status of a transaction.")
+def update_transaction_status(transaction_id: int,
+                              status: TransactionStatusUpdate,
+                              db: Session = Depends(get_db),
+                              user: User = Depends(get_user_except_pending_fpr)):
+    """
+    Update the status of a transaction.
+    """
+    return TransactionService.update_transaction_status(db, user, transaction_id, status)
 
 
 @router.post("/{transaction_id}/confirm", response_model=TransactionResponse,

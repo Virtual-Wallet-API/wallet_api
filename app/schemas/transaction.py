@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel
 
-from app.models.transaction import TransactionStatus
+from app.models.transaction import TransactionStatus, TransactionUpdateStatus
 from app.schemas.user import ShortUserResponse
 
 
@@ -37,6 +37,10 @@ class TransactionAccept(BaseModel):
 class TransactionDecline(BaseModel):
     """Schema for receiver declining a pending transaction"""
     reason: Optional[str] = None  # Optional reason for declining
+
+
+class TransactionStatusUpdate(BaseModel):
+    status: TransactionUpdateStatus
 
 
 class TransactionResponse(TransactionBase):

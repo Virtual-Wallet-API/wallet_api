@@ -1,13 +1,14 @@
-from sqlalchemy.orm import Session
-from typing import Optional
-from fastapi import HTTPException
 from datetime import datetime
+from typing import Optional
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 from app.models import User, Transaction
-from app.models.transaction import TransactionStatus
-from app.schemas.transaction import TransactionCreate, TransactionResponse, TransactionHistoryResponse
-from .transaction_validators import TransactionValidators
+from app.models.transaction import TransactionStatus, TransactionUpdateStatus
+from app.schemas.transaction import TransactionCreate, TransactionHistoryResponse, TransactionStatusUpdate
 from .transaction_notifications import TransactionNotificationService
+from .transaction_validators import TransactionValidators
 
 
 class TransactionService:
@@ -53,6 +54,18 @@ class TransactionService:
         return transaction
 
     @classmethod
+    def update_transaction_status(cls, db: Session, user: User, transaction_id: int, status: TransactionStatusUpdate):
+        """Router function for updating transaction status"""
+        status_update_map = {
+            TransactionUpdateStatus.ACCEPT: TransactionService.accept_transaction,
+            TransactionUpdateStatus.CANCEL: TransactionService.cancel_transaction,
+            TransactionUpdateStatus.CONFIRM: TransactionService.confirm_transaction,
+            TransactionUpdateStatus.DECLINE: TransactionService.decline_transaction
+        }
+
+        return status_update_map[status.action](db, user, transaction_id)
+
+    @classmethod
     def confirm_transaction(cls, db: Session, user: User, transaction_id: int) -> Transaction:
         """
         Confirm a pending transaction by reserving funds and changing status to AWAITING_ACCEPTANCE
@@ -72,8 +85,7 @@ class TransactionService:
 
         try:
             # Reserve funds from sender's account
-            sender = db.query(User).filter(User.id == transaction.sender_id).first()
-            sender.reserve_funds(transaction.amount)
+            transaction.sender.reserve_funds(transaction.amount)
 
             # Change status to awaiting acceptance
             transaction.status = TransactionStatus.AWAITING_ACCEPTANCE

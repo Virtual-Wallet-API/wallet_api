@@ -1,9 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize section toggle
-    initializeSectionToggle();
-    
-    // Load initial cards
-    loadCards();
+    Promise.all([
+        initializeSectionToggle(),
+        loadCards()
+    ]).then(() => {
+        document.dispatchEvent(new Event('pageContentLoaded'));
+    });
 });
 
 // Section Toggle Functionality
@@ -30,6 +32,7 @@ function initializeSectionToggle() {
             icon.classList.add('up');
         }
     });
+    return true;
 }
 
 // Load Cards
@@ -79,6 +82,7 @@ function loadCards() {
         loadingContainer.classList.add('hidden');
         initialContainer.innerHTML = '<p class="text-center text-danger">Error loading cards. Please try again later.</p>';
     });
+    return true;
 }
 
 // Render Cards

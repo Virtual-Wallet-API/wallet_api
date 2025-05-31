@@ -367,6 +367,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
-    document.dispatchEvent(new CustomEvent('pageContentLoaded'));
 });
