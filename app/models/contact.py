@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 
 from app.infrestructure import Base
-from app.models import Transaction
+from app.models.transaction import Transaction
 
 
 class Contact(Base):

@@ -18,15 +18,17 @@ class UserContacts:
     @classmethod
     def add_contact(cls, db: Session, user: User, identifier: ContactCreate) -> Contact:
         identifier = identifier.identifier.strip()
-
+        print(identifier)
         if identifier.isnumeric() and len(identifier) == 10:
             contact = db.query(User).filter(User.phone_number == identifier).first()
             if not contact:
+                print("No user found matching the provided phone number")
                 raise HTTPException(status_code=404, detail="No user found matching the provided phone number")
             return UserContacts.insert_contact(db, user, contact)
         else:
             contact = db.query(User).filter(User.username == identifier or User.email == identifier).first()
             if not contact:
+                print("No user found matching the provided username/email")
                 raise HTTPException(status_code=404, detail="No user found matching the provided username/email")
             return UserContacts.insert_contact(db, user, contact)
 
