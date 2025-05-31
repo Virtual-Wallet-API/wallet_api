@@ -79,16 +79,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             const data = await response.json();
             
-            if (data.categories) {
+            if (data.categories && data.categories.length > 0) {
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
                 });
+            } else {
+                categorySelect.disabled = true;
+                categorySelect.innerHTML = '<option value="" selected>You have no categories</option>';
             }
         } catch (error) {
             console.error('Error loading categories:', error);
+            categorySelect.disabled = true;
+            categorySelect.innerHTML = '<option value="" selected>Error loading categories</option>';
         }
     }
 
@@ -106,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             const data = await response.json();
 
-            if (data.transactions) {
+            if (data.transactions && data.transactions.length > 0) {
                 initialContainer.innerHTML = '';
                 data.transactions.forEach(transaction => {
                     const transactionElement = createTransactionElement(transaction);
@@ -114,9 +119,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
 
                 viewMoreContainer.style.display = data.has_more ? 'block' : 'none';
+            } else {
+                initialContainer.innerHTML = `
+                    <div class="no-transactions-alert">
+                        No ${status === 'pending' ? 'pending' : 'awaiting acceptance'} transactions found
+                    </div>
+                `;
+                viewMoreContainer.style.display = 'none';
             }
         } catch (error) {
             console.error(`Error loading ${status} transactions:`, error);
+            initialContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    Error loading transactions. Please try again later.
+                </div>
+            `;
         } finally {
             loadingElement.style.display = 'none';
         }
@@ -142,7 +159,61 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
         document.getElementById('modal-description').textContent = transaction.description || 'No description';
         document.getElementById('modal-status').textContent = transaction.status;
+
+        // Store transaction ID for cancellation
+        window.currentTransactionId = transaction.id;
+
+        // Show cancel button if transaction is pending
+        const cancelButton = document.getElementById('cancel-transaction-btn');
+        if (transaction.status === 'pending') {
+            if (!cancelButton) {
+                const footer = document.querySelector('#transactionModal .modal-footer');
+                const newCancelButton = document.createElement('button');
+                newCancelButton.id = 'cancel-transaction-btn';
+                newCancelButton.className = 'btn btn-danger';
+                newCancelButton.textContent = 'Cancel Transaction';
+                newCancelButton.addEventListener('click', cancelTransaction);
+                footer.insertBefore(newCancelButton, footer.firstChild);
+            } else {
+                cancelButton.style.display = 'inline-block';
+            }
+        } else if (cancelButton) {
+            cancelButton.style.display = 'none';
+        }
+
         transactionModal.show();
+    }
+
+    async function cancelTransaction() {
+        if (!window.currentTransactionId) return;
+
+        try {
+            const response = await fetch(`/api/v1/transactions/status/${window.currentTransactionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({ action: 'cancel' })
+            });
+
+            if (response.ok) {
+                transactionModal.hide();
+                showSuccess('Transaction cancelled successfully');
+                loadTransactions('pending');
+                loadTransactions('awaiting_acceptance');
+                await auth.refreshUserData();
+                updateBalanceDisplay();
+            } else {
+                const data = await response.json();
+                showError(data.message || 'Failed to cancel transaction');
+            }
+        } catch (error) {
+            showError('An error occurred while cancelling the transaction');
+            console.error('Error:', error);
+        } finally {
+            window.currentTransactionId = null;
+        }
     }
 
     function toggleIntervalGroup() {
@@ -169,9 +240,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             content.offsetHeight;
             content.style.maxHeight = content.scrollHeight + 'px';
             content.style.opacity = '1';
+            content.classList.add('show');
         } else {
             content.style.maxHeight = '0';
             content.style.opacity = '0';
+            content.classList.remove('show');
             setTimeout(() => {
                 content.style.display = 'none';
             }, 300);
@@ -182,6 +255,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function handleFormSubmit(e) {
         e.preventDefault();
+        
+        // Clear any existing messages
+        successMessage.style.display = 'none';
+        successMessage.classList.remove('visible');
+        errorMessage.style.display = 'none';
+        errorMessage.classList.remove('visible');
         
         // Validate amount
         const amount = parseFloat(amountInput.value);
@@ -290,18 +369,28 @@ document.addEventListener('DOMContentLoaded', async function() {
     function showError(message) {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+        errorMessage.classList.add('visible');
         successMessage.style.display = 'none';
+        successMessage.classList.remove('visible');
         setTimeout(() => {
-            errorMessage.style.display = 'none';
+            errorMessage.classList.remove('visible');
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 300);
         }, 5000);
     }
 
     function showSuccess(message) {
         successMessage.textContent = message;
         successMessage.style.display = 'block';
+        successMessage.classList.add('visible');
         errorMessage.style.display = 'none';
+        errorMessage.classList.remove('visible');
         setTimeout(() => {
-            successMessage.style.display = 'none';
+            successMessage.classList.remove('visible');
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 300);
         }, 5000);
     }
 }); 

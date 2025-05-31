@@ -1,154 +1,129 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link rel="stylesheet" href="/static/css/payments/send.css" type="text/css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/payments/send.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="send-page-container">
-    <h2 class="send-title-main">Send Money</h2>
-
-    <!-- Send Payment Box -->
-    <div class="send-form-box" id="send-box">
-        <div class="form-message alert alert-success" id="success-message" role="alert" style="display: none;"></div>
-        <div class="form-message alert alert-danger" id="error-message" role="alert" style="display: none;"></div>
-
-        <form id="send-form" method="POST">
-            <!-- Balance Display -->
-            <div class="balance-display" id="balance-display">
-                <span id="balance-text" style="opacity: 0;">Available Balance:</span>
-                <span id="balance-amount" style="opacity: 0;">$0.00</span>
-                <span id="balance-amount-loading" class="hidden"><i class="bi bi-arrow-repeat"></i></span>
+    <h1 class="send-title-main">Send Money</h1>
+    
+    <div class="send-form-box">
+        <div class="balance-display">
+            <span id="balance-text">Available Balance</span>
+            <span id="balance-amount">$0.00</span>
+            <div id="balance-amount-loading" class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
+        </div>
 
-            <!-- Receiver Input -->
+        <div id="success-message" class="alert alert-success" role="alert" style="display: none;"></div>
+        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+
+        <form id="send-form">
             <div class="form-group">
-                <label for="receiver-identifier">Send To</label>
-                <div class="receiver-input-group">
-                    <span class="input-group-text-custom"><i class="bi bi-person"></i></span>
-                    <input class="form-control" id="receiver-identifier" type="text" 
-                           placeholder="Enter username, email or phone number" required>
+                <label for="receiver-identifier">Receiver</label>
+                <div class="input-group">
+                    <span class="input-group-text-custom">@</span>
+                    <input type="text" class="form-control" id="receiver-identifier" placeholder="Enter username" required>
                 </div>
-                <div class="form-message alert-danger" id="receiver-error" style="display: none;"></div>
             </div>
 
-            <!-- Amount Input -->
             <div class="form-group">
                 <label for="send-amount">Amount</label>
-                <div class="amount-input-group">
-                    <span class="input-group-text-custom">USD</span>
-                    <input class="form-control" id="send-amount" min="0.01" 
-                           placeholder="Enter amount" required step="0.01" type="number">
+                <div class="input-group">
+                    <span class="input-group-text-custom">$</span>
+                    <input type="number" class="form-control" id="send-amount" placeholder="0.00" step="0.01" min="0.01" required>
                 </div>
-                <div class="form-message alert-danger" id="amount-error" style="display: none;"></div>
             </div>
 
-            <!-- Description Input -->
             <div class="form-group">
-                <label for="description">Description (Optional)</label>
-                <div class="description-input-group">
-                    <span class="input-group-text-custom"><i class="bi bi-chat-left-text"></i></span>
-                    <input class="form-control" id="description" type="text" 
-                           placeholder="What's this payment for?">
-                </div>
+                <label for="description">Description</label>
+                <input type="text" class="form-control" id="description" placeholder="Enter description">
             </div>
 
-            <!-- Category Selection -->
             <div class="form-group">
-                <label for="category-select">Category (Optional)</label>
-                <div class="category-select-input-group">
-                    <span class="input-group-text-custom"><i class="bi bi-tag"></i></span>
-                    <select class="form-select" id="category-select">
-                        <option value="" selected>Select a category</option>
-                    </select>
-                </div>
+                <label for="category-select">Category</label>
+                <select class="form-select" id="category-select">
+                    <option value="" selected>Select a category</option>
+                </select>
             </div>
 
-            <!-- Recurring Transaction -->
             <div class="form-group">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="recurring-checkbox">
                     <label class="form-check-label" for="recurring-checkbox">
-                        Make a recurring transaction
+                        Recurring Transaction
                     </label>
                 </div>
             </div>
 
-            <!-- Interval Selection (Hidden by default) -->
-            <div class="form-group" id="interval-group" style="display: none;">
-                <label for="interval-select">Repeat Every</label>
-                <div class="interval-select-input-group">
-                    <span class="input-group-text-custom"><i class="bi bi-calendar"></i></span>
-                    <select class="form-select" id="interval-select">
-                        <option value="1">A day</option>
-                        <option value="2">A week</option>
-                        <option value="3">A month</option>
-                    </select>
-                </div>
+            <div id="interval-group" class="form-group" style="display: none;">
+                <label for="interval-select">Interval</label>
+                <select class="form-select" id="interval-select">
+                    <option value="1">Daily</option>
+                    <option value="7">Weekly</option>
+                    <option value="30">Monthly</option>
+                    <option value="365">Yearly</option>
+                </select>
             </div>
 
-            <!-- Submit Button -->
-            <button class="btn btn-confirm-send" id="submit-button" type="submit">
-                <span id="button-text">Send Payment</span>
-                <span id="spinner" style="display: none;"><i class="bi bi-arrow-repeat"></i> Processing...</span>
+            <button type="submit" class="btn btn-confirm-send" id="submit-button">
+                <span id="button-text">Send Money</span>
+                <div id="spinner" class="spinner-border spinner-border-sm" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </button>
         </form>
     </div>
 
-    <!-- Pending Transactions Section -->
-    <div class="section-toggle-pending" id="pending-toggle" tabindex="0" aria-expanded="false" aria-controls="pending-transactions-list-content">
-        <h3>Pending Transactions</h3>
-        <i class="bi bi-chevron-down"></i>
-    </div>
-    <div class="pending-transactions-list" id="pending-transactions-list-content">
-        <div class="list-loading-container" id="pending-loading"><i class="bi bi-arrow-repeat"></i></div>
-        <div id="initial-pending">
-            <!-- Pending transaction items will be inserted here by JS -->
+    <div class="transactions-section">
+        <div class="section-toggle" id="pending-toggle" aria-expanded="false">
+            <h2>Pending Transactions</h2>
+            <i class="bi bi-chevron-down"></i>
         </div>
-        <div id="additional-pending" class="items-list-more" style="max-height: 0; opacity: 0; overflow: hidden;">
-            <!-- Additional pending transaction items -->
+        <div id="pending-transactions-list-content" class="transactions-list-content">
+            <div id="pending-loading" class="loading-spinner" style="display: none;">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="initial-pending" class="transactions-list"></div>
+            <div id="view-more-pending-btn-container" class="view-more-container" style="display: none;">
+                <button class="btn btn-view-more">View More</button>
+            </div>
         </div>
-        <div class="view-more-button-container" id="view-more-pending-btn-container" style="display: none;">
-            <a class="btn btn-outline-primary btn-view-more" href="#" id="view-pending-btn">View More</a>
-        </div>
-    </div>
 
-    <!-- Awaiting Acceptance Transactions Section -->
-    <div class="section-toggle-awaiting" id="awaiting-toggle" tabindex="0" aria-expanded="false" aria-controls="awaiting-transactions-list-content">
-        <h3>Awaiting Acceptance</h3>
-        <i class="bi bi-chevron-down"></i>
+        <div class="section-toggle" id="awaiting-toggle" aria-expanded="false">
+            <h2>Awaiting Acceptance</h2>
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        <div id="awaiting-transactions-list-content" class="transactions-list-content">
+            <div id="awaiting-loading" class="loading-spinner" style="display: none;">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="initial-awaiting" class="transactions-list"></div>
+            <div id="view-more-awaiting-btn-container" class="view-more-container" style="display: none;">
+                <button class="btn btn-view-more">View More</button>
+            </div>
+        </div>
     </div>
-    <div class="awaiting-transactions-list" id="awaiting-transactions-list-content">
-        <div class="list-loading-container" id="awaiting-loading"><i class="bi bi-arrow-repeat"></i></div>
-        <div id="initial-awaiting">
-            <!-- Awaiting transaction items will be inserted here by JS -->
-        </div>
-        <div id="additional-awaiting" class="items-list-more" style="max-height: 0; opacity: 0; overflow: hidden;">
-            <!-- Additional awaiting transaction items -->
-        </div>
-        <div class="view-more-button-container" id="view-more-awaiting-btn-container" style="display: none;">
-            <a class="btn btn-outline-primary btn-view-more" href="#" id="view-awaiting-btn">View More</a>
-        </div>
-    </div>
-
-    <!-- Add padding to clear fixed footer -->
-    <div style="padding-bottom: 80px;"></div>
 </div>
-{% endblock %}
 
-{% block modals %}
 <!-- Transaction Confirmation Modal -->
-<div class="modal fade modal-transaction-confirm" id="transactionConfirmModal" tabindex="-1" aria-labelledby="transactionConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="transactionConfirmModal" tabindex="-1" aria-labelledby="transactionConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionConfirmModalLabel">Confirm Transaction</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to send this payment?</p>
+                <p>Please confirm the following transaction details:</p>
                 <div class="transaction-details">
-                    <p><strong>To:</strong> <span id="modal-receiver"></span></p>
+                    <p><strong>Receiver:</strong> <span id="modal-receiver"></span></p>
                     <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
                     <p><strong>Description:</strong> <span id="modal-description"></span></p>
                 </div>
@@ -162,22 +137,24 @@
 </div>
 
 <!-- Transaction Details Modal -->
-<div class="modal fade modal-transaction-details" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Date:</strong> <span id="modal-date"></span></p>
-                <p><strong>To:</strong> <span id="modal-receiver"></span></p>
-                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
-                <p><strong>Description:</strong> <span id="modal-description"></span></p>
-                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                <div class="transaction-details">
+                    <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                    <p><strong>Receiver:</strong> <span id="modal-receiver"></span></p>
+                    <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                    <p><strong>Description:</strong> <span id="modal-description"></span></p>
+                    <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -185,5 +162,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="text/javascript" src="/static/js/payments/send.js"></script>
+<script src="{{ url_for('static', filename='js/payments/send.js') }}"></script>
 {% endblock %} 
