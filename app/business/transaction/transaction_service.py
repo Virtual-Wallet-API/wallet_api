@@ -66,6 +66,43 @@ class TransactionService:
         return status_update_map[status.action](db, user, transaction_id)
 
     @classmethod
+    def _handle_status_update_error(cls, db: Session,
+                                    transaction: Transaction,
+                                    error: Exception,
+                                    release_funds: bool = False,
+                                    sender: User = None):
+        """
+        Common error handling for transaction operations
+        :param db: Database session
+        :param transaction: Transaction object
+        :param error: Exception that occurred
+        :param release_funds: Whether to release reserved funds
+        :param sender: Sender user (needed if release_funds is True)
+        :raises: HTTPException or the original exception
+        """
+        db.rollback()
+        # Mark transaction as failed
+        transaction.status = TransactionStatus.FAILED
+
+        # Release reserved funds if needed
+        if release_funds and sender:
+            try:
+                sender.release_reserved_funds(transaction.amount)
+            except Exception as fund_error:
+                # Log the error but continue with marking the transaction as failed
+                print(f"Error releasing funds: {str(fund_error)}")
+
+        db.commit()
+        db.refresh(transaction)
+
+        # Notify about failure
+        TransactionNotificationService.notify_transaction_failed(transaction, str(error))
+
+        if isinstance(error, ValueError):
+            raise HTTPException(status_code=400, detail=str(error))
+        raise error
+
+    @classmethod
     def confirm_transaction(cls, db: Session, user: User, transaction_id: int) -> Transaction:
         """
         Confirm a pending transaction by reserving funds and changing status to AWAITING_ACCEPTANCE
@@ -99,29 +136,13 @@ class TransactionService:
 
             return transaction
 
-        except ValueError as e:
-            db.rollback()
-            # Mark transaction as failed
-            transaction.status = TransactionStatus.FAILED
-            db.commit()
-            db.refresh(transaction)
-
-            # Notify about failure
-            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
-            raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            db.rollback()
-            # Mark transaction as failed
-            transaction.status = TransactionStatus.FAILED
-            db.commit()
-            db.refresh(transaction)
-
-            # Notify about failure
-            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
-            raise e
+        except (ValueError, Exception) as e:
+            return cls._handle_status_update_error(db, transaction, e)
 
     @classmethod
-    def accept_transaction(cls, db: Session, receiver: User, transaction_id: int,
+    def accept_transaction(cls, db: Session,
+                           receiver: User,
+                           transaction_id: int,
                            message: Optional[str] = None) -> Transaction:
         """
         Accept a pending transaction as a receiver and execute the actual balance transfer
@@ -136,15 +157,12 @@ class TransactionService:
         TransactionValidators.validate_transaction_acceptable(transaction, receiver)
 
         try:
-            # Execute the balance transfer from reserved funds
-            sender = db.query(User).filter(User.id == transaction.sender_id).first()
-
             # Refresh both users to get latest balances
-            db.refresh(sender)
+            db.refresh(transaction.sender)
             db.refresh(receiver)
 
             # Transfer from reserved funds to actual transfer
-            sender.transfer_from_reserved(transaction.amount)
+            transaction.sender.transfer_from_reserved(transaction.amount)
             receiver.balance += transaction.amount
             transaction.status = TransactionStatus.COMPLETED
 
@@ -157,31 +175,8 @@ class TransactionService:
 
             return transaction
 
-        except ValueError as e:
-            db.rollback()
-            # Mark transaction as failed and release reserved funds
-            transaction.status = TransactionStatus.FAILED
-            sender.release_reserved_funds(transaction.amount)
-            db.commit()
-            db.refresh(transaction)
-
-            # Notify about failure
-            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
-            raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            db.rollback()
-            # Mark transaction as failed and try to release reserved funds
-            try:
-                transaction.status = TransactionStatus.FAILED
-                sender.release_reserved_funds(transaction.amount)
-            except:
-                pass  # If release fails, we still want to mark as failed
-            db.commit()
-            db.refresh(transaction)
-
-            # Notify about failure
-            TransactionNotificationService.notify_transaction_failed(transaction, str(e))
-            raise e
+        except (ValueError, Exception) as e:
+            return cls._handle_status_update_error(db, transaction, e, release_funds=True, sender=sender)
 
     @classmethod
     def decline_transaction(cls, db: Session, receiver: User, transaction_id: int,
@@ -200,8 +195,7 @@ class TransactionService:
 
         try:
             # Release reserved funds back to sender
-            sender = db.query(User).filter(User.id == transaction.sender_id).first()
-            sender.release_reserved_funds(transaction.amount)
+            transaction.sender.release_reserved_funds(transaction.amount)
 
             # Mark transaction as denied
             transaction.status = TransactionStatus.DENIED
@@ -213,11 +207,11 @@ class TransactionService:
 
             return transaction
 
-        except ValueError as e:
+        except (ValueError, Exception) as e:
+            # Simple error handling without changing transaction status
             db.rollback()
-            raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            db.rollback()
+            if isinstance(e, ValueError):
+                raise HTTPException(status_code=400, detail=str(e))
             raise e
 
     @classmethod
@@ -232,27 +226,29 @@ class TransactionService:
         transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
         TransactionValidators.validate_transaction_ownership(transaction, user)
 
-        # Only allow cancellation of PENDING transactions (before confirmation)
-        if transaction.status not in [TransactionStatus.PENDING]:
-            from fastapi import HTTPException
-            raise HTTPException(
-                status_code=400,
-                detail=f"Cannot cancel transaction with status: {transaction.status}. Only pending transactions can be cancelled."
-            )
-
         # Only sender can cancel their own transaction
         if transaction.sender_id != user.id:
-            from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="Only the sender can cancel this transaction")
 
-        transaction.status = TransactionStatus.CANCELLED
-        db.commit()
-        db.refresh(transaction)
+        # Only allow cancellation of PENDING transactions (before confirmation)
+        if transaction.status not in (TransactionStatus.PENDING, TransactionStatus.AWAITING_ACCEPTANCE):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot cancel transaction with status: {transaction.status.value}. Only pending and awaiting confirmation transactions can be cancelled."
+            )
 
-        # Send notifications
-        TransactionNotificationService.notify_transaction_cancelled(transaction)
+        try:
+            transaction.status = TransactionStatus.CANCELLED
+            db.commit()
+            db.refresh(transaction)
 
-        return transaction
+            # Send notifications
+            TransactionNotificationService.notify_transaction_cancelled(transaction)
+
+            return transaction
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to cancel transaction: {str(e)}")
 
     @classmethod
     def get_transaction_by_id(cls, db: Session, user: User, transaction_id: int) -> Transaction:

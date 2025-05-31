@@ -133,7 +133,7 @@ class TransactionValidators:
         if transaction.status != TransactionStatus.PENDING:
             raise HTTPException(
                 status_code=400,
-                detail=f"Transaction cannot be confirmed. Current status: {transaction.status}"
+                detail=f"Transaction cannot be confirmed. Current status: {transaction.status.value}"
             )
 
         return True
@@ -150,7 +150,7 @@ class TransactionValidators:
         if transaction.status != TransactionStatus.AWAITING_ACCEPTANCE:
             raise HTTPException(
                 status_code=400,
-                detail=f"Transaction cannot be accepted/declined. Current status: {transaction.status}. Transaction must be confirmed by sender first."
+                detail=f"Transaction cannot be accepted/declined. Current status: {transaction.status.value}."
             )
 
         if transaction.receiver_id != user.id:

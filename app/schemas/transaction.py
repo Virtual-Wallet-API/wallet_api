@@ -40,7 +40,7 @@ class TransactionDecline(BaseModel):
 
 
 class TransactionStatusUpdate(BaseModel):
-    status: TransactionUpdateStatus
+    action: TransactionUpdateStatus
 
 
 class TransactionResponse(TransactionBase):
