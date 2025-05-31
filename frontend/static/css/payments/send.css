@@ -1,0 +1,243 @@
+.send-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.send-title-main {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.send-form-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.balance-display {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 1.1em;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.receiver-input-group,
+.amount-input-group,
+.description-input-group,
+.category-select-input-group,
+.interval-select-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group-text-custom {
+    background: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-right: none;
+    padding: 10px 15px;
+    border-radius: 5px 0 0 5px;
+    color: #6c757d;
+}
+
+.form-control {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 0 5px 5px 0;
+    padding: 10px 15px;
+    font-size: 1em;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.form-select {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 0 5px 5px 0;
+    padding: 10px 15px;
+    font-size: 1em;
+    background-color: #fff;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.form-check-input {
+    margin-right: 10px;
+}
+
+.btn-confirm-send {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-confirm-send:hover {
+    background: #0056b3;
+}
+
+.btn-confirm-send:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Section Toggles */
+.section-toggle-pending,
+.section-toggle-awaiting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.section-toggle-pending:hover,
+.section-toggle-awaiting:hover {
+    background: #e9ecef;
+}
+
+.section-toggle-pending h3,
+.section-toggle-awaiting h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+/* Transaction Lists */
+.pending-transactions-list,
+.awaiting-transactions-list {
+    background: #fff;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.list-loading-container {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.items-list-more {
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.view-more-button-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.btn-view-more {
+    padding: 8px 20px;
+    font-size: 0.9em;
+}
+
+/* Form Messages */
+.form-message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Modal Styles */
+.modal-transaction-confirm .modal-content,
+.modal-transaction-details .modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 15px 20px;
+}
+
+.transaction-details {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.transaction-details p {
+    margin: 8px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .send-page-container {
+        padding: 15px;
+    }
+
+    .send-form-box {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .input-group-text-custom {
+        padding: 8px 12px;
+    }
+
+    .form-control,
+    .form-select {
+        padding: 8px 12px;
+    }
+} 
