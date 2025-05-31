@@ -53,7 +53,7 @@ function initializeFormSubmission() {
         e.preventDefault();
         successMessage.classList.remove('visible');
         errorMessage.classList.remove('visible');
-        
+
         // Disable form and show loading state
         form.querySelectorAll('input').forEach(input => input.disabled = true);
         submitButton.disabled = true;
@@ -114,12 +114,13 @@ function initializeSearch() {
     searchInput.addEventListener('keyup', function() {
         const query = this.value.toLowerCase();
         const contacts = document.querySelectorAll('.contact-item');
-        
+
         contacts.forEach(contact => {
             const username = contact.querySelector('.username').textContent.toLowerCase();
             const email = contact.querySelector('.email').textContent.toLowerCase();
-            
-            if (username.includes(query) || email.includes(query)) {
+            contactHeight = contact.style.height;
+
+            if (username.match(query) || email.match(query)) {
                 contact.style.opacity = '1';
                 contact.style.maxHeight = contact.scrollHeight + 'px';
                 contact.style.transform = 'translateX(0)';
