@@ -70,11 +70,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     function updateTransactionsHeight() {
         originalPendingContentHeight = pendingContent.scrollHeight * 1.4;
         pendingContent.setAttribute("originalHeight", originalPendingContentHeight)
-        pendingContent.style.maxHeight = originalPendingContentHeight + 'px';
-
         originalAwaitingContentHeight = awaitingContent.scrollHeight * 1.4;
         awaitingContent.setAttribute("originalHeight", originalAwaitingContentHeight)
-        awaitingContent.style.maxHeight = originalAwaitingContentHeight + 'px';
+        const pendingVisible = pendingContent.getAttribute("visible");
+        const awaitingVisible = awaitingContent.getAttribute("visible");
+        pendingContent.style.maxHeight = pendingVisible ? originalPendingContentHeight + 'px' : 0;
+        awaitingContent.style.maxHeight = awaitingVisible ? originalAwaitingContentHeight + 'px' : 0;
     }
 
     // Functions
@@ -260,6 +261,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Force a reflow
             content.offsetHeight;
             content.style.maxHeight = content.getAttribute("originalHeight") + 'px';
+            content.setAttribute("visible", true);
             content.style.opacity = '1';
             content.classList.add('show');
         } else {

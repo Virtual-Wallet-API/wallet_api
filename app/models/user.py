@@ -264,6 +264,7 @@ class User(Base):
                 f"Cannot release more than reserved. Reserved: ${self.reserved_balance:.2f}, Requested: ${amount:.2f}")
 
         self.reserved_balance -= amount
+        self.balance += amount
         return True
 
     def transfer_from_reserved(self, amount: float) -> bool:

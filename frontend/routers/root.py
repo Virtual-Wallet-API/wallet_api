@@ -65,6 +65,13 @@ def send(request: Request):
     return templates.TemplateResponse("payments/send.html", data)
 
 
+@router.get("/receive", response_model=None)
+def receive(request: Request):
+    data = {"request": request,
+            "page": "receive"}
+    return templates.TemplateResponse("payments/receive.html", data)
+
+
 @router.get("/deposits", response_model=None)
 def deposit(request: Request):
     data = {"request": request,
