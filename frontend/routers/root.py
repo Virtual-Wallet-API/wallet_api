@@ -61,7 +61,7 @@ def transactions(request: Request):
 @router.get("/send", response_model=None)
 def send(request: Request):
     data = {"request": request,
-            "page": "Send Money"}
+            "page": "send"}
     return templates.TemplateResponse("payments/send.html", data)
 
 
