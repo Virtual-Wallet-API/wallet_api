@@ -270,8 +270,9 @@ class StripeDepositService:
         """
         try:
             # Get the deposit by payment intent ID
+            payment_intent_id = confirm_data.payment_intent_id.split("_secret_")[0]
             deposit = db.query(Deposit).filter(
-                Deposit.stripe_payment_intent_id == confirm_data.payment_intent_id,
+                Deposit.stripe_payment_intent_id == payment_intent_id,
                 Deposit.user_id == user.id
             ).first()
 
@@ -282,8 +283,7 @@ class StripeDepositService:
                 )
 
             # Retrieve payment intent from Stripe to check status
-            payment_intent = await StripeService.retrieve_payment_intent(
-                confirm_data.payment_intent_id.split("_secret_")[0])
+            payment_intent = await StripeService.retrieve_payment_intent(payment_intent_id)
             if payment_intent["status"] == "succeeded":
                 # Update deposit status
                 deposit.mark_completed()

@@ -476,5 +476,7 @@
             $('#transactionModal').modal('show');
         });
     });
+
+    document.dispatchEvent(new Event('pageContentLoaded'));
 </script>
 {% endblock %}

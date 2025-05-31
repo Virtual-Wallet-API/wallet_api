@@ -38,8 +38,8 @@ class Auth {
     }
 
     // Store token in localStorage
-    setToken(token) {
-        localStorage.setItem(this.tokenKey, token);
+    setToken(access_token) {
+        localStorage.setItem(this.tokenKey, access_token);
     }
 
     // Get token from localStorage
@@ -59,12 +59,13 @@ class Auth {
     }
 
     // Store user data in global userData variable
-    setUserData(uData) {
+    setUserData(uData, access_token) {
         userData.id = uData.id;
         userData.username = uData.username;
         userData.balance = uData.balance;
         userData.avatar = uData.avatar;
         userData.status = uData.status;
+        token = access_token;
         localStorage.setItem(this.userKey, JSON.stringify(userData));
     }
 
@@ -103,7 +104,6 @@ class Auth {
                 throw new Error(detail || 'Failed: ' + response.statusText);
             }
             const responseData = await response.json();
-            console.log(responseData);
 
             // const {access_token, token_type, username} = responseData;
             this.setToken(responseData.access_token);
@@ -181,7 +181,7 @@ class Auth {
             }
 
             const userData = await response.json();
-            this.setUserData(userData);
+            this.setUserData(userData, token);
             return {user: userData, message: 'User information updated successfully'};
         } catch (error) {
             console.error('Update user info error:', error);
@@ -220,19 +220,19 @@ class Auth {
 
     // Refresh user data via /users/me
     async refreshUserData() {
-        if (!this.getToken()) {
+        const token = this.getToken();
+        if (!token) {
             console.warn('No token found, skipping user data refresh.');
+            this.setUserData(this.getUserData() || {}, token);
             this.clearAuthData();
             return null;
         }
 
-        // Check if 5 minutes have passed since last refresh
         const now = Date.now();
         const lastRefresh = this.getLastRefreshTimestamp();
-        const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+        const fiveMinutes = 5 * 60 * 1000;
         if (lastRefresh && now - lastRefresh < fiveMinutes) {
-            this.setUserData(this.getUserData())
-            token = this.getToken();
+            this.setUserData(this.getUserData() || {}, token);
             console.log('Skipping refresh, less than 5 minutes since last refresh.');
             return true;
         }
@@ -263,23 +263,14 @@ class Auth {
             }
 
             if (userDataLoaded && udata.username !== userData.username) {
-                console.log("User data changed, clearing auth data.");
+                console.log('User data changed, clearing auth data.');
                 this.clearAuthData();
                 window.location.reload();
                 return null;
             }
 
-            userData = {
-                username: udata.username,
-                id: udata.id,
-                email: udata.email,
-                phone: udata.phone_number,
-                balance: parseFloat(udata.balance).toFixed(2),
-                avatar: udata.avatar,
-                status: udata.status
-            };
-            this.setUserData(userData);
-            this.setLastRefreshTimestamp(); // Update timestamp after successful refresh
+            this.setUserData(udata, token);
+            this.setLastRefreshTimestamp();
             userDataLoaded = true;
 
             console.log(`User data successfully fetched for ${userData.username}.`);
@@ -309,7 +300,7 @@ class Auth {
     // Logout user
     logout() {
         this.clearAuthData();
-        window.location.reload();
+        //window.location.reload();
     }
 }
 
@@ -339,7 +330,7 @@ if (typeof preventAuth === 'undefined') {
 if (!preventAuth) {
     if (!auth.loggedIn()) {
         console.log("Not logged in.")
-        window.location.href = '/login';
+        //window.location.href = '/login';
     }
     refreshUserData();
 }
