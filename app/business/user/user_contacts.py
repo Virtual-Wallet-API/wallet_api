@@ -16,6 +16,10 @@ class UserContacts:
         return db_contact
 
     @classmethod
+    def check_cotnact_exists(cls, db: Session, user: User, contact: User) -> bool:
+        return db.query(Contact).filter(Contact.user_id == user.id, Contact.contact_id == contact.id).first() is not None
+
+    @classmethod
     def add_contact(cls, db: Session, user: User, identifier: ContactCreate) -> Contact:
         identifier = identifier.identifier.strip()
 
@@ -23,6 +27,8 @@ class UserContacts:
             contact = db.query(User).filter(User.phone_number == identifier).first()
             if not contact:
                 raise HTTPException(status_code=404, detail="No user found matching the provided phone number")
+            if UserContacts.check_cotnact_exists(db, user, contact):
+                raise HTTPException(status_code=400, detail="Contact already exists")
             return UserContacts.insert_contact(db, user, contact)
         else:
             contact = db.query(User).filter(User.username == identifier).first()
@@ -30,6 +36,8 @@ class UserContacts:
                 contact = db.query(User).filter(User.email == identifier).first()
                 if not contact:
                     raise HTTPException(status_code=404, detail="No user found matching the provided username/email")
+            if UserContacts.check_cotnact_exists(db, user, contact):
+                raise HTTPException(status_code=400, detail="Contact already exists")
             return UserContacts.insert_contact(db, user, contact)
 
     @classmethod
