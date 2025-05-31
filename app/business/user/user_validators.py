@@ -12,6 +12,28 @@ class UserValidators:
     UniqueValidation: tuple = ("username", "email", "phone")
 
     @staticmethod
+    def search_user_by_identifier(db: Session, identifier: str) -> User | None:
+        """
+        Search a user by their identifier (username, email or phone number).
+        :param db: The database session.
+        :param identifier: The identifier to search for.
+        :return: The user object if found, otherwise returns False.
+        """
+        identifier_map = {
+            "username": User.username,
+            "email": User.email,
+            "phone": User.phone_number
+        }
+
+        user = None
+        for field, value in identifier_map.items():
+            user = UserValidators.find_user_with(field, identifier, db)
+            if user:
+                return user
+
+        raise HTTPException(status_code=400, detail="User with these details does not exist")
+
+    @staticmethod
     def find_user_with(field: str, value: str | int, db: Session) -> User | bool:
         """
         Check if a user exists in the database based on a specific field and value.

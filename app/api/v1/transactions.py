@@ -41,11 +41,7 @@ def get_transaction_history(
     total transactions, outgoing total, and incoming total amounts.
     Only COMPLETED transactions are included in financial totals.
     """
-    return TransactionService.get_user_transaction_history(
-        db=db,
-        user=user,
-        **filter_params.model_dump()
-        )
+    return TransactionService.get_user_transaction_history(db, user, filter_params)
 
 
 @router.get("/pending/received", response_model=List[TransactionResponse])

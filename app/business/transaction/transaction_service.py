@@ -1,7 +1,6 @@
-from datetime import datetime
-from typing import Optional
+from typing import Optional, Annotated
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.models import User, Transaction
@@ -9,13 +8,17 @@ from app.models.transaction import TransactionStatus, TransactionUpdateStatus
 from app.schemas.transaction import TransactionCreate, TransactionHistoryResponse, TransactionStatusUpdate
 from .transaction_notifications import TransactionNotificationService
 from .transaction_validators import TransactionValidators
+from ..user.user_validators import UserValidators
+from ...schemas.router import TransactionHistoryFilter
 
 
 class TransactionService:
     """Business logic for transaction management"""
 
     @classmethod
-    def create_pending_transaction(cls, db: Session, sender: User, transaction_data: TransactionCreate) -> Transaction:
+    def create_pending_transaction(cls, db: Session,
+                                   sender: User,
+                                   transaction_data: TransactionCreate) -> Transaction:
         """
         Create a new pending transaction (no balance changes yet)
         :param db: Database session
@@ -23,10 +26,12 @@ class TransactionService:
         :param transaction_data: Transaction creation data
         :return: Created transaction object
         """
+
+        receiver = UserValidators.search_user_by_identifier(db, transaction_data.identifier)
+
         # Validate transaction data
+        TransactionValidators.validate_self_transaction(sender.id, receiver.id)
         validated_amount = TransactionValidators.validate_transaction_amount(transaction_data.amount)
-        receiver = TransactionValidators.validate_receiver_exists(transaction_data.receiver_id, db)
-        TransactionValidators.validate_self_transaction(sender.id, transaction_data.receiver_id)
         TransactionValidators.validate_sufficient_available_balance(sender, validated_amount)
 
         # Handle category_id None conversion
@@ -35,7 +40,7 @@ class TransactionService:
         # Create pending transaction
         transaction = Transaction(
             sender_id=sender.id,
-            receiver_id=transaction_data.receiver_id,
+            receiver_id=receiver.id,
             amount=validated_amount,
             description=transaction_data.description,
             category_id=category_id,
@@ -265,33 +270,25 @@ class TransactionService:
 
     @classmethod
     def get_user_transaction_history(cls, db: Session, user: User,
-                                     limit: Optional[int] = None,
-                                     offset: Optional[int] = None,
-                                     order_by: str = "date_desc",
-                                     # Advanced filtering options
-                                     date_from: Optional[datetime] = None,
-                                     date_to: Optional[datetime] = None,
-                                     sender_id: Optional[int] = None,
-                                     receiver_id: Optional[int] = None,
-                                     direction: Optional[str] = None,  # "in", "out", or None for both
-                                     status: Optional[str] = None) -> TransactionHistoryResponse:
+                                     history_filter: TransactionHistoryFilter) -> TransactionHistoryResponse:
         """
         Get transaction history for a user with advanced filtering and sorting
         :param db: Database session
         :param user: User requesting transaction history
-        :param limit: Limit number of results
-        :param offset: Offset for pagination
-        :param order_by: Sort order ("date_desc", "date_asc", "amount_desc", "amount_asc")
-        :param date_from: Filter transactions from this date
-        :param date_to: Filter transactions until this date
-        :param sender_id: Filter by specific sender ID
-        :param receiver_id: Filter by specific receiver ID
-        :param direction: Filter by direction ("in" for received, "out" for sent)
-        :param status: Filter by transaction status
+        :param history_filter: Filter query parameters
         :return: Transaction history response
         """
         # Start with base query for user transactions
         query = user.get_transactions(db)
+        date_from = history_filter.date_from
+        date_to = history_filter.date_to
+        sender_id = history_filter.sender_id
+        receiver_id = history_filter.receiver_id
+        direction = history_filter.direction
+        status = history_filter.status
+        order_by = history_filter.order_by
+        limit = history_filter.limit
+        offset = (history_filter.page - 1) * limit
 
         # Apply date range filters
         if date_from:
@@ -313,12 +310,7 @@ class TransactionService:
 
         # Apply status filter
         if status:
-            try:
-                status_enum = TransactionStatus(status.upper())
-                query = query.filter(Transaction.status == status_enum)
-            except ValueError:
-                # Invalid status, return empty result
-                query = query.filter(False)
+            query = query.filter(Transaction.status == status)
 
         # Apply sorting
         if order_by == "date_asc":
@@ -371,10 +363,7 @@ class TransactionService:
         :param user: User to get pending transactions for
         :return: List of pending transactions where user is sender
         """
-        return db.query(Transaction).filter(
-            Transaction.sender_id == user.id,
-            Transaction.status == TransactionStatus.PENDING
-        ).all()
+        return user.pending_sent_transactions
 
     @classmethod
     def get_awaiting_acceptance_sent_transactions(cls, db: Session, user: User) -> list[Transaction]:
@@ -384,7 +373,4 @@ class TransactionService:
         :param user: User to get awaiting acceptance transactions for
         :return: List of transactions awaiting acceptance where user is sender
         """
-        return db.query(Transaction).filter(
-            Transaction.sender_id == user.id,
-            Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE
-        ).all()
+        return user.awaiting_acceptance_sent_transactions

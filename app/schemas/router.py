@@ -1,5 +1,6 @@
-from typing import Optional, Literal
 from datetime import datetime
+from typing import Optional, Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -31,13 +32,15 @@ class UserDepositsFilter(BaseModel):
     limit: int = Field(30, gt=9, le=100, description="The maximum number of results per page")
     page: int = Field(1, ge=1, description="The page you wish to view")
 
+
 class TransactionHistoryFilter(BaseModel):
     # Pagination
-    limit: Optional[int] = Field(None, description="Limit number of results")
-    offset: Optional[int] = Field(None, description="Offset for pagination")
+    limit: Optional[int] = Field(30, ge=10, le=100, description="Limit number of results per page")
+    page: Optional[int] = Field(1, ge=1, description="The current page")
 
     # Sorting
-    order_by: str = Field("date_desc", description="Sort order: date_desc, date_asc, amount_desc, amount_asc")
+    order_by: Literal["date_desc", "date_asc", "amount_desc", "amount_asc"] =\
+        Field("date_desc", description="Sort order")
 
     # Date filtering
     date_from: Optional[datetime] = Field(None, description="Filter transactions from this date (ISO format)")
@@ -48,8 +51,9 @@ class TransactionHistoryFilter(BaseModel):
     receiver_id: Optional[int] = Field(None, description="Filter by specific receiver ID")
 
     # Direction filtering
-    direction: Optional[str] = Field(None, description="Filter by direction: 'in' for received, 'out' for sent")
+    direction: Optional[Literal["in", "out"]] = Field(None, description="Filter by direction received or sent")
 
     # Status filtering
-    status: Optional[str] = Field(None,
-                                  description="Filter by transaction status: pending, awaiting_acceptance, completed, denied, cancelled, failed")
+    status: Optional[Literal["pending", "awaiting_acceptance", "completed", "denied", "cancelled", "failed"]] = \
+        Field(None,
+              description="Filter by transaction status")

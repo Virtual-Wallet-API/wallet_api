@@ -68,6 +68,14 @@ class User(Base):
     def pending_received_transactions(self):
         return self.received_transactions.filter(Transaction.status == TransactionStatus.PENDING).all()
 
+    @property
+    def pending_sent_transactions(self):
+        return self.sent_transactions.filter(Transaction.status == TransactionStatus.PENDING).all()
+
+    @property
+    def awaiting_acceptance_sent_transactions(self):
+        return self.sent_transactions.filter(Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE).all()
+
     @transactions.expression
     def transactions(cls):
         return (select(Transaction)

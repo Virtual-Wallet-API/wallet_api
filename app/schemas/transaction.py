@@ -1,7 +1,8 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from app.models.transaction import TransactionStatus, TransactionUpdateStatus
 from app.schemas.user import ShortUserResponse
@@ -16,12 +17,24 @@ class TransactionBase(BaseModel):
     currency_id: int
 
 
+class TransactionCreateIdentifiers(str, Enum):
+    USERNAME = "username"
+    EMAIL = "email"
+    PHONE_NUMBER = "phone_number"
+
+
 class TransactionCreate(BaseModel):
-    receiver_id: int
+    identifier: str
     amount: float
     description: Optional[str] = None
     category_id: Optional[int] = None
     currency_id: int
+
+    @field_validator('category_id')
+    def category_id_must_be_positive(cls, v):
+        if v < 1:
+            return None
+        return v
 
 
 class TransactionConfirm(BaseModel):
