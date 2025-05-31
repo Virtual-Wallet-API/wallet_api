@@ -12,14 +12,15 @@ class UserValidators:
     UniqueValidation: tuple = ("username", "email", "phone")
 
     @staticmethod
-    def search_user_by_identifier(db: Session, identifier: str) -> User | None:
+    def search_user_by_identifier(db: Session, identifier: str | int) -> User | None:
         """
-        Search a user by their identifier (username, email or phone number).
+        Search a user by their identifier (id, username, email or phone number).
         :param db: The database session.
         :param identifier: The identifier to search for.
         :return: The user object if found, otherwise returns False.
         """
         identifier_map = {
+            "id": User.id,
             "username": User.username,
             "email": User.email,
             "phone": User.phone_number

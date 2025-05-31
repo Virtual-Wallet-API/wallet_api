@@ -100,3 +100,5 @@ class ShortUserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+UserResponse.model_rebuild()

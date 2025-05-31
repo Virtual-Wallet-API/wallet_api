@@ -1,10 +1,18 @@
+import os
+import random
+import string
 from datetime import datetime
 from typing import Dict
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
 from app.business.user import UVal
-from app.business.utils import NService, NType
+from app.business.user.user_auth import UserAuthService
+from app.business.user.user_validators import UserValidators
+from app.business.utils import NotificationService
+from app.business.utils.notification_service import EmailTemplates
+from app.infrestructure import auth, DataValidators
 from app.models import User, UStatus, Transaction
 from app.models.transaction import TransactionStatus
 from app.schemas.admin import UpdateUserStatus, AdminUserResponse, AdminTransactionResponse
@@ -30,19 +38,19 @@ class AdminService:
         return True
 
     @classmethod
-    def update_user_status(cls, db: Session, user: int | str | User, update_data: UpdateUserStatus, admin: User) -> Dict:
+    def update_user_status(cls, db: Session, user: int | str | User, update_data: UpdateUserStatus,
+                           admin: User) -> Dict:
         """
         Approve a pending user account
+        :param update_data:
         :param db: database session
         :param user: Pending User object, username or id
         :param admin: Admin's user object
         """
         cls.verify_admin(db, admin)
 
-        if isinstance(user, str):
-            user = UVal.find_user_with_or_raise_exception("username", user, db)
-        elif isinstance(user, int):
-            user = UVal.find_user_with_or_raise_exception("id", user, db)
+        if not isinstance(user, User):
+            user = UserValidators.search_user_by_identifier(db, user)
 
         match update_data.status:
             case UStatus.ACTIVE.value:
@@ -53,11 +61,7 @@ class AdminService:
                                         detail="Pending users must have a debit or credit card to be approved")
 
                 user.status = UStatus.ACTIVE
-                NService.notify(user, {
-                    "title": "Your account has been activated",
-                    "body": f"Hello, {user.username}! Your account has been activated and is ready for use.",
-                    "type": NType.IMPORTANT
-                })
+                NotificationService.notify_from_template(EmailTemplates.ACCOUNT_ACTIVATED, user)
 
                 db.commit()
                 db.refresh(user)
@@ -68,13 +72,7 @@ class AdminService:
                     return {"user": user, "message": "User is already blocked"}
                 else:
                     user.status = UStatus.BLOCKED
-                    reason = update_data.reason
-                    reason = "due to " + reason if reason else ""
-                    NService.notify(user, {
-                        "title": "Your account has been blocked",
-                        "body": f"Hello, {user.username}! Your account has been blocked {reason}. If you would like to appeal our decision, please reply to this email.",
-                        "type": NType.IMPORTANT
-                    })
+                    NotificationService.notify_from_template(EmailTemplates.ACCOUNT_BLOCKED, user)
 
                     db.commit()
                     db.refresh(user)
@@ -85,11 +83,7 @@ class AdminService:
                     return {"user": user, "message": "User is already deactivated"}
                 else:
                     user.status = UStatus.DEACTIVATED
-                    NService.notify(user, {
-                        "title": "Your account has been deactivated",
-                        "body": f"Hello, {user.username}! Your account has been deactivated. If you would like to reactivate it, simply log in again.",
-                        "type": NType.IMPORTANT
-                    })
+                    NotificationService.notify_from_template(EmailTemplates.ACCOUNT_DEACTIVATED, user)
 
                     db.commit()
                     db.refresh(user)
@@ -268,10 +262,39 @@ class AdminService:
             raise HTTPException(status_code=404, detail=f"Transaction with ID {transaction_id} not found")
 
         if transaction.status == TransactionStatus.PENDING:
+            user = UserValidators.search_user_by_identifier(db, transaction.sender_id)
             transaction.status = TransactionStatus.DENIED
             db.commit()
             db.refresh(transaction)
+            NotificationService.notify(user,
+                                       "Transaction denied",
+                                       f"Dear {user.username},\n\n" +\
+                                       f"After a careful review we decided to deny your transaction of {transaction.amount}.\n" +\
+                                       f"If you have any questions feel free to contact us at admin@vwallet.ninja\n" +\
+                                       f"\n\nThank you for using our services.")
             return transaction
         else:
             raise HTTPException(status_code=400,
                                 detail=f"Transaction cannot be denied, current status: {transaction.status}")
+
+    @classmethod
+    def promote_user_to_admin(cls, db: Session, admin: User, user_id: int) -> User:
+        user = UserValidators.search_user_by_identifier(db, user_id)
+
+        # Generate password
+        chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+        random.seed = (os.urandom(1024))
+        while True:
+            password = ''.join(random.choice(chars) for i in range(12))
+            try:
+                DataValidators.validate_password(password)
+                break
+            except HTTPException:
+                continue
+
+        user.hashed_password = auth.hash_password(password)
+        user.forced_password_reset = True
+        user.admin = True
+        db.commit()
+        db.refresh(user)
+        return user

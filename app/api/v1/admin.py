@@ -11,6 +11,7 @@ from app.models import User
 from app.schemas import UserPublicResponse
 from app.schemas.admin import UpdateUserStatus, ListAllUsersResponse, ListAllUserTransactionsResponse, \
     AdminTransactionResponse
+from app.schemas.user import UserResponse
 from app.schemas.router import AdminUserFilter
 from app.schemas.withdrawal import WithdrawalResponse, WithdrawalUpdate
 
@@ -125,3 +126,11 @@ def update_withdrawal_status(withdrawal_id: int,
                              db: Session = Depends(get_db)):
     """Update withdrawal status and tracking information"""
     return WithdrawalService.update_withdrawal_status(db, user, withdrawal_id, update_data)
+
+
+@router.put("/users/{user_id}/role", response_model=UserResponse)
+def promote_user_to_admin(user_id: int,
+                          admin: User = Depends(get_current_admin),
+                          db: Session = Depends(get_db)):
+    """Promote a user to admin"""
+    return AdminService.promote_user_to_admin(db, admin, user_id)

@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from app.business.user.user_validators import UserValidators as UVal
+from app.business.user.user_validators import UserValidators as UVal, UserValidators
 from app.dependencies import get_db
-from app.infrestructure import generate_token, data_validators
+from app.infrestructure import generate_token, data_validators, auth, DataValidators
 from app.models import User, UStatus
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -174,3 +174,14 @@ class UserAuthService:
             return True
         else:
             return False
+
+    @classmethod
+    def change_user_password(cls, db, user, password, current_password):
+        if not auth.check_hashed_password(current_password, user.hashed_password):
+            raise HTTPException(status_code=403, detail="Invalid credentials")
+
+        password = DataValidators.validate_password(password)
+        user.hashed_password = auth.hash_password(password)
+        db.commit()
+        db.refresh(user)
+        return user

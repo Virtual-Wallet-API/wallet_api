@@ -4,7 +4,9 @@ from typing import List
 from sqlalchemy import and_
 from sqlalchemy.orm import Query, Session
 
+from app.business import NotificationService
 from app.business.user.user_auth import UserAuthService
+from app.business.utils.notification_service import EmailTemplates
 from app.infrestructure import SessionLocal
 from app.infrestructure.scheduler import schedule_daily_job
 from app.models import Transaction, RecurringTransactionHistory, User
@@ -75,6 +77,10 @@ class RecurringService:
             can_execute = rt["sender"].available_balance >= rt["amount"]
             if not can_execute:
                 return_map_list.append({"failed": True, "reason": "Insufficient balance", "map": rt})
+                NotificationService.notify_from_template(EmailTemplates.FAILED_RECURRING_TRANSACTION,
+                                                         rt["sender"],
+                                                         amount=rt["amount"],
+                                                         currency=rt["currency"])
                 continue
 
             can_send = UserAuthService.verify_user_can_transact(rt["sender"])

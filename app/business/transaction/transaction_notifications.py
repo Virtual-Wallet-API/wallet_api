@@ -1,6 +1,6 @@
 from app.models.transaction import Transaction
 from typing import Dict, Optional
-from app.business.utils import NService, NType
+from app.business.utils import NotificationService, NotificationType
 
 
 class TransactionNotificationService:
@@ -115,7 +115,7 @@ class TransactionNotificationService:
     @staticmethod
     def notify_transaction_confirmed(transaction: Transaction):
         """Legacy method - now redirects to notify_transaction_completed for compatibility"""
-        TransactionNotificationService.notify_transaction_completed(transaction)
+        TransactionNotificatioNotificationService.notify_transaction_completed(transaction)
 
     @classmethod
     def notify_transaction_received(cls, transaction: Transaction) -> bool:
@@ -131,7 +131,7 @@ class TransactionNotificationService:
             "title": "New Transaction Received",
             "body": f"You have received a pending transaction of ${transaction.amount:.2f} from {sender.username}. "
                     f"Description: {transaction.description or 'No description'}",
-            "type": NType.IMPORTANT,
+            "type": NotificationType.IMPORTANT,
             "transaction_id": transaction.id,
             "action_required": True
         }
@@ -140,7 +140,7 @@ class TransactionNotificationService:
         print(f"📧 NOTIFICATION to {receiver.email}: {message['title']} - {message['body']}")
 
         # TODO: When email service is implemented, uncomment:
-        # return NService.notify(receiver, message)
+        # return NotificationService.notify(receiver, message)
         return True
 
     @classmethod
@@ -157,7 +157,7 @@ class TransactionNotificationService:
             "title": "Transaction Completed",
             "body": f"You have received ${transaction.amount:.2f} from {sender.username}. "
                     f"Your new balance has been updated.",
-            "type": NType.IMPORTANT,
+            "type": NotificationType.IMPORTANT,
             "transaction_id": transaction.id
         }
 
@@ -177,7 +177,7 @@ class TransactionNotificationService:
         message = {
             "title": "Transaction Cancelled",
             "body": f"The pending transaction of ${transaction.amount:.2f} from {sender.username} has been cancelled.",
-            "type": NType.UNIMPORTANT,
+            "type": NotificationType.UNIMPORTANT,
             "transaction_id": transaction.id
         }
 
@@ -198,7 +198,7 @@ class TransactionNotificationService:
             "title": "Transaction Created",
             "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has been created and is pending confirmation. "
                     f"Please confirm to complete the transfer.",
-            "type": NType.IMPORTANT,
+            "type": NotificationType.IMPORTANT,
             "transaction_id": transaction.id,
             "action_required": True
         }
@@ -220,7 +220,7 @@ class TransactionNotificationService:
             "title": "Transaction Confirmed",
             "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has been successfully completed. "
                     f"Your balance has been updated.",
-            "type": NType.IMPORTANT,
+            "type": NotificationType.IMPORTANT,
             "transaction_id": transaction.id
         }
 
@@ -244,7 +244,7 @@ class TransactionNotificationService:
             "title": "Transaction Failed",
             "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has failed.{failure_reason} "
                     f"No money has been transferred.",
-            "type": NType.ALERT,
+            "type": NotificationType.ALERT,
             "transaction_id": transaction.id
         }
 

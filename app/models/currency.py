@@ -12,3 +12,6 @@ class Currency(Base):
     deposits = relationship("Deposit", back_populates="currency")
     transactions = relationship("Transaction", back_populates="currency")
     withdrawals = relationship("Withdrawal", back_populates="currency")
+
+    def __repr__(self):
+        return self.code
