@@ -11,7 +11,13 @@ from app.models import Transaction, RecurringTransactionHistory, User
 from app.models.recurring_transation import RecurringInterval, RecurringTransaction
 from app.models.transaction import TransactionStatus
 
+
 class RecurringService:
+    INTERVALS = [
+        RecurringInterval.DAILY,
+        RecurringInterval.WEEKLY,
+        RecurringInterval.MONTHLY
+    ]
 
     @classmethod
     def gen_recurring_transaction_map(cls, t: Transaction, db: Session, rid: int, interval: RecurringInterval):
@@ -24,20 +30,21 @@ class RecurringService:
         if last_execution:
             last_execution_date = last_execution.execution_date.date()
             days_since = (datetime.date.today() - last_execution_date).days
+            if last_execution_date == datetime.date.today():
+                add = False
+            else:
+                match interval:
+                    case RecurringInterval.DAILY:
+                        add = last_execution_date != datetime.date.today()
 
-            match interval:
-                case RecurringInterval.DAILY:
-                    add = last_execution_date != datetime.date.today()
+                    case RecurringInterval.WEEKLY:
+                        add = days_since % 7 == 0
 
-                case RecurringInterval.WEEKLY:
-                    add = days_since % 7 == 0
+                    case RecurringInterval.MONTHLY:
+                        add = days_since % 30 == 0
 
-                case RecurringInterval.MONTHLY:
-                    add = days_since % 30 == 0
-
-                case _:
-                    add = False
-
+                    case _:
+                        add = False
         else:
             add = True
 
@@ -73,7 +80,8 @@ class RecurringService:
             can_send = UserAuthService.verify_user_can_transact(rt["sender"])
             can_receive = UserAuthService.verify_user_can_transact(rt["receiver"])
             if not can_send or not can_receive:
-                return_map_list.append({"failed": True, "reason": "Account has suspended rights to transact", "map": rt})
+                return_map_list.append(
+                    {"failed": True, "reason": "Account has suspended rights to transact", "map": rt})
                 continue
 
             if cls.transfer_balance(db, rt["sender"], rt["receiver"], rt["amount"]):
@@ -109,44 +117,23 @@ class RecurringService:
                 print("Database connection error, unable to execute recurring transactions.")
                 return
             else:
-
+                map_lists = []
                 transactions: Query = (db.query(Transaction, RecurringTransaction.id.label("rt_id"))
                                        .join(RecurringTransaction)
                                        .filter(and_(Transaction.recurring == True,
                                                     Transaction.status == TransactionStatus.ACCEPTED,
                                                     RecurringTransaction.is_active == True)))
+                for interval in cls.INTERVALS:
+                    query = transactions.filter(RecurringTransaction.interval == interval)
+                    map_list = [
+                        transaction_map
+                        for transaction, rid in query
+                        if (transaction_map := cls.gen_recurring_transaction_map(transaction, db, rid, interval))
+                    ]
+                    map_lists.append(map_list)
 
-                daily = (transactions.filter(RecurringTransaction.interval == RecurringInterval.DAILY))
-                daily_map_list = []
-                for dt, rid in daily:
-                    transaction_map = cls.gen_recurring_transaction_map(dt, db, rid, RecurringInterval.DAILY)
-                    if not transaction_map:
-                        continue
-                    daily_map_list.append(transaction_map)
-
-                weekly = (transactions.filter(RecurringTransaction.interval == RecurringInterval.WEEKLY))
-                weekly_map_list = []
-                for wt, rid in weekly:
-                    transaction_map = cls.gen_recurring_transaction_map(wt, db, rid, RecurringInterval.WEEKLY)
-                    if not transaction_map:
-                        continue
-                    weekly_map_list.append(transaction_map)
-
-                monthly = (transactions.filter(RecurringTransaction.interval == RecurringInterval.MONTHLY))
-                monthly_map_list = []
-                for mt, rid in monthly:
-                    transaction_map = cls.gen_recurring_transaction_map(mt, db, rid, RecurringInterval.MONTHLY)
-                    if not transaction_map:
-                        continue
-                    monthly_map_list.append(transaction_map)
-
-                attempt_daily = cls.attempt_execute_recurring(db, daily_map_list)
-                attempt_weekly = cls.attempt_execute_recurring(db, weekly_map_list)
-                attempt_monthly = cls.attempt_execute_recurring(db, monthly_map_list)
-
-                results = cls.log_recurring_attempts(attempt_daily, attempt_weekly, attempt_monthly, db=db)
-
-                print(f"Recurring transactions executed successfully. Total completed: {results[0]}, failed: {results[1]}")
+                print(
+                    f"Recurring transactions executed successfully. Total completed: {results[0]}, failed: {results[1]}")
 
     @classmethod
     def register_recurring_transactions(cls):
