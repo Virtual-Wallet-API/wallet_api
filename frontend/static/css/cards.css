@@ -54,7 +54,6 @@
 /* Cards List */
 .cards-list {
     background: var(--background-color);
-    border: 1px solid var(--bs-border-color);
     border-radius: 1rem;
     padding: 1rem;
     margin-bottom: 2rem;
@@ -77,6 +76,7 @@
     margin-bottom: 1rem;
     background: var(--bs-body-bg);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
 }
 
 .card-item:last-child {
@@ -110,6 +110,7 @@
 
 .card-details {
     flex-grow: 1;
+    margin-right: 1rem;
 }
 
 .card-details .card-number {
@@ -123,19 +124,20 @@
     color: var(--bs-secondary-color);
 }
 
-.card-balance {
+.card-status {
     font-weight: 600;
     color: var(--accent-color);
     margin-right: 1rem;
+    white-space: nowrap;
 }
 
 .info-icon {
     color: var(--bs-secondary-color);
-    cursor: pointer;
     transition: color 0.2s ease;
+    pointer-events: none;
 }
 
-.info-icon:hover {
+.card-item:hover .info-icon {
     color: var(--accent-color);
 }
 
@@ -249,7 +251,7 @@
         font-size: 1.25rem;
     }
 
-    .card-balance {
+    .card-status {
         font-size: 0.875rem;
     }
 } 

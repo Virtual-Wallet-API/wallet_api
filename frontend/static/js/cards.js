@@ -84,7 +84,7 @@ function loadCards() {
 // Render Cards
 function renderCards(cards, container) {
     container.innerHTML = cards.map(card => `
-        <div class="card-item" data-card-id="${card.id}">
+        <div class="card-item" data-card-id="${card.id}" onclick="showCardDetails('${card.id}')">
             <div class="card-icon ${card.type.toLowerCase()}">
                 <i class="bi bi-credit-card"></i>
             </div>
@@ -95,7 +95,7 @@ function renderCards(cards, container) {
             <div class="card-status">
                 <div>${card.is_default ? 'Default Card' : 'Active'}</div>
             </div>
-            <span class="info-icon" onclick="showCardDetails('${card.id}')">
+            <span class="info-icon">
                 <i class="bi bi-info-circle"></i>
             </span>
         </div>

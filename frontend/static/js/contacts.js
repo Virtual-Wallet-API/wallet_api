@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize section toggle
-    initializeSectionToggle();
+    // Initialize section toggles
+    initializeSectionToggle('contacts-toggle', 'contacts-list-content');
+    initializeSectionToggle('add-contact-toggle', 'add-contact-box');
     
     // Initialize form submission
     initializeFormSubmission();
@@ -15,10 +16,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Section Toggle Functionality
-function initializeSectionToggle() {
-    const toggle = document.getElementById('contacts-toggle');
-    const content = document.getElementById('contacts-list-content');
+function initializeSectionToggle(toggleId, contentId) {
+    const toggle = document.getElementById(toggleId);
+    const content = document.getElementById(contentId);
     const icon = toggle.querySelector('i.bi-chevron-down');
+    const originalHeight = content.getAttribute('data-original-height') || content.scrollHeight;
+            
+    if (!content.hasAttribute('data-original-height')) {
+        content.setAttribute('data-original-height', originalHeight);
+    }
+
+    // Set initial state for add contact box
+    if (toggleId === 'add-contact-toggle') {
+        content.style.maxHeight = '0';
+        content.style.opacity = '0';
+        content.style.padding = '0';
+        content.style.marginBottom = '0';
+    }
     
     toggle.addEventListener('click', function() {
         // Toggle expanded state
@@ -29,11 +43,20 @@ function initializeSectionToggle() {
         if (isExpanded) {
             content.style.maxHeight = '0';
             content.style.opacity = '0';
+            if (toggleId === 'add-contact-toggle') {
+                content.style.padding = '0';
+                content.style.marginBottom = '0';
+            }
             content.classList.remove('show');
             icon.classList.remove('up');
         } else {
             content.style.maxHeight = content.scrollHeight + 'px';
             content.style.opacity = '1';
+            if (toggleId === 'add-contact-toggle') {
+                content.style.maxHeight = originalHeight + 'px';
+                content.style.padding = '2rem 2.5rem';
+                content.style.marginBottom = '2.5rem';
+            }
             content.classList.add('show');
             icon.classList.add('up');
         }
@@ -118,11 +141,15 @@ function initializeSearch() {
         contacts.forEach(contact => {
             const username = contact.querySelector('.username').textContent.toLowerCase();
             const email = contact.querySelector('.email').textContent.toLowerCase();
-            contactHeight = contact.style.height;
+            const originalHeight = contact.getAttribute('data-original-height') || contact.scrollHeight;
+            
+            if (!contact.hasAttribute('data-original-height')) {
+                contact.setAttribute('data-original-height', originalHeight);
+            }
 
             if (username.match(query) || email.match(query)) {
                 contact.style.opacity = '1';
-                contact.style.maxHeight = contact.scrollHeight + 'px';
+                contact.style.maxHeight = originalHeight + 'px';
                 contact.style.transform = 'translateX(0)';
             } else {
                 contact.style.opacity = '0';
@@ -185,7 +212,7 @@ function loadContacts() {
 // Render Contacts
 function renderContacts(contacts, container) {
     container.innerHTML = contacts.map(contact => `
-        <div class="contact-item" data-contact-id="${contact.id}">
+        <div class="contact-item" data-contact-id="${contact.id}" onclick="showContactDetails('${contact.id}')">
             <div class="contact-icon">
                 <i class="bi bi-person"></i>
             </div>
@@ -194,7 +221,7 @@ function renderContacts(contacts, container) {
                 <div class="email">${contact.contact_user.email}</div>
             </div>
             <div class="contact-actions">
-                <button class="btn btn-sm btn-outline-primary" onclick="showContactDetails('${contact.id}')">
+                <button class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-info-circle"></i>
                 </button>
             </div>
