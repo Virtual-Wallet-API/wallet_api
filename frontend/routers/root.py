@@ -2,13 +2,13 @@ from typing import Dict
 
 from fastapi import APIRouter, Request
 from fastapi.params import Depends
-from fastapi.staticfiles import StaticFiles
 from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
 from frontend.services.dependencies import get_valid_user_data
 
 router = APIRouter()
+
 
 @router.get("/", response_model=None)
 def root(request: Request):
@@ -58,6 +58,13 @@ def transactions(request: Request):
     return templates.TemplateResponse("payments/transactions.html", data)
 
 
+@router.get("/send", response_model=None)
+def send(request: Request):
+    data = {"request": request,
+            "page": "Send Money"}
+    return templates.TemplateResponse("payments/send.html", data)
+
+
 @router.get("/deposits", response_model=None)
 def deposit(request: Request):
     data = {"request": request,
@@ -92,4 +99,4 @@ def test_auth_dependency(username: str = Depends(get_valid_user_data)):
 
 @router.get("/all-deposits", response_model=Dict)
 def user_deposits_search(request: Request):
-    return templates.TemplateResponse("payments/user_deposits.html", {"request":request})
+    return templates.TemplateResponse("payments/user_deposits.html", {"request": request})
