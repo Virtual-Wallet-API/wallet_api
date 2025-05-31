@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 from fastapi import HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.models import User, Transaction
+from app.models import User, Transaction, RecurringTransaction
 from app.models.transaction import TransactionStatus, TransactionUpdateStatus
 from app.schemas.transaction import TransactionCreate, TransactionHistoryResponse, TransactionStatusUpdate
 from .transaction_notifications import TransactionNotificationService
@@ -45,12 +45,13 @@ class TransactionService:
             description=transaction_data.description,
             category_id=category_id,
             currency_id=transaction_data.currency_id,
-            status=TransactionStatus.PENDING
+            status=TransactionStatus.PENDING,
+            recurring=transaction_data.recurring
         )
 
-        cls.make_transaction_recurring(db, transaction, transaction_data.interval)
         db.add(transaction)
         db.commit()
+        db.refresh(transaction)
 
         if transaction_data.recurring:
             cls.make_transaction_recurring(db, transaction, transaction_data.interval)
@@ -395,16 +396,33 @@ class TransactionService:
 
     @classmethod
     def make_transaction_recurring(cls, db, transaction, interval):
-        pass
+        recurring = RecurringTransaction(transaction_id=transaction.id, interval=interval, is_active=False)
+        db.add(recurring)
+        db.commit()
+        db.refresh(recurring)
+        db.refresh(transaction)
+        return transaction
 
     @classmethod
     def confirm_recurring_transaction(cls, db, user, transaction):
-        pass
+        transaction.status = TransactionStatus.AWAITING_ACCEPTANCE
+        db.commit()
+        db.refresh(transaction)
+        return transaction
 
     @classmethod
     def accept_recurring_transaction(cls, db, user, transaction):
-        pass
+        recurring = transaction.recurring_transaction
+        recurring.is_active = True
+        transaction.status = TransactionStatus.ACCEPTED
+        db.commit()
+        db.refresh(transaction)
+        return transaction
 
     @classmethod
     def cancel_recurring_transaction(cls, db, user, transaction):
-        pass
+        transaction.status = TransactionStatus.CANCELLED
+        transaction.recurring_transaction.is_active = False
+        db.commit()
+        db.refresh(transaction)
+        return transaction

@@ -18,6 +18,7 @@ class TransactionStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
     DENIED = "denied"
+    ACCEPTED = "accepted"
 
 
 class TransactionUpdateStatus(str, Enum):

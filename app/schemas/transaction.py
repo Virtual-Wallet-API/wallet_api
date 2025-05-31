@@ -28,7 +28,7 @@ class TransactionCreate(BaseModel):
     amount: float
     description: Optional[str] = None
     category_id: Optional[int] = None
-    currency_id: int
+    currency_id: int = 1
     recurring: bool = False
     interval: Optional[int] = 1
 
@@ -36,6 +36,12 @@ class TransactionCreate(BaseModel):
     def category_id_must_be_positive(cls, v):
         if v < 1:
             return None
+        return v
+
+    @field_validator("currency_id")
+    def currency_id_null(cls, v):
+        if v == 0:
+            return 1
         return v
 
 
