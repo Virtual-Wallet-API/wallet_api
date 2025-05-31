@@ -330,7 +330,7 @@ if (typeof preventAuth === 'undefined') {
 if (!preventAuth) {
     if (!auth.loggedIn()) {
         console.log("Not logged in.")
-        //window.location.href = '/login';
+        window.location.href = '/login';
     }
     refreshUserData();
 }
