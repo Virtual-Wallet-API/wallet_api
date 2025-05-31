@@ -164,3 +164,13 @@ class UserAuthService:
         db.commit()
         db.refresh(user)
         return user
+
+    @classmethod
+    def verify_user_can_transact(cls, user: User):
+        """
+        helepr function for recurring transactions
+        """
+        if user.status == UStatus.ACTIVE or user.admin:
+            return True
+        else:
+            return False

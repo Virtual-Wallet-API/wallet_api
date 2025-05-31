@@ -48,7 +48,7 @@ class Transaction(Base):
     currency_id = Column(Integer, ForeignKey("currencies.id"), nullable=False)
 
     category = relationship("Category", back_populates="transactions")
-    recurring_transaction = relationship("RecurringTransaction", back_populates="transaction")
+    recurring_transaction = relationship("RecurringTransaction", back_populates="transaction", lazy='dynamic')
     currency = relationship("Currency", back_populates="transactions")
 
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_transactions")
@@ -92,5 +92,5 @@ class Transaction(Base):
         return self.recurring_transaction is not None
 
     @property
-    def recurring_interval(self) -> int:
-        return self.recurring_transaction.interval if self.is_recurring else None
+    def recurring_query(self):
+        return

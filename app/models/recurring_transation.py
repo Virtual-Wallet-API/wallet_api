@@ -10,7 +10,7 @@ from app.infrestructure import Base
 
 
 class RecurringInterval(str, Enum):
-    DAYLY = "day"
+    DAILY = "day"
     WEEKLY = "week"
     MONTHLY = "month"
 
@@ -21,7 +21,7 @@ class RecurringTransaction(Base):
     transaction_id = Column(Integer, ForeignKey("transactions.id"))
     interval = Column(CEnum(RecurringInterval, name="recurring_interval",
                             values_callable=lambda obj: [e.value for e in obj]),
-                      default=RecurringInterval.DAYLY, nullable=False)
+                      default=RecurringInterval.DAILY, nullable=False)
     is_active = Column(Boolean, nullable=False, default=False)
 
     transaction = relationship("Transaction", back_populates="recurring_transaction")

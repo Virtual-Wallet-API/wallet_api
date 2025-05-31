@@ -7,7 +7,7 @@ from app.models.recurring_transation import RecurringInterval
 
 class RecurringTransactionBase(BaseModel):
     transaction_id: int
-    interval: RecurringInterval = RecurringInterval.DAYLY
+    interval: RecurringInterval = RecurringInterval.DAILY
     is_active: bool = False
 
 

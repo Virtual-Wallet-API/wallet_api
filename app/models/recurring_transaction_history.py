@@ -13,6 +13,8 @@ class RecurringTransactionHistory(Base):
                           values_callable=lambda obj: [e.value for e in obj]),
                     default=TransactionStatus.PENDING,
                     nullable=False)
+    reason = Column(String, nullable=True)
+
     recurring_transaction_id = Column(Integer, ForeignKey("recurring_transactions.id"), nullable=False)
 
     recurring_transaction = relationship("RecurringTransaction", back_populates="history")

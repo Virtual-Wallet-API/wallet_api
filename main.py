@@ -1,14 +1,37 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from app.infrestructure.database import Base, engine
-from app import *
-import frontend.frontend
 
-print("Create all...")
+from app import *
+from app.business.transaction.transactions_recurring import RecurringService
+from app.infrestructure.database import Base, engine
+from app.infrestructure.scheduler import init_scheduler
+
+# Ensure the database is not missing tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}])
+
+# Create lifespan event handler for FastAPI
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    scheduler = init_scheduler()
+    print("Scheduler started")
+    RecurringService.register_recurring_transactions()
+    print("Recurring transactions registered")
+    try:
+        yield
+    finally:
+        # Shutdown logic
+        if scheduler.running:
+            scheduler.shutdown()
+            print("Scheduler shut down")
+
+
+# FastAPI app
+app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}], lifespan=lifespan)
 
 # static files for frontend
 app.mount("/static", StaticFiles(directory="frontend/static", check_dir=True), name="static")
