@@ -14,8 +14,6 @@ router = APIRouter()
 def root(request: Request):
     data = {"request": request,
             "page": "VWallet - Home"}
-    tokens = request.cookies
-    print(tokens)
     return templates.TemplateResponse("index.html", data)
 
 

@@ -1,8 +1,13 @@
+let userData = {};
+let userDataLoaded = false;
+let token = null;
+
 class Auth {
     constructor() {
-        this.baseUrl = 'http://localhost:8000/api/v1';
-        this.tokenKey = 'auth_token';
+        this.baseUrl = '/api/v1';
+        this.tokenKey = 'access_token';
         this.userKey = 'user_data';
+        this.lastRefreshKey = 'last_user_data_refresh';
         this.refreshInterval = 15 * 60 * 1000; // Refresh every 15 minutes
         this.refreshTimer = null;
     }
@@ -42,21 +47,42 @@ class Auth {
         return localStorage.getItem(this.tokenKey);
     }
 
-    // Store user data in localStorage
-    setUserData(userData) {
+    // Store last refresh timestamp
+    setLastRefreshTimestamp() {
+        localStorage.setItem(this.lastRefreshKey, Date.now().toString());
+    }
+
+    // Get last refresh timestamp
+    getLastRefreshTimestamp() {
+        const timestamp = localStorage.getItem(this.lastRefreshKey);
+        return timestamp ? parseInt(timestamp) : 0;
+    }
+
+    // Store user data in global userData variable
+    setUserData(uData) {
+        userData.id = uData.id;
+        userData.username = uData.username;
+        userData.balance = uData.balance;
+        userData.avatar = uData.avatar;
+        userData.status = uData.status;
         localStorage.setItem(this.userKey, JSON.stringify(userData));
     }
 
-    // Get user data from localStorage (accessible on every page)
+    // Get user data from global userData variable
     getUserData() {
-        const data = localStorage.getItem(this.userKey);
-        return data ? JSON.parse(data) : null;
+        return localStorage.getItem(this.userKey) ? JSON.parse(localStorage.getItem(this.userKey)) : null;
+    }
+
+    loggedIn() {
+        return localStorage.getItem(this.tokenKey) ? true : false;
     }
 
     // Clear all auth-related data
     clearAuthData() {
         localStorage.removeItem(this.tokenKey);
         localStorage.removeItem(this.userKey);
+        localStorage.removeItem(this.lastRefreshKey); // Clear timestamp
+        userData = {};
         if (this.refreshTimer) {
             clearInterval(this.refreshTimer);
             this.refreshTimer = null;
@@ -64,30 +90,29 @@ class Auth {
     }
 
     // Login user via /users/token endpoint
-    async login(email, password) {
+    async login(username, password) {
         try {
-            // Validate email and password
-            this.validateUserData({email, password});
-
             const response = await fetch(`${this.baseUrl}/users/token`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({username: email, password})
+                body: new URLSearchParams({username: username, password})
             });
 
             if (!response.ok) {
                 const {detail} = await response.json();
-                throw new Error(detail || 'Login failed');
+                throw new Error(detail || 'Failed: ' + response.statusText);
             }
+            const responseData = await response.json();
+            console.log(responseData);
 
-            const {access_token, username} = await response.json();
-            this.setToken(access_token);
+            // const {access_token, token_type, username} = responseData;
+            this.setToken(responseData.access_token);
             const userData = await this.refreshUserData();
             this.startRefreshTimer();
-            return {user: userData, message: 'Login successful'};
+            return {success: true, message: 'Login successful'};
         } catch (error) {
             console.error('Login error:', error);
-            throw error;
+            return {success: false, message: error.message};
         }
     }
 
@@ -195,23 +220,70 @@ class Auth {
 
     // Refresh user data via /users/me
     async refreshUserData() {
-        const token = this.getToken();
-        if (!token) return null;
+        if (!this.getToken()) {
+            console.warn('No token found, skipping user data refresh.');
+            this.clearAuthData();
+            return null;
+        }
+
+        // Check if 5 minutes have passed since last refresh
+        const now = Date.now();
+        const lastRefresh = this.getLastRefreshTimestamp();
+        const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+        if (lastRefresh && now - lastRefresh < fiveMinutes) {
+            this.setUserData(this.getUserData())
+            token = this.getToken();
+            console.log('Skipping refresh, less than 5 minutes since last refresh.');
+            return true;
+        }
 
         try {
             const response = await fetch(`${this.baseUrl}/users/me`, {
                 method: 'GET',
-                headers: {'Authorization': `Bearer ${token}`}
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (!response.ok) {
-                this.clearAuthData();
-                throw new Error('Failed to refresh user data');
+                const errorData = await response.json().catch(() => ({detail: 'Failed to parse error response from server.'}));
+                console.error('Failed to fetch user data:', response.status, errorData);
+                if (response.status === 401 || response.status === 403) {
+                    this.clearAuthData();
+                    return null;
+                }
+                throw new Error(errorData.detail || `HTTP error ${response.status}`);
             }
 
-            const userData = await response.json();
-            this.setUserData(userData); // Store username, email, phone_number, avatar, id, balance, status
-            return userData;
+            const udata = await response.json();
+            if (!udata || typeof udata.username !== 'string') {
+                console.error('Invalid user data structure received:', udata);
+                throw new Error('Invalid user data format.');
+            }
+
+            if (userDataLoaded && udata.username !== userData.username) {
+                console.log("User data changed, clearing auth data.");
+                this.clearAuthData();
+                window.location.reload();
+                return null;
+            }
+
+            userData = {
+                username: udata.username,
+                id: udata.id,
+                email: udata.email,
+                phone: udata.phone_number,
+                balance: parseFloat(udata.balance).toFixed(2),
+                avatar: udata.avatar,
+                status: udata.status
+            };
+            this.setUserData(userData);
+            this.setLastRefreshTimestamp(); // Update timestamp after successful refresh
+            userDataLoaded = true;
+
+            console.log(`User data successfully fetched for ${userData.username}.`);
+            return true;
         } catch (error) {
             console.error('Refresh user data error:', error);
             return null;
@@ -237,7 +309,39 @@ class Auth {
     // Logout user
     logout() {
         this.clearAuthData();
+        window.location.reload();
     }
 }
 
-export default new Auth();
+// export default new Auth();
+const auth = new Auth();
+
+async function refreshUserData() {
+    if (!userData.username) {
+        console.log("Loading user data");
+    } else {
+        console.log(`Checking refresh for ${userData.username}.`);
+    }
+
+    let refresh = await auth.refreshUserData();
+    if (!refresh) {
+        console.log('Failed to refresh user data.');
+        auth.clearAuthData();
+    } else {
+        console.log('User data checked or fetched.');
+    }
+}
+
+if (typeof preventAuth === 'undefined') {
+    window.preventAuth = false;
+}
+
+if (!preventAuth) {
+    if (!auth.loggedIn()) {
+        console.log("Not logged in.")
+        window.location.href = '/login';
+    }
+    refreshUserData();
+}
+
+console.log("Auth.js load completed.")

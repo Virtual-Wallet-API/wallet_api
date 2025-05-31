@@ -861,6 +861,8 @@
 
 
     document.addEventListener("DOMContentLoaded", async function () {
+        await initializeBaseScripts();
+
         try {
             const balanceAmountEl = document.getElementById('balance-amount');
             if (userData && userData.balance !== undefined) { // Check if userData and balance are already populated
@@ -887,7 +889,7 @@
             setupSectionToggle('transactions-toggle', 'transactions-list-content');
             setupSectionToggle('deposits-toggle', 'deposits-list-content');
 
-            document.dispatchEvent(new CustomEvent('pageContentLoaded'));
+            document.dispatchEvent(new CustomEvent('pageContentLoaded', { bubbles: true }));
 
         } catch (error) {
             console.error('Error loading page content:', error);

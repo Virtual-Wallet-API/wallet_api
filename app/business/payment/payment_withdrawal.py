@@ -124,7 +124,7 @@ class WithdrawalService:
     @staticmethod
     def get_user_withdrawals(db: Session,
                              user: User,
-                             limit: int = 50,
+                             limit: int = 30,
                              status_filter: Optional[str] = None) -> WithdrawalHistoryResponse:
         """Get withdrawal history for a user with filtering"""
         filtered_withdrawals = []
@@ -132,18 +132,24 @@ class WithdrawalService:
             filtered_withdrawals = [w for w in user.withdrawals
                                     if w.status == status_filter]
 
-        withdrawals = user.withdrawals[:limit] if not status_filter else filtered_withdrawals[:limit]
+        # withdrawals = user.withdrawals[:limit] if not status_filter else filtered_withdrawals[:limit]
+        wquery = db.query(Withdrawal).filter(Withdrawal.user_id == user.id).order_by(Withdrawal.created_at.desc())
+        withdrawals = wquery.limit(limit).all()
+        total_count = wquery.count()
 
         withdrawal_responses = [WithdrawalPublicResponse.model_validate(w) for w in withdrawals]
 
-        total = len(user.withdrawals)
+        found_total = len(withdrawals)
         total_amount = user.total_withdrawal_amount
+        found_amount = sum([w.amount for w in withdrawals])
         pending_amount = user.total_pending_withdrawal_amount
 
         return WithdrawalHistoryResponse(
             withdrawals=withdrawal_responses,
-            total=total,
+            total=total_count,
+            found_total=found_total,
             total_amount=total_amount,
+            found_amount=found_amount,
             pending_amount=pending_amount
         )
 

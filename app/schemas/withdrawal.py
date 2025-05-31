@@ -154,9 +154,11 @@ class WithdrawalPublicResponse(BaseModel):
 # Schema for withdrawal history
 class WithdrawalHistoryResponse(BaseModel):
     withdrawals: List[WithdrawalPublicResponse]
-    total: int
-    total_amount: float
-    pending_amount: float
+    total: int = 0
+    found_total: int = 0
+    total_amount: float = 0.0
+    found_amount: float = 0.0
+    pending_amount: float = 0.0
 
     model_config = {
         "from_attributes": True,

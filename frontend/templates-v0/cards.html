@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+        <!-- Main Content -->
+        <div class="col-md-9 main-content p-5">
+            <div class="container page-title">
+                <h3>Cards</h3>
+            </div>
+
+            <!-- Wallet Cards Section -->
+            <h2>Debit Cards</h2>
+            <div class="card-row">
+                <div class="card-icon card-debit-red">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="card-details">
+                    <div>Debit Card ending in 1234</div>
+                    <div class="text-muted">Expiry: 12/25</div>
+                </div>
+                <div class="card-balance">
+                    <div>Balance: $100.00</div>
+                </div>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+            <div class="card-row">
+                <div class="card-icon card-debit-green">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="card-details">
+                    <div>Debit Card ending in 5678</div>
+                    <div class="text-muted">Expiry: 11/24</div>
+                </div>
+                <div class="card-balance">
+                    <div>Balance: $200.00</div>
+                </div>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+
+            <h2>Credit Cards</h2>
+            <div class="card-row">
+                <div class="card-icon card-credit-blue">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="card-details">
+                    <div>Credit Card ending in 9012</div>
+                    <div class="text-muted">Expiry: 10/23</div>
+                </div>
+                <div class="card-balance">
+                    <div>Balance: $50.00</div>
+                </div>
+                <span class="info-icon"><i class="bi bi-info-circle"></i></span>
+            </div>
+{% endblock %}
+
+{% block modals %}
+<!-- Transaction Modal -->
+<div aria-hidden="true" aria-labelledby="transactionModalLabel" class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Description:</strong> <span id="modal-description"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Category:</strong> <span id="modal-category"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+</script>
+{% endblock %}
