@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize variables
     const sendForm = document.getElementById('send-form');
     const receiverInput = document.getElementById('receiver-identifier');
@@ -28,11 +28,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const awaitingToggle = document.getElementById('awaiting-toggle');
     const awaitingContent = document.getElementById('awaiting-transactions-list-content');
 
+    // Set initial state of transaction lists
+    pendingContent.style.maxHeight = '0';
+    pendingContent.style.opacity = '0';
+    awaitingContent.style.maxHeight = '0';
+    awaitingContent.style.opacity = '0';
+
     // Check for receiver query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const receiverParam = urlParams.get('receiver');
     if (receiverParam) {
         receiverInput.value = receiverParam;
+    }
+
+    // Wait for userData to be available
+    if (!window.userData || !window.userData.balance) {
+        await auth.refreshUserData();
     }
 
     // Load categories
@@ -61,7 +72,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadCategories() {
         try {
-            const response = await fetch('/api/v1/categories');
+            const response = await fetch('/api/v1/categories', {
+                headers: {
+                    'Authorization': `Bearer ${auth.getToken()}`
+                }
+            });
             const data = await response.json();
             
             if (data.categories) {
@@ -84,7 +99,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             loadingElement.style.display = 'block';
-            const response = await fetch(`/api/v1/transactions?limit=100&status=${status}`);
+            const response = await fetch(`/api/v1/transactions?limit=100&status=${status}`, {
+                headers: {
+                    'Authorization': `Bearer ${auth.getToken()}`
+                }
+            });
             const data = await response.json();
 
             if (data.transactions) {
@@ -129,16 +148,35 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleIntervalGroup() {
         if (recurringCheckbox.checked) {
             intervalGroup.style.display = 'block';
+            intervalGroup.style.maxHeight = intervalGroup.scrollHeight + 'px';
+            intervalGroup.style.opacity = '1';
         } else {
-            intervalGroup.style.display = 'none';
+            intervalGroup.style.maxHeight = '0';
+            intervalGroup.style.opacity = '0';
+            setTimeout(() => {
+                intervalGroup.style.display = 'none';
+            }, 300);
         }
     }
 
     function toggleSection(toggle, content) {
         const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', !isExpanded);
-        content.style.maxHeight = isExpanded ? '0' : content.scrollHeight + 'px';
-        content.style.opacity = isExpanded ? '0' : '1';
+        
+        if (!isExpanded) {
+            content.style.display = 'block';
+            // Force a reflow
+            content.offsetHeight;
+            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.opacity = '1';
+        } else {
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            setTimeout(() => {
+                content.style.display = 'none';
+            }, 300);
+        }
+        
         toggle.querySelector('i').className = isExpanded ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
     }
 
@@ -174,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/api/v1/transactions', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
                 },
                 body: JSON.stringify(transactionData)
             });
@@ -194,6 +233,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reset form
                 sendForm.reset();
                 intervalGroup.style.display = 'none';
+                intervalGroup.style.maxHeight = '0';
+                intervalGroup.style.opacity = '0';
             } else {
                 showError(data.message || 'Failed to create transaction');
             }
@@ -214,7 +255,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/v1/transactions/status/${window.pendingTransactionId}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
                 },
                 body: JSON.stringify({ action: 'confirm' })
             });
@@ -224,6 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showSuccess('Transaction confirmed successfully');
                 loadTransactions('pending');
                 loadTransactions('awaiting_acceptance');
+                await auth.refreshUserData();
                 updateBalanceDisplay();
             } else {
                 const data = await response.json();

@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link rel="stylesheet" href="/static/css/payments/send.css">
+<link rel="stylesheet" href="/static/css/payments/send.css" type="text/css">
 {% endblock %}
 
 {% block content %}
 <div class="send-page-container">
-    <h2 class="send-title-main">Send Payment</h2>
+    <h2 class="send-title-main">Send Money</h2>
 
     <!-- Send Payment Box -->
     <div class="send-form-box" id="send-box">
-        <div class="form-message alert alert-success" id="success-message" style="display: none;"></div>
-        <div class="form-message alert alert-danger" id="error-message" style="display: none;"></div>
+        <div class="form-message alert alert-success" id="success-message" role="alert" style="display: none;"></div>
+        <div class="form-message alert alert-danger" id="error-message" role="alert" style="display: none;"></div>
 
         <form id="send-form" method="POST">
             <!-- Balance Display -->
