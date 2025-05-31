@@ -25,7 +25,7 @@ class ContactResponse(ContactBase):
         from_attributes = True
 
 
-class ContactPublicResponse(ContactBase):
+class ContactPublicResponse(BaseModel):
     id: int
     contact_user: "UserPublicResponse"
 
