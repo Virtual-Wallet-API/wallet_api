@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load initial contacts
     loadContacts();
+
+    document.dispatchEvent(new Event('pageContentLoaded'));
 });
 
 // Section Toggle Functionality
@@ -49,16 +51,14 @@ function initializeFormSubmission() {
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        successMessage.classList.remove('visible');
+        errorMessage.classList.remove('visible');
         
         // Disable form and show loading state
         form.querySelectorAll('input').forEach(input => input.disabled = true);
         submitButton.disabled = true;
         buttonText.style.display = 'none';
         spinner.style.display = 'inline-block';
-        
-        // Hide any existing messages
-        successMessage.style.display = 'none';
-        errorMessage.style.display = 'none';
         
         // Get form data
         contactAddInput = document.getElementById("contact-identifier")
@@ -77,10 +77,10 @@ function initializeFormSubmission() {
         })
         .then(response => response.json())
         .then(data => {
-            if (if response.status === 200) {
+            if (!data.detail) {
                 // Show success message
                 successMessage.textContent = 'Contact added successfully!';
-                successMessage.style.display = 'block';
+                successMessage.classList.add('visible');
                 
                 // Reset form
                 form.reset();
@@ -88,13 +88,14 @@ function initializeFormSubmission() {
                 // Reload contacts list
                 loadContacts();
             } else {
-                throw new Error(data.detail || 'Error: ${response.json().detail || "No error message"}');
+                throw new Error(data.detail);
             }
         })
         .catch(error => {
             // Show error message
+            console.log(error.message);
             errorMessage.textContent = error.message;
-            errorMessage.style.display = 'block';
+            errorMessage.classList.add('visible');
         })
         .finally(() => {
             // Re-enable form and hide loading state
@@ -110,7 +111,7 @@ function initializeFormSubmission() {
 function initializeSearch() {
     const searchInput = document.getElementById('search-contacts');
     
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('keyup', function() {
         const query = this.value.toLowerCase();
         const contacts = document.querySelectorAll('.contact-item');
         

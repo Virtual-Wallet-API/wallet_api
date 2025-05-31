@@ -26,10 +26,11 @@ class UserContacts:
                 raise HTTPException(status_code=404, detail="No user found matching the provided phone number")
             return UserContacts.insert_contact(db, user, contact)
         else:
-            contact = db.query(User).filter(User.username == identifier or User.email == identifier).first()
+            contact = db.query(User).filter(User.username == identifier).first()
             if not contact:
-                print("No user found matching the provided username/email")
-                raise HTTPException(status_code=404, detail="No user found matching the provided username/email")
+                contact = db.query(User).filter(User.email == identifier).first()
+                if not contact: 
+                    raise HTTPException(status_code=404, detail="No user found matching the provided username/email")
             return UserContacts.insert_contact(db, user, contact)
 
     @classmethod
