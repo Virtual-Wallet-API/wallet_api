@@ -49,16 +49,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     Promise.all([
         loadCategories(),
         loadTransactions('pending'),
-        loadTransactions('awaiting_acceptance'),
+        loadTransactions('awaiting'),
         updateBalanceDisplay()
     ]).then(() => {
         document.dispatchEvent(new Event('pageContentLoaded'));
-        originalPendingContentHeight = pendingContent.scrollHeight * 1.4;
-        pendingContent.setAttribute("originalHeight", originalPendingContentHeight)
-
-        originalAwaitingContentHeight = awaitingContent.scrollHeight * 1.4;
-        awaitingContent.setAttribute("originalHeight", originalAwaitingContentHeight)
-
+        updateTransactionsHeight();
         pendingContent.style.maxHeight = '0';
         awaitingContent.style.maxHeight = '0';
     })
@@ -70,6 +65,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     awaitingToggle.addEventListener('click', () => toggleSection(awaitingToggle, awaitingContent));
     document.getElementById('confirm-transaction-btn').addEventListener('click', confirmTransaction);
+
+
+    function updateTransactionsHeight() {
+        originalPendingContentHeight = pendingContent.scrollHeight * 1.4;
+        pendingContent.setAttribute("originalHeight", originalPendingContentHeight)
+        pendingContent.style.maxHeight = originalPendingContentHeight + 'px';
+
+        originalAwaitingContentHeight = awaitingContent.scrollHeight * 1.4;
+        awaitingContent.setAttribute("originalHeight", originalAwaitingContentHeight)
+        awaitingContent.style.maxHeight = originalAwaitingContentHeight + 'px';
+    }
 
     // Functions
     async function updateBalanceDisplay() {
@@ -114,15 +120,22 @@ document.addEventListener('DOMContentLoaded', async function () {
         const loadingElement = document.getElementById(`${status === 'pending' ? 'pending' : 'awaiting'}-loading`);
         const initialContainer = document.getElementById(`initial-${status === 'pending' ? 'pending' : 'awaiting'}`);
         const viewMoreContainer = document.getElementById(`view-more-${status === 'pending' ? 'pending' : 'awaiting'}-btn-container`);
+        let api_status = status === "awaiting" ? "awaiting_acceptance" : "pending"
 
         try {
-            loadingElement.style.display = 'block';
-            const response = await fetch(`/api/v1/transactions?limit=100&status=${status}`, {
-                headers: {
-                    'Authorization': `Bearer ${auth.getToken()}`
-                }
-            });
-            const data = await response.json();
+            let data = localStorage.getItem(`${status}-transactions-cache`);
+            data = data ? JSON.parse(data) : null;
+            if (!data || data.updated < new Date().getTime() - 1000 * 60 * 5) {
+                loadingElement.style.display = 'block';
+                const response = await fetch(`/api/v1/transactions?limit=100&status=${api_status}`, {
+                    headers: {
+                        'Authorization': `Bearer ${auth.getToken()}`
+                    }
+                });
+                data = await response.json();
+                data.updated = new Date().getTime();
+                localStorage.setItem(`${status}-transactions-cache`, JSON.stringify(data));
+            }
 
             if (data.transactions && data.transactions.length > 0) {
                 initialContainer.innerHTML = '';
@@ -140,6 +153,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 `;
                 viewMoreContainer.style.display = 'none';
             }
+            updateTransactionsHeight();
         } catch (error) {
             console.error(`Error loading ${status} transactions:`, error);
             initialContainer.innerHTML = `
@@ -178,20 +192,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // Show cancel button if transaction is pending
         const cancelButton = document.getElementById('cancel-transaction-btn');
-        if (transaction.status === 'pending') {
-            if (!cancelButton) {
-                const footer = document.querySelector('#transactionModal .modal-footer');
-                const newCancelButton = document.createElement('button');
-                newCancelButton.id = 'cancel-transaction-btn';
-                newCancelButton.className = 'btn btn-danger';
-                newCancelButton.textContent = 'Cancel Transaction';
-                newCancelButton.addEventListener('click', cancelTransaction);
-                footer.insertBefore(newCancelButton, footer.firstChild);
-            } else {
-                cancelButton.style.display = 'inline-block';
-            }
-        } else if (cancelButton) {
-            cancelButton.style.display = 'none';
+        if (!cancelButton) {
+            const footer = document.querySelector('#transactionModal .modal-footer');
+            const newCancelButton = document.createElement('button');
+            newCancelButton.id = 'cancel-transaction-btn';
+            newCancelButton.className = 'btn btn-danger';
+            newCancelButton.textContent = 'Cancel Transaction';
+            newCancelButton.addEventListener('click', cancelTransaction);
+            footer.insertBefore(newCancelButton, footer.firstChild);
+        } else {
+            cancelButton.style.display = 'inline-block';
         }
 
         transactionModal.show();
@@ -213,8 +223,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 transactionModal.hide();
                 showSuccess('Transaction cancelled successfully');
+                localStorage.removeItem(`pending-transactions-cache`);
+                localStorage.removeItem(`awaiting-transactions-cache`);
                 loadTransactions('pending');
-                loadTransactions('awaiting_acceptance');
+                loadTransactions('awaiting');
                 await auth.refreshUserData();
                 await updateBalanceDisplay();
             } else {
@@ -309,6 +321,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const data = await response.json();
 
             if (response.ok) {
+                localStorage.removeItem(`pending-transactions-cache`);
+                loadTransactions('pending');
                 // Show confirmation modal
                 document.getElementById('modal-receiver').textContent = receiverInput.value;
                 document.getElementById('modal-amount').textContent = `$${amount.toFixed(2)}`;
@@ -349,11 +363,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             });
 
             if (response.ok) {
+                localStorage.removeItem(`pending-transactions-cache`);
+                localStorage.removeItem(`awaiting-transactions-cache`);
                 transactionConfirmModal.hide();
                 showSuccess('Transaction confirmed successfully');
-                loadTransactions('pending');
-                loadTransactions('awaiting_acceptance');
                 await auth.refreshUserData();
+                loadTransactions('pending');
+                loadTransactions('awaiting');
                 await updateBalanceDisplay();
             } else {
                 const data = await response.json();

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from fastapi import HTTPException
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 from sqlalchemy.types import Enum as CEnum
@@ -22,25 +22,12 @@ class RecurringTransaction(Base):
     interval = Column(CEnum(RecurringInterval, name="recurring_interval",
                             values_callable=lambda obj: [e.value for e in obj]),
                       default=RecurringInterval.DAYLY, nullable=False)
-    is_active = Column(Integer, nullable=False, default=True)
+    is_active = Column(Boolean, nullable=False, default=False)
 
     transaction = relationship("Transaction", back_populates="recurring_transaction")
     history = relationship("RecurringTransactionHistory", back_populates="recurring_transaction", lazy='dynamic')
 
     # TODO add recurring transaction history table to track how many times and when the transaction goes through
-
-    @validates("interval")
-    def validate_interval(self, key, v: int):
-        if v < 1:
-            raise HTTPException(status_code=400,
-                                detail="Interval must be positive")
-        return v
-
-    @validates("is_active")
-    def validate_is_active(self, key, v: int):
-        if v not in [0, 1]:
-            raise HTTPException(status_code=400,
-                                detail="Is Active must be 0 or 1")
 
     @property
     def executions(self) -> int:

@@ -407,6 +407,11 @@ class TransactionService:
 
     @classmethod
     def confirm_recurring_transaction(cls, db, user, transaction):
+        if transaction.status != TransactionStatus.PENDING:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot confirm transaction with status: {transaction.status.value}. Only pending transactions can be confirmed."
+            )
         transaction.status = TransactionStatus.AWAITING_ACCEPTANCE
         db.commit()
         db.refresh(transaction)
@@ -414,6 +419,11 @@ class TransactionService:
 
     @classmethod
     def accept_recurring_transaction(cls, db, user, transaction):
+        if transaction.status != TransactionStatus.AWAITING_ACCEPTANCE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot accept transaction with status: {transaction.status.value}. Only awaiting confirmation transactions can be accepted."
+            )
         recurring = transaction.recurring_transaction
         recurring.is_active = True
         transaction.status = TransactionStatus.ACCEPTED
@@ -423,6 +433,11 @@ class TransactionService:
 
     @classmethod
     def cancel_recurring_transaction(cls, db, user, transaction):
+        if transaction.status not in (TransactionStatus.AWAITING_ACCEPTANCE, TransactionStatus.PENDING, TransactionStatus.ACCEPTED):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot cancel transaction with status: {transaction.status.value}. Only pending and awaiting confirmation transactions can be cancelled."
+            )
         transaction.status = TransactionStatus.CANCELLED
         transaction.recurring_transaction.is_active = False
         db.commit()
