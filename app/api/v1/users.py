@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 
 from app.business import UAuth, UVal
+from app.business.user.user_contacts import UserContacts
 from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr, \
     get_current_admin
 from app.models import User, Contact
@@ -109,18 +110,8 @@ def create_contact(contact: ContactCreate,
     """
     Creates a new contact for the authenticated user.
     """
-    UVal.find_user_with_or_raise_exception("id", contact.contact_id, db)
 
-    db_contact = (db.query(Contact)
-                  .filter(Contact.contact_id == contact.contact_id and Contact.user_id == user.id).first())
-    if db_contact:
-        raise HTTPException(status_code=400, detail="Contact already exists")
-
-    db_contact = Contact(contact_id=contact.contact_id, user_id=user.id)
-    db.add(db_contact)
-    db.commit()
-    db.refresh(db_contact)
-    return db_contact
+    return UserContacts.add_contact(db, user, contact)
 
 
 @router.delete("/contacts/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -130,15 +121,4 @@ def remove_contact(contact_id: int,
     """
     Removes a contact from the authenticated user's list of contacts.
     """
-    db_contact = (db.query(Contact)
-                  .filter(Contact.contact_id == contact_id and Contact.user_id == user.id).first())
-    if not db_contact:
-        raise HTTPException(status_code=404, detail="Contact not found")
-
-    db.delete(db_contact)
-    db.commit()
-    return status.HTTP_204_NO_CONTENT
-
-@router.get("/test")
-def test(db: Session = Depends(get_db), user: User = Depends(get_current_admin)):
-    return user.transactions
+    return UserContacts.remove_contact(db, user, contact_id)

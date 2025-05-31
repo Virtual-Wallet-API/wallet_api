@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import validates
 
 from app.infrestructure import Base
+from app.models import Transaction
 
 
 class Contact(Base):
@@ -30,5 +31,7 @@ class Contact(Base):
                                 detail="User ID is required")
         return user_id
 
-# TODO - Check with Siso
-# TODO - Add to the __init__.py
+    @property
+    def transactions(self):
+        return (self.user.transactions_query
+                .filter(Transaction.sender_id == self.contact_id or Transaction.receiver_id == self.contact_id).all())

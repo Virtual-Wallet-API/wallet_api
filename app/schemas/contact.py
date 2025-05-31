@@ -6,7 +6,7 @@ UserPublicResponse = ForwardRef("UserPublicResponse")
 
 
 class ContactBase(BaseModel):
-    contact_id: int
+    identifier: str
 
 
 class ContactCreate(ContactBase):
