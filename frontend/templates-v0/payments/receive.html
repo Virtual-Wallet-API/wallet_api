@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="/static/css/payments/send.css">
+{% endblock %}
+
+{% block content %}
+<div class="send-page-container">
+    <h1 class="send-title-main">Receive Money</h1>
+    
+    <div class="transactions-section">
+        <div id="awaiting-loading" class="loading-spinner" style="display: none;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="initial-awaiting" class="transactions-list"></div>
+        <div id="view-more-awaiting-btn-container" class="view-more-container" style="display: none;">
+            <button class="btn btn-view-more">View More</button>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-details">
+                    <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                    <p><strong>Sender:</strong> <span id="modal-sender"></span></p>
+                    <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                    <p><strong>Description:</strong> <span id="modal-description"></span></p>
+                    <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="decline-transaction-btn">Decline</button>
+                <button type="button" class="btn btn-success" id="accept-transaction-btn">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/payments/receive.js"></script>
+{% endblock %} 
