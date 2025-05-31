@@ -17,6 +17,12 @@ async function initializeBaseScripts() {
         }, {once: true});
     });
 
+    document.getElementById("logout-btn").addEventListener('click', async (e) => {
+        e.preventDefault();
+        await auth.logout();
+        window.location.href = '/fe/';
+    })
+
     try {
         // Base requirements
         if (typeof jQuery === 'undefined' || typeof bootstrap === 'undefined') {

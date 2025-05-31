@@ -60,9 +60,13 @@
                     <i class="bi bi-list-ul"></i>
                     <span>Send Money</span>
                 </a>
+                <a class="nav-link{% if page == 'receive' %} active{% endif %}" href="/fe/receive">
+                    <i class="bi bi-list-ul"></i>
+                    <span>Incoming Transactions</span>
+                </a>
                 <a class="nav-link{% if page == 'transactions' %} active{% endif %}" href="/fe/transactions">
                     <i class="bi bi-list-ul"></i>
-                    <span>Transactions</span>
+                    <span>Transactions History</span>
                 </a>
                 <a class="nav-link{% if page == 'cards' %} active{% endif %}" href="/fe/cards">
                     <i class="bi bi-credit-card"></i>

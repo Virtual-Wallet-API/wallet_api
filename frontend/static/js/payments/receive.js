@@ -7,9 +7,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     const acceptButton = document.getElementById('accept-transaction-btn');
     const declineButton = document.getElementById('decline-transaction-btn');
 
-    // Load initial transactions
-    loadTransactions();
-
     // Event Listeners
     acceptButton.addEventListener('click', () => handleTransactionAction('accept'));
     declineButton.addEventListener('click', () => handleTransactionAction('decline'));
@@ -130,4 +127,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             errorDiv.remove();
         }, 5000);
     }
-}); 
+    // Load initial transactions
+    await loadTransactions();
+    document.dispatchEvent(new Event('pageContentLoaded'));
+});
+
+
