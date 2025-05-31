@@ -21,7 +21,7 @@ function initializeSectionToggle(toggleId, contentId) {
     const content = document.getElementById(contentId);
     const icon = toggle.querySelector('i.bi-chevron-down');
     const originalHeight = content.getAttribute('data-original-height') || content.scrollHeight;
-            
+
     if (!content.hasAttribute('data-original-height')) {
         content.setAttribute('data-original-height', originalHeight);
     }
@@ -33,12 +33,12 @@ function initializeSectionToggle(toggleId, contentId) {
         content.style.padding = '0';
         content.style.marginBottom = '0';
     }
-    
+
     toggle.addEventListener('click', function() {
         // Toggle expanded state
         const isExpanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', !isExpanded);
-        
+
         // Toggle content visibility
         if (isExpanded) {
             content.style.maxHeight = '0';
@@ -46,14 +46,18 @@ function initializeSectionToggle(toggleId, contentId) {
             if (toggleId === 'add-contact-toggle') {
                 content.style.padding = '0';
                 content.style.marginBottom = '0';
+                // Reset messages when collapsing
+                document.getElementById('success-message').classList.remove('visible');
+                document.getElementById('error-message').classList.remove('visible');
+                // Reset data-original-height to original value (without messages)
+                content.setAttribute('data-original-height', content.scrollHeight);
             }
             content.classList.remove('show');
             icon.classList.remove('up');
         } else {
-            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.maxHeight = content.getAttribute('data-original-height') + 'px';
             content.style.opacity = '1';
             if (toggleId === 'add-contact-toggle') {
-                content.style.maxHeight = originalHeight + 'px';
                 content.style.padding = '2rem 2.5rem';
                 content.style.marginBottom = '2.5rem';
             }
@@ -71,7 +75,8 @@ function initializeFormSubmission() {
     const spinner = document.getElementById('spinner');
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
-    
+    const addContactBox = document.getElementById('add-contact-box');
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         successMessage.classList.remove('visible');
@@ -82,13 +87,29 @@ function initializeFormSubmission() {
         submitButton.disabled = true;
         buttonText.style.display = 'none';
         spinner.style.display = 'inline-block';
-        
+
         // Get form data
-        contactAddInput = document.getElementById("contact-identifier")
+        const contactAddInput = document.getElementById("contact-identifier");
         const data = {
             identifier: contactAddInput.value
         };
         console.log(data);
+
+        // Function to update data-original-height
+        const updateContainerHeight = (messageElement) => {
+            // Wait for transition to complete
+            const onTransitionEnd = () => {
+                const originalHeight = parseFloat(addContactBox.getAttribute('data-original-height')) || addContactBox.scrollHeight;
+                const messageHeight = messageElement.offsetHeight; // Height of the fully revealed message
+                const newHeight = originalHeight + messageHeight;
+                addContactBox.setAttribute('data-original-height', newHeight);
+                addContactBox.style.maxHeight = newHeight + 'px';
+                // Clean up event listener
+                messageElement.removeEventListener('transitionend', onTransitionEnd);
+            };
+            messageElement.addEventListener('transitionend', onTransitionEnd);
+        };
+
         // Submit contact
         fetch('/api/v1/users/contacts', {
             method: 'POST',
@@ -98,20 +119,25 @@ function initializeFormSubmission() {
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.detail) {
+        .then(response => {
+            return response.json().then(data => ({ response, data }));
+        })
+        .then(({ response, data }) => {
+            if (response.status === 200) {
                 // Show success message
                 successMessage.textContent = 'Contact added successfully!';
                 successMessage.classList.add('visible');
-                
+
+                // Update height after transition
+                updateContainerHeight(successMessage);
+
                 // Reset form
                 form.reset();
-                
+
                 // Reload contacts list
                 loadContacts();
             } else {
-                throw new Error(data.detail);
+                throw new Error(data.detail || 'No error message');
             }
         })
         .catch(error => {
@@ -119,6 +145,9 @@ function initializeFormSubmission() {
             console.log(error.message);
             errorMessage.textContent = error.message;
             errorMessage.classList.add('visible');
+
+            // Update height after transition
+            updateContainerHeight(errorMessage);
         })
         .finally(() => {
             // Re-enable form and hide loading state
