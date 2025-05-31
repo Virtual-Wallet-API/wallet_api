@@ -53,9 +53,11 @@ class Auth {
     }
 
     // Get last refresh timestamp
-    getLastRefreshTimestamp() {
+    async getLastRefreshTimestamp() {
         const timestamp = localStorage.getItem(this.lastRefreshKey);
-        return timestamp ? parseInt(timestamp) : 0;
+        let result = timestamp ? parseInt(timestamp) : 0;
+        console.log(`Last refresh timestamp: ${result}`);
+        return result;
     }
 
     // Store user data in global userData variable
@@ -228,8 +230,8 @@ class Auth {
             return null;
         }
 
-        const now = Date.now();
-        const lastRefresh = this.getLastRefreshTimestamp();
+        const now = new Date().getTime();
+        const lastRefresh = await this.getLastRefreshTimestamp();
         const fiveMinutes = 5 * 60 * 1000;
         if (lastRefresh && now - lastRefresh < fiveMinutes) {
             this.setUserData(this.getUserData() || {}, token);

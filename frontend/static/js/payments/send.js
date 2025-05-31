@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             data = data ? JSON.parse(data) : null;
             if (!data || data.updated < new Date().getTime() - 1000 * 60 * 5) {
                 loadingElement.style.display = 'block';
-                const response = await fetch(`/api/v1/transactions?limit=100&status=${api_status}`, {
+                const response = await fetch(`/api/v1/transactions?limit=100&status=${api_status}&direction=out`, {
                     headers: {
                         'Authorization': `Bearer ${auth.getToken()}`
                     }
