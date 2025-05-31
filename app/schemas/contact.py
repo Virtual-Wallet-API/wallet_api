@@ -17,7 +17,7 @@ class ContactUpdate(ContactBase):
     contact_id: Optional[int] = None
 
 
-class ContactResponse(ContactBase):
+class ContactResponse(BaseModel):
     id: int
     user_id: int
 
