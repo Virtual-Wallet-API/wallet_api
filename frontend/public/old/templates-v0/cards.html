@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/css/cards.css">
+{% endblock %}
+
+{% block content %}
+<div class="cards-page-container">
+    <h2 class="cards-title-main">Cards</h2>
+
+    <!-- Cards List -->
+    <div class="section-toggle" id="cards-toggle" tabindex="0" aria-expanded="true" aria-controls="cards-list-content">
+        <h3>My Cards</h3>
+        <i class="bi bi-chevron-down"></i>
+    </div>
+    <div class="cards-list show" id="cards-list-content">
+        <div class="list-loading-container" id="cards-loading"><i class="bi bi-arrow-repeat"></i></div>
+        <div id="initial-cards">
+            <!-- Card items will be inserted here by JS -->
+        </div>
+        <div id="additional-cards" class="items-list-more" style="max-height: 0; opacity: 0; overflow: hidden;">
+            <!-- Additional card items -->
+        </div>
+        <div class="view-more-button-container" id="view-more-cards-btn-container" style="display: none;">
+            <a class="btn btn-outline-primary btn-view-more" href="#" id="view-cards-btn">View More</a>
+        </div>
+    </div>
+
+    <!-- Add padding to clear fixed footer -->
+    <div style="padding-bottom: 80px;"></div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Card Details Modal -->
+<div class="modal fade modal-card-details" id="cardDetailsModal" tabindex="-1" aria-labelledby="cardDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cardDetailsModalLabel">Card Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Card Number:</strong> <span id="modal-card-number"></span></p>
+                <p><strong>Expiry Date:</strong> <span id="modal-expiry"></span></p>
+                <p><strong>Card Type:</strong> <span id="modal-card-type"></span></p>
+                <p><strong>Cardholder Name:</strong> <span id="modal-cardholder"></span></p>
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                <p><strong>Added:</strong> <span id="modal-added"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="remove-card-btn">Remove Card</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="/js/cards.js"></script>
+{% endblock %}
