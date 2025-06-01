@@ -8,29 +8,9 @@ class Auth {
         this.tokenKey = 'access_token';
         this.userKey = 'user_data';
         this.lastRefreshKey = 'last_user_data_refresh';
-        this.refreshInterval = 2.5 * 60 * 1000; // Refresh every 2.5 minutes
+        this.refreshInterval = 15 * 60 * 1000; // Refresh every 15 minutes
         this.refreshTimer = null;
-        this.nullUserData = {username: '', id: 0, balance: 0, avatar: '', status: 'offline'};
-
-
-        this.ready = this.initialize();
     }
-
-    async initialize() {
-        if (!window.preventAuth && this.loggedIn()) {
-            const success = await this.refreshUserData();
-            if (!success) {
-                console.log('Initialization failed, redirecting to login.');
-                window.location.href = '/login';
-                return false;
-            }
-            return true;
-        }
-        console.log('Not logged in or preventAuth is true, redirecting to login.');
-        window.location.href = '/login';
-        return false;
-    }
-
 
     // Validate user data for create/update
     validateUserData({username, password, email, phone_number}) {
@@ -82,20 +62,18 @@ class Auth {
 
     // Store user data in global userData variable
     setUserData(uData, access_token) {
-        console.log(JSON.stringify(uData));
         userData.id = uData.id;
         userData.username = uData.username;
         userData.balance = uData.balance;
         userData.avatar = uData.avatar;
         userData.status = uData.status;
         token = access_token;
-        window.userData = userData;
         localStorage.setItem(this.userKey, JSON.stringify(userData));
     }
 
     // Get user data from global userData variable
     getUserData() {
-        return localStorage.getItem(this.userKey) ? JSON.parse(localStorage.getItem(this.userKey)) : this.nullUserData;
+        return localStorage.getItem(this.userKey) ? JSON.parse(localStorage.getItem(this.userKey)) : null;
     }
 
     loggedIn() {
@@ -251,15 +229,14 @@ class Auth {
             this.clearAuthData();
             return null;
         }
-        if (!!userData) {
-            const now = new Date().getTime();
-            const lastRefresh = await this.getLastRefreshTimestamp();
-            const fiveMinutes = 0.1 * 60 * 1000;
-            if (lastRefresh && now - lastRefresh < fiveMinutes) {
-                this.setUserData(this.getUserData() || {}, token);
-                console.log('Skipping refresh, less than 5 minutes since last refresh.');
-                return true;
-            }
+
+        const now = new Date().getTime();
+        const lastRefresh = await this.getLastRefreshTimestamp();
+        const fiveMinutes = 5 * 60 * 1000;
+        if (lastRefresh && now - lastRefresh < fiveMinutes) {
+            this.setUserData(this.getUserData() || {}, token);
+            console.log('Skipping refresh, less than 5 minutes since last refresh.');
+            return true;
         }
 
         try {
@@ -319,7 +296,6 @@ class Auth {
 
     // Event-based refresh
     async refreshOnEvent() {
-        localStorage.removeItem(this.lastRefreshKey);
         return await this.refreshUserData();
     }
 
@@ -332,28 +308,22 @@ class Auth {
 
 // export default new Auth();
 const auth = new Auth();
-window.auth = auth;
 
-function refreshUserData() {
-    return auth.refreshUserData();
+async function refreshUserData() {
+    if (!userData.username) {
+        console.log("Loading user data");
+    } else {
+        console.log(`Checking refresh for ${userData.username}.`);
+    }
+
+    let refresh = await auth.refreshUserData();
+    if (!refresh) {
+        console.log('Failed to refresh user data.');
+        auth.clearAuthData();
+    } else {
+        console.log('User data checked or fetched.');
+    }
 }
-
-
-// async function refreshUserData() {
-//     if (!userData.username) {
-//         console.log("Loading user data");
-//     } else {
-//         console.log(`Checking refresh for ${userData.username}.`);
-//     }
-//
-//     let refresh = await auth.refreshUserData();
-//     if (!refresh) {
-//         console.log('Failed to refresh user data.');
-//         auth.clearAuthData();
-//     } else {
-//         console.log('User data checked or fetched.');
-//     }
-// }
 
 if (typeof preventAuth === 'undefined') {
     window.preventAuth = false;
@@ -361,11 +331,10 @@ if (typeof preventAuth === 'undefined') {
 
 if (!preventAuth) {
     if (!auth.loggedIn()) {
-        console.log("Not logged in.");
+        console.log("Not logged in.")
         window.location.href = '/login';
-    } else {
-        auth.refreshUserData(); // Call instance method
     }
+    refreshUserData();
 }
 
 console.log("Auth.js load completed.")

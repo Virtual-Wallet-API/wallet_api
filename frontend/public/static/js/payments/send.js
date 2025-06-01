@@ -1,5 +1,5 @@
-document.addEventListener('DOMContentLoaded', async function () {
-    // Initialize variables
+document.addEventListener('DOMContentLoaded', async () => {
+    // DOM Elements
     const sendForm = document.getElementById('send-form');
     const receiverInput = document.getElementById('receiver-identifier');
     const amountInput = document.getElementById('send-amount');
@@ -13,92 +13,79 @@ document.addEventListener('DOMContentLoaded', async function () {
     const spinner = document.getElementById('spinner');
     const successMessage = document.getElementById('success-message');
     const errorMessage = document.getElementById('error-message');
-    const balanceDisplay = document.getElementById('balance-display');
-    const balanceText = document.getElementById('balance-text');
     const balanceAmount = document.getElementById('balance-amount');
     const balanceAmountLoading = document.getElementById('balance-amount-loading');
-
-    // Initialize modals
-    const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
-    const transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
-
-    // Initialize section toggles
-    const pendingToggle = document.getElementById('pending-toggle');
+    const pendingToggle = document.getElementById('toggle-pending-transactions');
     const pendingContent = document.getElementById('pending-transactions-list-content');
-    const awaitingToggle = document.getElementById('awaiting-toggle');
+    const awaitingToggle = document.getElementById('toggle-awaiting-transactions');
     const awaitingContent = document.getElementById('awaiting-transactions-list-content');
+    const formLoadingOverlay = document.getElementById('form-loading-overlay');
 
-    // Check for receiver query parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const receiverParam = urlParams.get('receiver');
-    if (receiverParam) {
-        receiverInput.value = receiverParam;
-    }
+    // Modals
+    const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
+    const transactionDetailsModal = new bootstrap.Modal(document.getElementById('transactionDetailsModal'));
 
-    // Wait for userData to be available
-    if (!window.userData || !window.userData.balance) {
-        await auth.refreshUserData();
-    }
-
-    let originalPendingContentHeight;
-    let originalAwaitingContentHeight;
-
+    // Initial Setup
+    balanceAmount.style.opacity = '0';
+    balanceAmountLoading.style.display = 'block';
+    pendingContent.style.maxHeight = '0';
     pendingContent.style.opacity = '0';
+    awaitingContent.style.maxHeight = '0';
     awaitingContent.style.opacity = '0';
-
-    Promise.all([
-        loadCategories(),
-        loadTransactions('pending'),
-        loadTransactions('awaiting'),
-        updateBalanceDisplay()
-    ]).then(() => {
-        document.dispatchEvent(new Event('pageContentLoaded'));
-        updateTransactionsHeight();
-        pendingContent.style.maxHeight = '0';
-        awaitingContent.style.maxHeight = '0';
-    })
 
     // Event Listeners
     sendForm.addEventListener('submit', handleFormSubmit);
     recurringCheckbox.addEventListener('change', toggleIntervalGroup);
-    toggleIntervalGroup();
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     awaitingToggle.addEventListener('click', () => toggleSection(awaitingToggle, awaitingContent));
     document.getElementById('confirm-transaction-btn').addEventListener('click', confirmTransaction);
+    document.getElementById('cancel-transaction-btn').addEventListener('click', cancelTransaction);
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', () => {
+            amountInput.value = button.dataset.amount;
+            document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        });
+    });
 
-
-    function updateTransactionsHeight() {
-        originalPendingContentHeight = pendingContent.scrollHeight * 1.4;
-        pendingContent.setAttribute("originalHeight", originalPendingContentHeight)
-        originalAwaitingContentHeight = awaitingContent.scrollHeight * 1.4;
-        awaitingContent.setAttribute("originalHeight", originalAwaitingContentHeight)
-        const pendingVisible = pendingContent.getAttribute("visible");
-        const awaitingVisible = awaitingContent.getAttribute("visible");
-        pendingContent.style.maxHeight = pendingVisible ? originalPendingContentHeight + 'px' : 0;
-        awaitingContent.style.maxHeight = awaitingVisible ? originalAwaitingContentHeight + 'px' : 0;
-    }
+    // Load Data
+    await Promise.all([
+        loadCategories(),
+        loadTransactions('pending'),
+        loadTransactions('awaiting'),
+        loadSummaryData()
+    ]).then(() => {
+        document.dispatchEvent(new Event('pageContentLoaded'));
+    });
 
     // Functions
     async function updateBalanceDisplay() {
-        if (!userData || !userData.balance) {
-            await auth.refreshUserData();
+        try {
+            const userData = await auth.getUserData();
+            balanceAmountLoading.style.transition = 'opacity 0.3s ease';
+            balanceAmountLoading.style.opacity = '0';
+            setTimeout(() => {
+                balanceAmountLoading.style.display = 'none';
+                balanceAmount.textContent = `$${userData.balance.toFixed(2)}`;
+                balanceAmount.style.opacity = '1';
+                balanceAmount.classList.add('balance-updated');
+                setTimeout(() => balanceAmount.classList.remove('balance-updated'), 500);
+            }, 300);
+        } catch (error) {
+            console.error('Error updating balance:', error);
+            balanceAmount.textContent = 'Error';
+            showError('Failed to load balance');
         }
-        balanceText.style.opacity = '1';
-        balanceAmount.textContent = `$${userData.balance.toFixed(2)}`;
-        balanceAmount.style.opacity = '1'
-        balanceAmountLoading.style.opacity = '0';
-        return true;
     }
+
+    await updateBalanceDisplay();
 
     async function loadCategories() {
         try {
             const response = await fetch('/api/v1/categories', {
-                headers: {
-                    'Authorization': `Bearer ${auth.getToken()}`
-                }
+                headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
             const data = await response.json();
-
             if (data.categories && data.categories.length > 0) {
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
@@ -107,210 +94,150 @@ document.addEventListener('DOMContentLoaded', async function () {
                     categorySelect.appendChild(option);
                 });
             } else {
-                categorySelect.disabled = true;
-                categorySelect.innerHTML = '<option value="" selected>You have no categories</option>';
+                document.getElementById('category-group').style.display = 'none';
             }
         } catch (error) {
             console.error('Error loading categories:', error);
-            categorySelect.disabled = true;
-            categorySelect.innerHTML = '<option value="" selected>Error loading categories</option>';
+            document.getElementById('category-group').style.display = 'none';
         }
     }
 
     async function loadTransactions(status) {
-        const loadingElement = document.getElementById(`${status === 'pending' ? 'pending' : 'awaiting'}-loading`);
-        const initialContainer = document.getElementById(`initial-${status === 'pending' ? 'pending' : 'awaiting'}`);
-        const viewMoreContainer = document.getElementById(`view-more-${status === 'pending' ? 'pending' : 'awaiting'}-btn-container`);
-        let api_status = status === "awaiting" ? "awaiting_acceptance" : "pending"
+        const loadingElement = document.getElementById(`${status}-loading`);
+        const container = document.getElementById(`initial-${status}`);
+        const viewMoreContainer = document.getElementById(`view-more-${status}-btn-container`);
+        const apiStatus = status === 'awaiting' ? 'awaiting_acceptance' : 'pending';
 
         try {
-            let data = localStorage.getItem(`${status}-transactions-cache`);
-            data = data ? JSON.parse(data) : null;
-            if (!data || data.updated < new Date().getTime() - 1000 * 60 * 5) {
-                loadingElement.style.display = 'block';
-                const response = await fetch(`/api/v1/transactions?limit=100&status=${api_status}&direction=out`, {
-                    headers: {
-                        'Authorization': `Bearer ${auth.getToken()}`
-                    }
-                });
-                data = await response.json();
-                data.updated = new Date().getTime();
-                localStorage.setItem(`${status}-transactions-cache`, JSON.stringify(data));
-            }
-
+            loadingElement.style.display = 'flex';
+            const response = await fetch(`/api/v1/transactions?limit=100&status=${apiStatus}&direction=out`, {
+                headers: {'Authorization': `Bearer ${auth.getToken()}`}
+            });
+            const data = await response.json();
+            container.innerHTML = '';
             if (data.transactions && data.transactions.length > 0) {
-                initialContainer.innerHTML = '';
                 data.transactions.forEach(transaction => {
-                    const transactionElement = createTransactionElement(transaction);
-                    initialContainer.appendChild(transactionElement);
+                    container.appendChild(createTransactionElement(transaction));
                 });
-
                 viewMoreContainer.style.display = data.has_more ? 'block' : 'none';
             } else {
-                initialContainer.innerHTML = `
-                    <div class="no-transactions-alert">
-                        No ${status === 'pending' ? 'pending' : 'awaiting acceptance'} transactions found
-                    </div>
-                `;
-                viewMoreContainer.style.display = 'none';
+                container.innerHTML = `<p class="text-muted text-center" id="no-${status}">No ${status} transactions</p>`;
             }
-            updateTransactionsHeight();
         } catch (error) {
             console.error(`Error loading ${status} transactions:`, error);
-            initialContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    Error loading transactions. Please try again later.
-                </div>
-            `;
+            container.innerHTML = '<p class="text-danger text-center" id="error-' + status + '">Error loading transactions</p>';
         } finally {
             loadingElement.style.display = 'none';
         }
     }
 
+    async function loadSummaryData() {
+        try {
+            // Calculate dates
+            const dateTo = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD
+            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
+
+            const response = await fetch(`/api/v1/transactions/?date_from=${dateFrom}&date_to=${dateTo}&direction=out`, {
+                headers: {'Authorization': `Bearer ${auth.getToken()}`}
+            });
+            const data = await response.json();
+            document.getElementById('money-sent-value').textContent = `$${data.outgoing_total.toFixed(2)}`;
+            document.getElementById('avg-transaction-value').textContent = `$${data.avg_transaction.toFixed(2)}`;
+            document.getElementById('total-transactions-count').textContent = data.total;
+            let trend = calculateOutTrend(data);
+            document.getElementById('send-trend-percentage').textContent = `${trend.toFixed(1)}%`;
+            document.getElementById('transaction-trend-value').textContent = `NaN`;
+        } catch (error) {
+            console.error('Error loading summary data:', error);
+        }
+    }
+
+    function calculateOutTrend(data) {
+        if (data.total === 0) {
+            return 0; // No transactions, no trend
+        } else if (data.total > 0 && data.outgoing_total > 0) {
+            return ((data.outgoing_total - data.avg_transaction) / data.avg_transaction) * 100; // Positive trend
+        }
+        return 0
+    }
+
     function createTransactionElement(transaction) {
         const div = document.createElement('div');
         div.className = 'transaction-item';
+        div.dataset.id = transaction.id;
         div.innerHTML = `
-            <div class="transaction-info">
-                <span class="transaction-amount">$${transaction.amount.toFixed(2)}</span>
-                <span class="transaction-description">${transaction.description || 'No description'}</span>
-            </div>
-            <div class="transaction-date">${new Date(transaction.date).toLocaleDateString()}</div>
+            <span class="date">${new Date(transaction.date).toLocaleDateString()}</span>
+            <span class="description">${transaction.description || 'No description'}</span>
+            <span class="status">${transaction.status.replace('_', ' ')}</span>
+            <span class="amount">$${transaction.amount.toFixed(2)}</span>
+            <i class="bi bi-info-circle info-icon"></i>
         `;
         div.addEventListener('click', () => showTransactionDetails(transaction));
         return div;
     }
 
-    function showTransactionDetails(transaction) {
-        document.getElementById('modal-date').textContent = new Date(transaction.date).toLocaleString();
-        document.getElementById('modal-receiver').textContent = transaction.receiver_id;
-        document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
-        document.getElementById('modal-description').textContent = transaction.description || 'No description';
-        document.getElementById('modal-status').textContent = transaction.status;
-
-        // Store transaction ID for cancellation
-        window.currentTransactionId = transaction.id;
-
-        // Show cancel button if transaction is pending
-        const cancelButton = document.getElementById('cancel-transaction-btn');
-        if (!cancelButton) {
-            const footer = document.querySelector('#transactionModal .modal-footer');
-            const newCancelButton = document.createElement('button');
-            newCancelButton.id = 'cancel-transaction-btn';
-            newCancelButton.className = 'btn btn-danger';
-            newCancelButton.textContent = 'Cancel Transaction';
-            newCancelButton.addEventListener('click', cancelTransaction);
-            footer.insertBefore(newCancelButton, footer.firstChild);
-        } else {
-            cancelButton.style.display = 'inline-block';
-        }
-
-        transactionModal.show();
-    }
-
-    async function cancelTransaction() {
-        if (!window.currentTransactionId) return;
-
-        try {
-            const response = await fetch(`/api/v1/transactions/status/${window.currentTransactionId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.getToken()}`
-                },
-                body: JSON.stringify({action: 'cancel'})
-            });
-
-            if (response.ok) {
-                transactionModal.hide();
-                showSuccess('Transaction cancelled successfully');
-                localStorage.removeItem(`pending-transactions-cache`);
-                localStorage.removeItem(`awaiting-transactions-cache`);
-                loadTransactions('pending');
-                loadTransactions('awaiting');
-                await auth.refreshUserData();
-                await updateBalanceDisplay();
-            } else {
-                const data = await response.json();
-                showError(data.detail || 'Failed to cancel transaction');
-            }
-        } catch (error) {
-            showError('An error occurred while cancelling the transaction');
-            console.error('Error:', error);
-        } finally {
-            window.currentTransactionId = null;
-        }
-    }
-
     function toggleIntervalGroup() {
         if (recurringCheckbox.checked) {
-            intervalGroup.style.maxHeight = intervalGroup.scrollHeight + 'px';
-            intervalGroup.style.opacity = '1';
+            intervalGroup.style.display = 'block';
+            setTimeout(() => {
+                intervalGroup.style.maxHeight = `${intervalGroup.scrollHeight}px`;
+                intervalGroup.style.opacity = '1';
+                intervalGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            }, 10);
         } else {
             intervalGroup.style.maxHeight = '0';
             intervalGroup.style.opacity = '0';
+            intervalGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            setTimeout(() => {
+                intervalGroup.style.display = 'none';
+            }, 300);
         }
     }
 
     function toggleSection(toggle, content) {
         const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', !isExpanded);
-
+        const icon = toggle.querySelector('.toggle-icon');
         if (!isExpanded) {
             content.style.display = 'block';
-            // Force a reflow
-            content.offsetHeight;
-            content.style.maxHeight = content.getAttribute("originalHeight") + 'px';
-            content.setAttribute("visible", true);
+            content.style.transition = 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out';
+            content.style.maxHeight = `${content.scrollHeight}px`;
             content.style.opacity = '1';
-            content.classList.add('show');
+            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
         } else {
             content.style.maxHeight = '0';
             content.style.opacity = '0';
-            content.classList.remove('show');
+            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
             setTimeout(() => {
-                // content.style.display = 'none';
-            }, 300);
+                content.style.display = 'none';
+            }, 400);
         }
-
-        toggle.querySelector('i').className = isExpanded ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
     }
 
     async function handleFormSubmit(e) {
         e.preventDefault();
-
-        // Clear any existing messages
-        successMessage.style.display = 'none';
-        successMessage.classList.remove('visible');
-        errorMessage.style.display = 'none';
-        errorMessage.classList.remove('visible');
-
-        // Validate amount
         const amount = parseFloat(amountInput.value);
-        if (amount > userData.balance) {
-            showError('Amount exceeds available balance');
-            return;
-        }
-        if (amount < 0.01) {
+        if (isNaN(amount) || amount < 0.01) {
             showError('Amount must be at least $0.01');
             return;
         }
+        const userData = await auth.getUserData();
+        if (amount > userData.balance) {
+            showError('Insufficient balance');
+            return;
+        }
 
-        // Prepare transaction data
         const transactionData = {
             identifier: receiverInput.value,
             amount: amount,
             description: descriptionInput.value,
             category_id: categorySelect.value || null,
             recurring: recurringCheckbox.checked,
-            interval: recurringCheckbox.checked ? parseInt(intervalSelect.value) : null
+            interval: recurringCheckbox.checked ? intervalSelect.value : null
         };
 
+        setLoading(true);
         try {
-            // Show loading state
-            setLoading(true);
-
-            // Create transaction
             const response = await fetch('/api/v1/transactions', {
                 method: 'POST',
                 headers: {
@@ -319,43 +246,54 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 body: JSON.stringify(transactionData)
             });
-
             const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Failed to create transaction');
 
-            if (response.ok) {
-                localStorage.removeItem(`pending-transactions-cache`);
-                loadTransactions('pending');
-                // Show confirmation modal
-                document.getElementById('modal-receiver').textContent = receiverInput.value;
-                document.getElementById('modal-amount').textContent = `$${amount.toFixed(2)}`;
-                document.getElementById('modal-description').textContent = descriptionInput.value || 'No description';
-                transactionConfirmModal.show();
+            document.getElementById('modal-receiver').textContent = transactionData.identifier;
+            document.getElementById('modal-amount').textContent = `$${transactionData.amount.toFixed(2)}`;
+            document.getElementById('modal-description').textContent = transactionData.description || 'No description';
+            window.currentTransactionId = data.id;
+            showSuccess('Transaction created successfully');
+            transactionConfirmModal.show();
 
-                // Store transaction ID for confirmation
-                window.pendingTransactionId = data.id;
-
-                // Reset form
-                sendForm.reset();
-                intervalGroup.style.maxHeight = '0';
-                intervalGroup.style.opacity = '0';
-            } else {
-                showError(data.detail || 'Failed to create transaction');
-            }
+            // Add to pending transactions
+            const transactionElement = createTransactionElement({
+                id: data.id,
+                date: new Date().toISOString(),
+                description: transactionData.description,
+                status: 'pending',
+                amount: transactionData.amount
+            });
+            document.getElementById('initial-pending').prepend(transactionElement);
+            clearTransactionBoxMessages();
         } catch (error) {
-            showError('An error occurred while creating the transaction');
-            console.error('Error:', error);
+            showError(error.message);
         } finally {
             setLoading(false);
         }
     }
 
+    function clearTransactionBoxMessages() {
+        const boxMessages = [
+            document.getElementById('no-pending'),
+            document.getElementById('no-awaiting'),
+            document.getElementById('error-pending'),
+            document.getElementById('error-awaiting')]
+
+        boxMessages.forEach(message => {
+            if (message) {
+                message.remove();
+            }
+        });
+    }
+
     async function confirmTransaction() {
-        if (!window.pendingTransactionId) return;
+        const transactionId = window.currentTransactionId;
+        if (!transactionId) return;
 
+        setLoading(true);
         try {
-            setLoading(true);
-
-            const response = await fetch(`/api/v1/transactions/status/${window.pendingTransactionId}`, {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -363,60 +301,110 @@ document.addEventListener('DOMContentLoaded', async function () {
                 },
                 body: JSON.stringify({action: 'confirm'})
             });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Failed to confirm transaction');
 
-            if (response.ok) {
-                localStorage.removeItem(`pending-transactions-cache`);
-                localStorage.removeItem(`awaiting-transactions-cache`);
-                transactionConfirmModal.hide();
-                showSuccess('Transaction confirmed successfully');
-                await auth.refreshUserData();
-                loadTransactions('pending');
-                loadTransactions('awaiting');
-                await updateBalanceDisplay();
-            } else {
-                const data = await response.json();
-                showError(data.detail || 'Failed to confirm transaction');
+            transactionConfirmModal.hide();
+            showSuccess('Transaction confirmed successfully');
+
+            // Move transaction to awaiting
+            const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
+            if (transactionElement) {
+                transactionElement.style.opacity = '0';
+                setTimeout(() => {
+                    transactionElement.remove();
+                    const awaitingElement = createTransactionElement({
+                        id: transactionId,
+                        date: new Date().toISOString(),
+                        description: document.getElementById('modal-description').textContent,
+                        status: 'awaiting_acceptance',
+                        amount: parseFloat(document.getElementById('modal-amount').textContent.replace('$', ''))
+                    });
+                    document.getElementById('initial-awaiting').prepend(awaitingElement);
+                }, 300);
             }
+            await auth.refreshOnEvent();
+            await updateBalanceDisplay();
+            sendForm.reset();
+            toggleIntervalGroup();
+            document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
         } catch (error) {
-            showError('An error occurred while confirming the transaction');
-            console.error('Error:', error);
+            showError(error.message);
         } finally {
             setLoading(false);
-            window.pendingTransactionId = null;
+            window.currentTransactionId = null;
         }
+    }
+
+    async function cancelTransaction() {
+        const transactionId = window.currentTransactionId;
+        if (!transactionId) return;
+
+        try {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({action: 'cancel'})
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Failed to cancel transaction');
+
+            transactionDetailsModal.hide();
+            showSuccess('Transaction cancelled successfully');
+
+            const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
+            if (transactionElement) {
+                transactionElement.style.opacity = '0';
+                setTimeout(() => transactionElement.remove(), 300);
+            }
+        } catch (error) {
+            showError(error.message);
+        } finally {
+            window.currentTransactionId = null;
+        }
+    }
+
+    function showTransactionDetails(transaction) {
+        document.getElementById('detail-modal-date').textContent = new Date(transaction.date).toLocaleString();
+        document.getElementById('detail-modal-receiver').textContent = transaction.receiver_id || transaction.identifier;
+        document.getElementById('detail-modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
+        document.getElementById('detail-modal-description').textContent = transaction.description || 'No description';
+        document.getElementById('detail-modal-status').textContent = transaction.status.replace('_', ' ');
+        window.currentTransactionId = transaction.id;
+
+        const cancelButton = document.getElementById('cancel-transaction-btn');
+        cancelButton.style.display = transaction.status === 'pending' ? 'inline-block' : 'none';
+
+        transactionDetailsModal.show();
     }
 
     function setLoading(isLoading) {
         submitButton.disabled = isLoading;
         buttonText.style.display = isLoading ? 'none' : 'inline';
-        spinner.style.display = isLoading ? 'inline' : 'none';
-    }
-
-    function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.classList.add('visible');
-        successMessage.style.display = 'none';
-        successMessage.classList.remove('visible');
-        setTimeout(() => {
-            errorMessage.classList.remove('visible');
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 300);
-        }, 5000);
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
+        formLoadingOverlay.style.display = isLoading ? 'flex' : 'none';
     }
 
     function showSuccess(message) {
         successMessage.textContent = message;
         successMessage.style.display = 'block';
         successMessage.classList.add('visible');
-        errorMessage.style.display = 'none';
-        errorMessage.classList.remove('visible');
         setTimeout(() => {
             successMessage.classList.remove('visible');
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 300);
-        }, 5000);
+            setTimeout(() => successMessage.style.display = 'none', 300);
+        }, 10000);
     }
-}); 
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.classList.add('visible');
+        setTimeout(() => {
+            errorMessage.classList.remove('visible');
+            setTimeout(() => errorMessage.style.display = 'none', 300);
+        }, 10000);
+    }
+});

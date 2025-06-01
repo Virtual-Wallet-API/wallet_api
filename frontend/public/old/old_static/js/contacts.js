@@ -1,0 +1,326 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize section toggles
+    Promise.all([
+        initializeSectionToggle('contacts-toggle', 'contacts-list-content'),
+        initializeSectionToggle('add-contact-toggle', 'add-contact-box'),
+        initializeFormSubmission(),
+        initializeSearch(),
+        loadContacts()
+    ]).then(() => {
+        document.dispatchEvent(new Event('pageContentLoaded'));
+    });
+});
+
+// Section Toggle Functionality
+function initializeSectionToggle(toggleId, contentId) {
+    const toggle = document.getElementById(toggleId);
+    const content = document.getElementById(contentId);
+    const icon = toggle.querySelector('i.bi-chevron-down');
+    const originalHeight = content.getAttribute('data-original-height') || content.scrollHeight;
+
+    if (!content.hasAttribute('data-original-height')) {
+        content.setAttribute('data-original-height', originalHeight);
+    }
+
+    // Set initial state for add contact box
+    if (toggleId === 'add-contact-toggle') {
+        content.style.maxHeight = '0';
+        content.style.opacity = '0';
+        content.style.padding = '0';
+        content.style.marginBottom = '0';
+    }
+
+    toggle.addEventListener('click', function() {
+        // Toggle expanded state
+        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', !isExpanded);
+
+        // Toggle content visibility
+        if (isExpanded) {
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            if (toggleId === 'add-contact-toggle') {
+                content.style.padding = '0';
+                content.style.marginBottom = '0';
+                // Reset messages when collapsing
+                document.getElementById('success-message').classList.remove('visible');
+                document.getElementById('error-message').classList.remove('visible');
+                // Reset data-original-height to original value (without messages)
+                content.setAttribute('data-original-height', content.scrollHeight);
+            }
+            content.classList.remove('show');
+            icon.classList.remove('up');
+        } else {
+            content.style.maxHeight = content.getAttribute('data-original-height') + 'px';
+            content.style.opacity = '1';
+            if (toggleId === 'add-contact-toggle') {
+                content.style.padding = '2rem 2.5rem';
+                content.style.marginBottom = '2.5rem';
+            }
+            content.classList.add('show');
+            icon.classList.add('up');
+        }
+    });
+    return true;
+}
+
+// Form Submission
+function initializeFormSubmission() {
+    const form = document.getElementById('add-contact-form');
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    const addContactBox = document.getElementById('add-contact-box');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        successMessage.classList.remove('visible');
+        errorMessage.classList.remove('visible');
+
+        // Disable form and show loading state
+        form.querySelectorAll('input').forEach(input => input.disabled = true);
+        submitButton.disabled = true;
+        buttonText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+
+        // Get form data
+        const contactAddInput = document.getElementById("contact-identifier");
+        const data = {
+            identifier: contactAddInput.value
+        };
+        console.log(data);
+
+        // Function to update data-original-height
+        const updateContainerHeight = (messageElement) => {
+            // Wait for transition to complete
+            const onTransitionEnd = () => {
+                const originalHeight = parseFloat(addContactBox.getAttribute('data-original-height')) || addContactBox.scrollHeight;
+                const messageHeight = messageElement.offsetHeight; // Height of the fully revealed message
+                const newHeight = originalHeight + messageHeight;
+                addContactBox.setAttribute('data-original-height', newHeight);
+                addContactBox.style.maxHeight = newHeight + 'px';
+                // Clean up event listener
+                messageElement.removeEventListener('transitionend', onTransitionEnd);
+            };
+            messageElement.addEventListener('transitionend', onTransitionEnd);
+        };
+
+        // Submit contact
+        fetch('/api/v1/users/contacts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${auth.getToken()}`
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            return response.json().then(data => ({ response, data }));
+        })
+        .then(({ response, data }) => {
+            if (response.status === 200) {
+                // Show success message
+                successMessage.textContent = 'Contact added successfully!';
+                successMessage.classList.add('visible');
+
+                // Update height after transition
+                updateContainerHeight(successMessage);
+
+                // Reset form
+                form.reset();
+
+                // Reload contacts list
+                loadContacts();
+            } else {
+                throw new Error(data.detail || 'No error message');
+            }
+        })
+        .catch(error => {
+            // Show error message
+            console.log(error.message);
+            errorMessage.textContent = error.message;
+            errorMessage.classList.add('visible');
+
+            // Update height after transition
+            updateContainerHeight(errorMessage);
+        })
+        .finally(() => {
+            // Re-enable form and hide loading state
+            form.querySelectorAll('input').forEach(input => input.disabled = false);
+            submitButton.disabled = false;
+            buttonText.style.display = 'inline-block';
+            spinner.style.display = 'none';
+        });
+    });
+    return true;
+}
+
+// Search Functionality
+function initializeSearch() {
+    const searchInput = document.getElementById('search-contacts');
+    
+    searchInput.addEventListener('keyup', function() {
+        const query = this.value.toLowerCase();
+        const contacts = document.querySelectorAll('.contact-item');
+
+        contacts.forEach(contact => {
+            const username = contact.querySelector('.username').textContent.toLowerCase();
+            const email = contact.querySelector('.email').textContent.toLowerCase();
+            const originalHeight = contact.getAttribute('data-original-height') || contact.scrollHeight;
+            
+            if (!contact.hasAttribute('data-original-height')) {
+                contact.setAttribute('data-original-height', originalHeight);
+            }
+
+            if (username.match(query) || email.match(query)) {
+                contact.style.opacity = '1';
+                contact.style.maxHeight = originalHeight + 'px';
+                contact.style.transform = 'translateX(0)';
+            } else {
+                contact.style.opacity = '0';
+                contact.style.maxHeight = '0';
+                contact.style.transform = 'translateX(-20px)';
+            }
+        });
+    });
+    return true;
+}
+
+// Load Contacts
+function loadContacts() {
+    const loadingContainer = document.getElementById('contacts-loading');
+    const initialContainer = document.getElementById('initial-contacts');
+    const viewMoreContainer = document.getElementById('view-more-contacts-btn-container');
+    
+    // Show loading state
+    loadingContainer.classList.remove('hidden');
+    
+    // Fetch contacts from API
+    fetch('/api/v1/users/contacts', {
+        headers: {
+            'Authorization': `Bearer ${auth.getToken()}`
+        }
+    })
+    .then(response => response.json())
+    .then(contacts => {
+        // Hide loading state
+        loadingContainer.classList.add('hidden');
+        
+        if (contacts && contacts.length > 0) {
+            // Render initial contacts
+            renderContacts(contacts.slice(0, 5), initialContainer);
+            
+            // Handle additional contacts
+            if (contacts.length > 5) {
+                const additionalContainer = document.getElementById('additional-contacts');
+                renderContacts(contacts.slice(5), additionalContainer);
+                viewMoreContainer.style.display = 'block';
+                
+                // Add view more functionality
+                document.getElementById('view-contacts-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    additionalContainer.style.maxHeight = additionalContainer.scrollHeight + 'px';
+                    additionalContainer.style.opacity = '1';
+                    viewMoreContainer.style.display = 'none';
+                });
+            }
+        } else {
+            initialContainer.innerHTML = '<p class="text-center text-muted">No contacts found.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading contacts:', error);
+        loadingContainer.classList.add('hidden');
+        initialContainer.innerHTML = '<p class="text-center text-danger">Error loading contacts. Please try again later.</p>';
+    });
+    return true;
+}
+
+// Render Contacts
+function renderContacts(contacts, container) {
+    container.innerHTML = contacts.map(contact => `
+        <div class="contact-item" data-contact-id="${contact.id}" onclick="showContactDetails('${contact.id}')">
+            <div class="contact-icon">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="contact-details">
+                <div class="username">${contact.contact_user.username}</div>
+                <div class="email">${contact.contact_user.email}</div>
+            </div>
+            <div class="contact-actions">
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Show Contact Details Modal
+function showContactDetails(contactId) {
+    // Find contact in the list
+    const contactItem = document.querySelector(`.contact-item[data-contact-id="${contactId}"]`);
+    const username = contactItem.querySelector('.username').textContent;
+    const email = contactItem.querySelector('.email').textContent;
+    
+    // Update modal content
+    document.getElementById('modal-username').textContent = username;
+    document.getElementById('modal-email').textContent = email;
+    document.getElementById('modal-phone').textContent = 'Not provided'; // You might want to add this to the API response
+    document.getElementById('modal-status').textContent = 'Active'; // You might want to add this to the API response
+    
+    // Update remove button
+    const removeButton = document.getElementById('remove-contact-btn');
+    removeButton.onclick = function() {
+        if (confirm('Are you sure you want to remove this contact?')) {
+            removeContact(contactId);
+        }
+    };
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('contactDetailsModal'));
+    modal.show();
+}
+
+// Remove Contact
+function removeContact(contactId) {
+    fetch(`/api/v1/users/contacts/${contactId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${auth.getToken()}`
+        }
+    })
+    .then(response => {
+        if (response.status === 204) {
+            // Find and fade out the contact
+            const contactItem = document.querySelector(`.contact-item[data-contact-id="${contactId}"]`);
+            if (contactItem) {
+                contactItem.style.opacity = '0';
+                contactItem.style.maxHeight = '0';
+                contactItem.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    contactItem.remove();
+                    
+                    // Check if there are any contacts left
+                    const remainingContacts = document.querySelectorAll('.contact-item');
+                    if (remainingContacts.length === 0) {
+                        const container = document.getElementById('initial-contacts');
+                        container.innerHTML = '<p class="text-center text-muted">No contacts found.</p>';
+                    }
+                }, 300);
+            }
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('contactDetailsModal'));
+            modal.hide();
+        } else {
+            throw new Error('Failed to remove contact');
+        }
+    })
+    .catch(error => {
+        console.error('Error removing contact:', error);
+        alert('Error removing contact. Please try again later.');
+    });
+} 

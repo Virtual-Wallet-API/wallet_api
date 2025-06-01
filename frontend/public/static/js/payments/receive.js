@@ -1,135 +1,362 @@
-document.addEventListener('DOMContentLoaded', async function () {
-    // Initialize variables
-    const loadingElement = document.getElementById('awaiting-loading');
-    const initialContainer = document.getElementById('initial-awaiting');
-    const viewMoreContainer = document.getElementById('view-more-awaiting-btn-container');
-    const transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
-    const acceptButton = document.getElementById('accept-transaction-btn');
-    const declineButton = document.getElementById('decline-transaction-btn');
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // DOM Elements
+    const balanceAmount = document.getElementById('balance-amount');
+    const balanceAmountLoading = document.getElementById('balance-amount-loading');
+    const pendingToggle = document.getElementById('toggle-pending-transactions');
+    const pendingContent = document.getElementById('pending-transactions-list-content');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    // Modals
+    let transactionConfirmModal = null;
+    let transactionDetailsModal = null;
+
+    // Initialize Modals
+    const confirmModalElement = document.getElementById('transactionConfirmModal');
+    const detailsModalElement = document.getElementById('transactionDetailsModal');
+
+    console.log('receive.js: Modal elements:', {
+        confirmModalElement: !!confirmModalElement,
+        detailsModalElement: !!detailsModalElement
+    });
+
+    if (!window.bootstrap || !window.bootstrap.Modal) {
+        showError('Failed to initialize modals. Please refresh the page.');
+        return;
+    }
+
+    if (confirmModalElement) {
+        try {
+            transactionConfirmModal = new bootstrap.Modal(confirmModalElement);
+        } catch (error) {
+            showError('Failed to initialize confirmation modal.');
+        }
+    } else {
+        showError('Confirmation modal not found.');
+    }
+
+    if (detailsModalElement) {
+        try {
+            transactionDetailsModal = new bootstrap.Modal(detailsModalElement);
+        } catch (error) {
+            console.error('receive.js: Error initializing transactionDetailsModal:', error);
+            showError('Failed to initialize details modal.');
+        }
+    } else {
+        console.error('receive.js: transactionDetailsModal element not found.');
+        showError('Details modal not found.');
+    }
+
+    // Exit if critical elements are missing
+    if (!balanceAmount || !balanceAmountLoading || !pendingToggle || !pendingContent) {
+        console.error('receive.js: Critical DOM elements missing.');
+        showError('Page failed to load properly.');
+        return;
+    }
+
+    // Initial Setup
+    balanceAmount.style.opacity = '0';
+    balanceAmountLoading.style.display = 'block';
+    pendingContent.style.maxHeight = '0';
+    pendingContent.style.opacity = '0';
 
     // Event Listeners
-    acceptButton.addEventListener('click', () => handleTransactionAction('accept'));
-    declineButton.addEventListener('click', () => handleTransactionAction('decline'));
+    pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
+    if (transactionConfirmModal) {
+        document.getElementById('confirm-transaction-btn')?.addEventListener('click', confirmTransaction);
+        document.getElementById('decline-transaction-btn')?.addEventListener('click', declineTransaction);
+        document.getElementById('decline-transaction-btn')?.addEventListener('click', declineTransaction);
+    }
 
-    async function loadTransactions() {
+    // Load Data
+    Promise.all([
+        updateBalanceDisplay(),
+        loadTransactions('pending'),
+        loadSummaryData()
+    ]).catch(error => {
+        console.error('receive.js: Error loading initial data:', error);
+        showError('Failed to load page data.');
+    });
+
+    // Functions
+    async function updateBalanceDisplay() {
         try {
-            let data = localStorage.getItem('incoming-transactions-cache');
-            data = data ? JSON.parse(data) : null;
-            if (!data || data.updated < new Date().getTime() - 1000 * 60 * 5) {
-                loadingElement.style.display = 'block';
-                const response = await fetch('/api/v1/transactions?status=awaiting_acceptance&direction=in', {
-                    headers: {
-                        'Authorization': `Bearer ${auth.getToken()}`
-                    }
-                });
-                data = await response.json();
-                data.updated = new Date().getTime();
-                localStorage.setItem('incoming-transactions-cache', JSON.stringify(data));
-            }
+            const userData = await auth.getUserData();
+            balanceAmountLoading.style.transition = 'opacity 0.3s ease';
+            balanceAmountLoading.style.opacity = '0';
+            setTimeout(() => {
+                balanceAmountLoading.style.display = 'none';
+                balanceAmount.textContent = `$${userData.balance.toFixed(2)}`;
+                balanceAmount.style.opacity = '1';
+                balanceAmount.classList.add('balance-updated');
+                setTimeout(() => balanceAmount.classList.remove('balance-updated'), 500);
+            }, 300);
+        } catch (error) {
+            console.error('receive.js: Error updating balance:', error);
+            balanceAmount.textContent = 'Error';
+            showError('Failed to load balance');
+        }
+    }
 
+    async function loadTransactions(status) {
+        const loadingElement = document.getElementById(`${status}-loading`);
+        const container = document.getElementById(`initial-${status}`);
+        const viewMoreContainer = document.getElementById(`view-more-${status}-btn-container`);
+
+        if (!loadingElement || !container || !viewMoreContainer) {
+            console.error('receive.js: Transaction list elements missing.');
+            showError('Failed to load transactions.');
+            return;
+        }
+
+        try {
+            loadingElement.style.display = 'flex';
+            const response = await fetch(`/api/v1/transactions?limit=100&status=awaiting_acceptance&direction=in`, {
+                headers: {'Authorization': `Bearer ${auth.getToken()}`}
+            });
+            const data = await response.json();
+            container.innerHTML = '';
             if (data.transactions && data.transactions.length > 0) {
-                initialContainer.innerHTML = '';
                 data.transactions.forEach(transaction => {
-                    const transactionElement = createTransactionElement(transaction);
-                    initialContainer.appendChild(transactionElement);
+                    container.appendChild(createTransactionElement(transaction));
                 });
-
                 viewMoreContainer.style.display = data.has_more ? 'block' : 'none';
             } else {
-                initialContainer.innerHTML = `
-                    <div class="no-transactions-alert">
-                        No incoming transactions found
-                    </div>
-                `;
-                viewMoreContainer.style.display = 'none';
+                container.innerHTML = `<p class="text-muted text-center" id="no-${status}">No pending transactions</p>`;
             }
         } catch (error) {
-            console.error('Error loading transactions:', error);
-            initialContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    Error loading transactions. Please try again later.
-                </div>
-            `;
+            console.error(`receive.js: Error loading ${status} transactions:`, error);
+            container.innerHTML = `<p class="text-danger text-center" id="error-${status}">Error loading transactions</p>`;
         } finally {
             loadingElement.style.display = 'none';
         }
     }
 
+    async function loadSummaryData() {
+        try {
+            const dateTo = new Date().toISOString().split('T')[0];
+            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const response = await fetch(`/api/v1/transactions/?date_from=${dateFrom}&date_to=${dateTo}&direction=in`, {
+                headers: {'Authorization': `Bearer ${auth.getToken()}`}
+            });
+            const data = await response.json();
+            document.getElementById('money-received-value').textContent = `$${data.incoming_total.toFixed(2)}`;
+            document.getElementById('avg-transaction-value').textContent = `$${data.avg_transaction.toFixed(2)}`;
+            document.getElementById('total-transactions-count').textContent = data.total;
+            const trend = calculateInTrend(data);
+            document.getElementById('receive-trend-percentage').textContent = `${trend.toFixed(1)}%`;
+            document.getElementById('transaction-trend-value').textContent = `NaN`;
+        } catch (error) {
+            console.error('receive.js: Error loading summary data:', error);
+        }
+    }
+
+    function calculateInTrend(data) {
+        if (data.total === 0) return 0;
+        if (data.total > 0 && data.incoming_total > 0) {
+            return ((data.incoming_total - data.avg_transaction) / data.avg_transaction) * 100;
+        }
+        return 0;
+    }
+
     function createTransactionElement(transaction) {
         const div = document.createElement('div');
         div.className = 'transaction-item';
+        div.dataset.id = transaction.id;
         div.innerHTML = `
-            <div class="transaction-info">
-                <span class="transaction-amount">$${transaction.amount.toFixed(2)}</span>
-                <span class="transaction-description">${transaction.description || 'No description'}</span>
+            <span class="date">${new Date(transaction.date).toLocaleDateString()}</span>
+            <span class="sender">${transaction.sender_id || 'Unknown'}</span>
+            <span class="status">${transaction.status.replace('_', ' ')}</span>
+            <span class="amount">$${transaction.amount.toFixed(2)}</span>
+            <div class="transaction-actions">
+                <button class="btn btn-sm btn-primary btn-action btn-confirm" data-id="${transaction.id}">Accept</button>
+                <button class="btn btn-sm btn-danger btn-action btn-decline" data-id="${transaction.id}">Decline</button>
             </div>
-            <div class="transaction-date">${new Date(transaction.date).toLocaleDateString()}</div>
+            <i class="bi bi-info-circle info-icon"></i>
         `;
-        div.addEventListener('click', () => showTransactionDetails(transaction));
+        div.querySelector('.info-icon').addEventListener('click', () => showTransactionDetails(transaction));
+        div.querySelector('.btn-confirm').addEventListener('click', () => prepareConfirmTransaction(transaction));
+        div.querySelector('.btn-decline').addEventListener('click', () => prepareDeclineTransaction(transaction));
         return div;
     }
 
-    function showTransactionDetails(transaction) {
-        document.getElementById('modal-date').textContent = new Date(transaction.date).toLocaleString();
-        document.getElementById('modal-sender').textContent = transaction.sender_id;
-        document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
-        document.getElementById('modal-description').textContent = transaction.description || 'No description';
-        document.getElementById('modal-status').textContent = transaction.status;
-
-        // Store transaction ID for actions
-        window.currentTransactionId = transaction.id;
-
-        transactionModal.show();
+    function toggleSection(toggle, content) {
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !isExpanded);
+        const icon = toggle.querySelector('.toggle-icon');
+        if (!isExpanded) {
+            content.style.display = 'block';
+            content.style.transition = 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out';
+            content.style.maxHeight = `${content.scrollHeight}px`;
+            content.style.opacity = '1';
+            icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
+        } else {
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
+            setTimeout(() => {
+                content.style.display = 'none';
+            }, 400);
+        }
     }
 
-    async function handleTransactionAction(action) {
-        if (!window.currentTransactionId) return;
+    function prepareConfirmTransaction(transaction) {
+        console.log('receive.js: Preparing confirm transaction:', transaction.id);
+        window.currentTransactionId = transaction.id;
+        document.getElementById('modal-sender').textContent = transaction.sender_id || 'Unknown';
+        document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
+        document.getElementById('modal-description').textContent = transaction.description || 'No description';
+        if (transactionConfirmModal) {
+            transactionConfirmModal.show();
+        } else {
+            console.error('receive.js: transactionConfirmModal not initialized');
+            showError('Confirmation modal unavailable.');
+        }
+    }
+
+    function prepareDeclineTransaction(transaction) {
+        window.currentTransactionId = transaction.id;
+        document.getElementById('modal-sender').textContent = transaction.sender_id || 'Unknown';
+        document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
+        document.getElementById('modal-description').textContent = transaction.description || 'No description';
+        if (transactionConfirmModal) {
+            transactionConfirmModal.show();
+        } else {
+            console.error('receive.js: transactionConfirmModal not initialized');
+            showError('Confirmation modal unavailable.');
+        }
+    }
+
+    async function confirmTransaction() {
+        const transactionId = window.currentTransactionId;
+        if (!transactionId) {
+            console.error('receive.js: No transaction ID for confirm');
+            return;
+        }
 
         try {
-            const response = await fetch(`/api/v1/transactions/status/${window.currentTransactionId}`, {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${auth.getToken()}`
                 },
-                body: JSON.stringify({ action: action })
+                body: JSON.stringify({ action: 'accept' })
             });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Failed to confirm transaction');
 
-            if (response.ok) {
-                transactionModal.hide();
-                localStorage.removeItem('incoming-transactions-cache');
-                await auth.refreshUserData();
-                loadTransactions();
-            } else {
-                const data = await response.json();
-                showError(data.detail || `Failed to ${action} transaction`);
+            if (transactionConfirmModal) transactionConfirmModal.hide();
+            showSuccess('Transaction confirmed successfully');
+            loadSummaryData()
+            const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
+            if (transactionElement) {
+                transactionElement.style.opacity = '0';
+                setTimeout(() => {
+                    transactionElement.remove();
+                    if (!document.querySelector('#initial-pending .transaction-item')) {
+                        document.getElementById('initial-pending').innerHTML = '<p class="text-muted text-center" id="no-pending">No pending transactions</p>';
+                    }
+                }, 300);
             }
+            await auth.refreshOnEvent();
+            await updateBalanceDisplay();
         } catch (error) {
-            showError(`An error occurred while ${action}ing the transaction`);
-            console.error('Error:', error);
+            console.error('receive.js: Error confirming transaction:', error);
+            showError(error.message);
         } finally {
             window.currentTransactionId = null;
         }
     }
 
-    function showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-danger';
-        errorDiv.textContent = message;
-        errorDiv.style.position = 'fixed';
-        errorDiv.style.top = '20px';
-        errorDiv.style.left = '50%';
-        errorDiv.style.transform = 'translateX(-50%)';
-        errorDiv.style.zIndex = '9999';
-        document.body.appendChild(errorDiv);
+    async function declineTransaction() {
+        const transactionId = window.currentTransactionId;
+        if (!transactionId) {
+            console.error('receive.js: No transaction ID for decline');
+            return;
+        }
 
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
+        try {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({ action: 'decline' })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || 'Failed to decline transaction');
+
+            if (transactionConfirmModal) transactionConfirmModal.hide();
+            if (transactionDetailsModal) transactionDetailsModal.hide();
+            showSuccess('Transaction declined successfully');
+            loadSummaryData()
+            const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
+            if (transactionElement) {
+                transactionElement.style.opacity = '0';
+                setTimeout(() => {
+                    transactionElement.remove();
+                    if (!document.querySelector('#initial-pending .transaction-item')) {
+                        document.getElementById('initial-pending').innerHTML = '<p class="text-muted text-center" id="no-pending">No pending transactions</p>';
+                    }
+                }, 300);
+            }
+        } catch (error) {
+            console.error('receive.js: Error declining transaction:', error);
+            showError(error.message);
+        } finally {
+            window.currentTransactionId = null;
+        }
     }
-    // Load initial transactions
-    await loadTransactions();
-    document.dispatchEvent(new Event('pageContentLoaded'));
+
+    function showTransactionDetails(transaction) {
+        console.log('receive.js: Showing transaction details:', transaction.id);
+        document.getElementById('detail-modal-date').textContent = new Date(transaction.date).toLocaleString();
+        document.getElementById('detail-modal-sender').textContent = transaction.sender_id || 'Unknown';
+        document.getElementById('detail-modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
+        document.getElementById('detail-modal-description').textContent = transaction.description || 'No description';
+        document.getElementById('detail-modal-status').textContent = transaction.status.replace('_', ' ');
+        window.currentTransactionId = transaction.id;
+
+        const declineButton = document.getElementById('decline-transaction-btn-details');
+        declineButton.style.display = transaction.status === 'awaiting_acceptance' ? 'inline-block' : 'none';
+
+        if (transactionDetailsModal) {
+            transactionDetailsModal.show();
+        } else {
+            console.error('receive.js: transactionDetailsModal not initialized');
+            showError('Details modal unavailable.');
+        }
+    }
+
+    function showSuccess(message) {
+        if (successMessage) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            successMessage.classList.add('visible');
+            setTimeout(() => {
+                successMessage.classList.remove('visible');
+                setTimeout(() => successMessage.style.display = 'none', 300);
+            }, 10000);
+        } else {
+            console.warn('receive.js: successMessage element not found');
+        }
+    }
+
+    function showError(message) {
+        if (errorMessage) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.classList.add('visible');
+            setTimeout(() => {
+                errorMessage.classList.remove('visible');
+                setTimeout(() => errorMessage.style.display = 'none', 300);
+            }, 10000);
+        } else {
+            console.warn('receive.js: errorMessage element not found');
+        }
+    }
 });
-
-

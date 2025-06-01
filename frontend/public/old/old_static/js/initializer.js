@@ -9,7 +9,7 @@ async function initializeBaseScripts() {
     const pageContentLoaded = new Promise(resolve => {
         const timeoutId = setTimeout(() => {
             resolve();
-        }, 1000);
+        }, 3500);
 
         document.addEventListener('pageContentLoaded', () => {
             clearTimeout(timeoutId);
@@ -17,14 +17,11 @@ async function initializeBaseScripts() {
         }, {once: true});
     });
 
-    // const logoutButton = document.getElementById("logout-btn")
-    // if (logoutButton) {
-    //     logoutButton.addEventListener('click', async (e) => {
-    //         e.preventDefault();
-    //         await auth.logout();
-    //         window.location.href = '/fe/';
-    //     })}
-    // }
+    document.getElementById("logout-btn").addEventListener('click', async (e) => {
+        e.preventDefault();
+        await auth.logout();
+        window.location.href = '/fe/';
+    })
 
     try {
         // Base requirements
@@ -33,8 +30,7 @@ async function initializeBaseScripts() {
         }
 
         // Fetch user data early
-        udata = auth.getUserData();
-        if (!udata || !udata.id) {
+        if (!userDataLoaded) {
             await auth.refreshUserData()
         }
 
@@ -76,4 +72,4 @@ async function initializeBaseScripts() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initializeBaseScripts);
+initializeBaseScripts();

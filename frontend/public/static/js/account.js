@@ -23,33 +23,153 @@ function attachItemEntryListeners() {
 
             var transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
             transactionModal.show();
+
+            // Fix: Remove lingering modal-backdrop on close
+            const modalEl = document.getElementById('transactionModal');
+            modalEl.addEventListener('hidden.bs.modal', function handler() {
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                modalEl.removeEventListener('hidden.bs.modal', handler);
+            });
         });
     });
 }
 
-// Generic "View More" Toggle
 function toggleMoreItems(listId, buttonId, seeAllUrl) {
-    const additionalList = document.getElementById(listId);
-    const viewBtn = document.getElementById(buttonId);
-    const isShown = additionalList.style.maxHeight !== '0px';
+    const additionalList = document.getElementById(listId); // e.g., additional-deposits-list
+    const viewBtn = document.getElementById(buttonId); // e.g., view-deposits-btn
+    const contentElement = additionalList.parentElement; // e.g., deposits-list-content
+    const contentParent = contentElement.parentElement; // e.g., .card
+    const isShown = additionalList.classList.contains('show'); // Use class instead of style check
 
-    if (isShown) { // If shown, and clicked, means "See All"
-        window.location.href = seeAllUrl;
-    } else { // If hidden, show more
-        additionalList.style.maxHeight = additionalList.scrollHeight + 'px';
-        additionalList.style.opacity = '1';
-        viewBtn.textContent = 'See All';
+    if (!additionalList || !viewBtn || !contentElement || !contentParent) {
+        console.error(`List, button, content, or parent element not found: ${listId}, ${buttonId}`);
+        return;
+    }
+
+    // Find the toggle element (.card-header sibling of contentElement)
+    const toggleElement = contentParent.querySelector('.card-header[role="button"][aria-expanded]');
+    const toggleHeight = toggleElement ? toggleElement.getBoundingClientRect().height : 0;
+
+    // Animation configuration - defined at the top so it's available for both cases
+    const animationDuration = 500; // Match setupSectionToggle
+    const easing = 'ease-in-out';
+
+    if (isShown) {
+        // Store the current heights before animation
+        const additionalHeight = additionalList.scrollHeight;
+        const contentHeight = contentElement.scrollHeight;
+
+        // Collapse
+        additionalList.animate(
+            [{maxHeight: `${additionalHeight}px`, opacity: 1}, {maxHeight: '0px', opacity: 0}],
+            {duration: animationDuration, easing: easing, fill: 'forwards'}
+        );
+        additionalList.classList.remove('show');
+
+        contentElement.animate(
+            [{maxHeight: `${contentHeight}px`}, {maxHeight: `${contentHeight - additionalHeight}px`}],
+            {duration: animationDuration, easing: easing, fill: 'forwards'}
+        );
+
+        contentParent.animate(
+            [{height: `${contentParent.scrollHeight}px`}, {height: `${toggleHeight + (contentHeight - additionalHeight)}px`}],
+            {duration: animationDuration, easing: easing, fill: 'forwards'}
+        ).onfinish = () => {
+            // Reset to auto after animation to prevent fixed heights
+            contentParent.style.height = 'auto';
+            contentParent.style.maxHeight = 'none';
+        };
+
+        // Ensure button text is visible
+        viewBtn.innerHTML = 'View More';
+    } else {
+        // Reset heights to ensure accurate measurements
+        additionalList.style.maxHeight = '0px';
+        contentElement.style.maxHeight = null; // Clear previous maxHeight
+        contentParent.style.height = null; // Clear previous height
+
+        // Force reflow to measure full height
+        additionalList.style.maxHeight = 'none';
+        const additionalHeight = additionalList.scrollHeight;
+        additionalList.style.maxHeight = '0px'; // Reset for animation
+
+        // Calculate heights
+        const contentCurrentHeight = contentElement.scrollHeight; // Current height without additionalList
+        const newContentHeight = contentCurrentHeight + additionalHeight; // Include additionalList
+        const newParentHeight = toggleHeight + newContentHeight; // Total height for .card
+
+        // Animate additionalList
+        additionalList.animate(
+            [
+                {maxHeight: '0px', opacity: 0},
+                {maxHeight: `${additionalHeight}px`, opacity: 1}
+            ],
+            {
+                duration: animationDuration,
+                easing: easing,
+                fill: 'forwards'
+            }
+        );
+        additionalList.classList.add('show'); // Mark as shown
+
+        // Animate contentElement
+        contentElement.animate(
+            [
+                {maxHeight: `${contentCurrentHeight}px`},
+                {maxHeight: `${newContentHeight}px`}
+            ],
+            {
+                duration: animationDuration,
+                easing: easing,
+                fill: 'forwards'
+            }
+        ).onfinish = () => {
+            // Reset maxHeight after animation to prevent fixed heights
+            contentElement.style.maxHeight = 'none';
+        };
+
+        // Animate contentParent
+        contentParent.animate(
+            [
+                {height: `${contentParent.scrollHeight}px`},
+                {height: `${newParentHeight}px`}
+            ],
+            {
+                duration: animationDuration,
+                easing: easing,
+                fill: 'forwards'
+            }
+        ).onfinish = () => {
+            // Reset to auto after animation to prevent fixed heights
+            contentParent.style.height = 'auto';
+            contentParent.style.maxHeight = 'none';
+        };
+
+        // Update button text with innerHTML to ensure visibility
+        viewBtn.innerHTML = 'See All';
     }
 }
 
 // Generic function to render items
 function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl, viewBtnEl, itemType, noItemsMessage, seeAllUrl) {
+    // Guard against null elements
+    if (!initialListEl) {
+        console.error(`Initial list element for ${itemType} is null`);
+        return;
+    }
+
     initialListEl.innerHTML = '';
-    additionalListEl.innerHTML = '';
+
+    if (additionalListEl) {
+        additionalListEl.innerHTML = '';
+    }
 
     if (!items || items.length === 0) {
         initialListEl.innerHTML = `<div class='alert alert-info mx-3'>${noItemsMessage}</div>`;
-        viewBtnContainerEl.style.display = 'none';
+        if (viewBtnContainerEl) {
+            viewBtnContainerEl.style.display = 'none';
+        }
         return;
     }
 
@@ -97,11 +217,14 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
                 </div>`;
     }).join('');
 
-    if (items.length <= 3) {
+    if (items.length <= 3 || !additionalListEl || !viewBtnContainerEl || !viewBtnEl) {
         initialListEl.innerHTML = itemEntries;
-        viewBtnContainerEl.style.display = 'none';
+        if (viewBtnContainerEl) {
+            viewBtnContainerEl.style.display = 'none';
+        }
     } else {
         initialListEl.innerHTML = items.slice(0, 3).map(item => { /* Regenerate HTML for first 3 */
+            // ... existing code ...
             let date, descriptionText, amountStr, amountFloat, amountClass, statusText, categoryText, refId;
             if (itemType === 'transaction') {
                 date = new Date(item.date).toLocaleDateString();
@@ -136,6 +259,7 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
         }).join('');
 
         additionalListEl.innerHTML = items.slice(3).map(item => { /* Regenerate HTML for rest */
+            // ... existing code ...
             let date, descriptionText, amountStr, amountFloat, amountClass, statusText, categoryText, refId;
             if (itemType === 'transaction') {
                 date = new Date(item.date).toLocaleDateString();
@@ -189,8 +313,13 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
 
 async function fetchTransactions() {
     const loadingAlert = document.getElementById('transactions-loading-alert');
+    const initialList = document.getElementById('initial-transactions-list');
+
     try {
-        loadingAlert.classList.remove('hidden');
+        if (loadingAlert) {
+            loadingAlert.classList.remove('hidden');
+        }
+
         const response = await fetch(`${API_BASE}/transactions`, {
             method: 'GET',
             headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}
@@ -202,7 +331,7 @@ async function fetchTransactions() {
 
         renderItems(
             transactions.slice(0, 12), // Show up to 12, JS handles 3 + more
-            document.getElementById('initial-transactions-list'),
+            initialList,
             document.getElementById('additional-transactions-list'),
             document.getElementById('view-transactions-btn-container'),
             document.getElementById('view-transactions-btn'),
@@ -212,16 +341,25 @@ async function fetchTransactions() {
         );
     } catch (error) {
         console.error('Error fetching transactions:', error);
-        document.getElementById('initial-transactions-list').innerHTML = "<div class='alert alert-danger mx-3'>Could not load transactions.</div>";
+        if (initialList) {
+            initialList.innerHTML = "<div class='alert alert-danger mx-3'>Could not load transactions.</div>";
+        }
     } finally {
-        loadingAlert.classList.add('hidden');
+        if (loadingAlert) {
+            loadingAlert.classList.add('hidden');
+        }
     }
 }
 
 async function fetchDeposits() {
     const loadingAlert = document.getElementById('deposits-loading-alert');
+    const initialList = document.getElementById('initial-deposits-list');
+
     try {
-        loadingAlert.classList.remove('hidden');
+        if (loadingAlert) {
+            loadingAlert.classList.remove('hidden');
+        }
+
         const response = await fetch(`${API_BASE}/deposits`, {
             method: 'GET',
             headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}
@@ -233,62 +371,181 @@ async function fetchDeposits() {
 
         renderItems(
             deposits.slice(0, 12), // Show up to 12
-            document.getElementById('initial-deposits-list'),
+            initialList,
             document.getElementById('additional-deposits-list'),
             document.getElementById('view-deposits-btn-container'),
             document.getElementById('view-deposits-btn'),
             'deposit',
             'No deposits yet.',
-            '/fe/all-deposits' // URL for "See All"
+            '/fe/deposits' // URL for "See All"
         );
     } catch (error) {
         console.error('Error fetching deposits:', error);
-        document.getElementById('initial-deposits-list').innerHTML = "<div class='alert alert-danger mx-3'>Could not load deposits.</div>";
+        if (initialList) {
+            initialList.innerHTML = "<div class='alert alert-danger mx-3'>Could not load deposits.</div>";
+        }
     } finally {
-        loadingAlert.classList.add('hidden');
+        if (loadingAlert) {
+            loadingAlert.classList.add('hidden');
+        }
     }
 }
 
-// Generic Toggle Function for Sections
-function setupSectionToggle(toggleId, listId) {
+// Modified Toggle Function for Sections
+function setupSectionToggle(toggleId, contentId) {
     const toggleElement = document.getElementById(toggleId);
-    const listElement = document.getElementById(listId);
-    const arrowIcon = toggleElement.querySelector('i.bi-chevron-down');
+    const contentElement = document.getElementById(contentId);
+    const contentParent = contentElement.parentElement;
 
-    // Initialize based on 'show' class (which means expanded)
-    const isInitiallyShown = listElement.classList.contains('show');
-    toggleElement.setAttribute('aria-expanded', isInitiallyShown.toString());
-    if (!isInitiallyShown) { // If not shown, ensure it's collapsed and arrow is up
-        listElement.style.maxHeight = '0px';
-        listElement.style.opacity = '0';
-        arrowIcon.classList.remove('up'); // Ensure arrow points down if collapsed
-    } else {
-        arrowIcon.classList.add('up'); // Ensure arrow points up if expanded
-        listElement.style.maxHeight = listElement.scrollHeight + 'px'; // Set initial max-height if shown
+    if (!toggleElement || !contentElement || !contentParent) {
+        console.error(`Toggle, content, or parent element not found: ${toggleId}, ${contentId}`);
+        return;
     }
 
+    console.log(`Setting up toggle for: ${toggleId} -> ${contentId}`);
 
-    toggleElement.addEventListener('click', () => {
-        const isCurrentlyShown = listElement.classList.toggle('show');
-        toggleElement.setAttribute('aria-expanded', isCurrentlyShown.toString());
-        arrowIcon.classList.toggle('up', isCurrentlyShown);
+    const arrowIcon = toggleElement.querySelector('i.bi-chevron-down');
+    if (!arrowIcon) {
+        console.error(`Arrow icon not found in toggle element: ${toggleId}`);
+        return;
+    }
 
-        if (isCurrentlyShown) {
-            listElement.style.maxHeight = listElement.scrollHeight + 'px';
-            listElement.style.opacity = '1';
-            // After transition, set to auto or large value if content might change
-            setTimeout(() => {
-                if (listElement.classList.contains('show')) listElement.style.maxHeight = '2500px';
-            }, 500); // Match CSS transition
+    // Calculate toggle height (used for collapsed state)
+    const boxToggleHeight = toggleElement.getBoundingClientRect().height;
+
+    // Initialize state based on aria-expanded attribute
+    let isExpanded = toggleElement.getAttribute('aria-expanded') === 'true';
+    console.log(`isExpanded initial state for ${toggleId}: ${isExpanded}`);
+
+    // Set initial state
+    if (isExpanded) {
+        contentParent.style.height = 'auto';
+        contentParent.style.maxHeight = 'none';
+        contentElement.classList.add('show');
+        arrowIcon.classList.add('up');
+        contentElement.style.maxHeight = contentElement.scrollHeight + 'px';
+        contentElement.style.opacity = '1';
+        contentElement.style.paddingTop = '0.5rem';
+        contentElement.style.paddingBottom = '0.5rem';
+    } else {
+        contentParent.style.height = boxToggleHeight + 'px';
+        contentParent.style.maxHeight = boxToggleHeight + 'px';
+        contentElement.classList.remove('show');
+        arrowIcon.classList.remove('up');
+        contentElement.style.maxHeight = '0px';
+        contentElement.style.opacity = '0';
+        contentElement.style.paddingTop = '0';
+        contentElement.style.paddingBottom = '0';
+    }
+
+    // Animation configuration
+    const animationDuration = 500; // Match original 500ms transition
+    const easing = 'ease-in-out'; // Smooth easing for natural animation
+
+    // Toggle functionality
+    toggleElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        isExpanded = !isExpanded;
+
+        toggleElement.setAttribute('aria-expanded', isExpanded);
+        arrowIcon.classList.toggle('up', isExpanded);
+        contentElement.classList.toggle('show', isExpanded);
+
+        if (isExpanded) {
+            // Expand content
+            const contentHeight = contentElement.scrollHeight;
+
+            contentParent.style.maxHeight = 'none';
+            // Animate contentParent height
+            contentParent.animate(
+                [
+                    {height: `${boxToggleHeight}px`},
+                    {height: `${contentHeight + boxToggleHeight}px`}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            ).onfinish = () => {
+                contentParent.style.height = 'auto';
+                contentParent.style.maxHeight = 'none';
+            };
+
+            // Animate contentElement properties
+            contentElement.animate(
+                [
+                    {maxHeight: '0px', opacity: 0, paddingTop: '0', paddingBottom: '0'},
+                    {maxHeight: `${contentHeight}px`, opacity: 1, paddingTop: '0.5rem', paddingBottom: '0.5rem'}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            );
+
+            // Animate arrow rotation (assuming CSS .up class uses transform: rotate(180deg))
+            arrowIcon.animate(
+                [
+                    {transform: 'rotate(0deg)'},
+                    {transform: 'rotate(180deg)'}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            );
         } else {
-            // Temporarily set max-height to current scroll height to animate from there
-            listElement.style.maxHeight = listElement.scrollHeight + 'px';
-            // Force reflow
-            listElement.offsetHeight;
-            listElement.style.maxHeight = '0px';
-            listElement.style.opacity = '0';
+            // Collapse content
+            const currentContentHeight = contentElement.scrollHeight;
+
+            // Animate contentParent height
+            contentParent.animate(
+                [
+                    {height: `${contentParent.scrollHeight}px`},
+                    {height: `${boxToggleHeight}px`}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            ).onfinish = () => {
+                contentParent.style.maxHeight = `${boxToggleHeight}px`;
+            };
+
+            // Animate contentElement properties
+            contentElement.animate(
+                [
+                    {maxHeight: `${currentContentHeight}px`, opacity: 1, paddingTop: '0.5rem', paddingBottom: '0.5rem'},
+                    {maxHeight: '0px', opacity: 0, paddingTop: '0', paddingBottom: '0'}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            );
+
+            // Animate arrow rotation back
+            arrowIcon.animate(
+                [
+                    {transform: 'rotate(180deg)'},
+                    {transform: 'rotate(0deg)'}
+                ],
+                {
+                    duration: animationDuration,
+                    easing: easing,
+                    fill: 'forwards'
+                }
+            );
         }
+
+        console.log(`isExpanded state for ${toggleId} after click: ${isExpanded}`);
     });
+
 
     // Keyboard accessibility
     toggleElement.addEventListener('keypress', (e) => {
@@ -298,53 +555,73 @@ function setupSectionToggle(toggleId, listId) {
         }
     });
 
-    // Observe changes in list content to readjust max-height if shown
+    // Observe content changes to adjust heights when expanded
     const observer = new MutationObserver(() => {
-        if (listElement.classList.contains('show')) {
-            listElement.style.maxHeight = listElement.scrollHeight + 'px';
-            setTimeout(() => { // Reset to allow further expansion if needed
-                if (listElement.classList.contains('show')) listElement.style.maxHeight = '2500px';
-            }, 500);
+        if (contentElement.classList.contains('show')) {
+            console.log(`Observer adjusting heights for ${contentId}`);
+            contentElement.style.maxHeight = contentElement.scrollHeight + 'px';
+            contentParent.style.height = 'auto';
+            contentParent.style.maxHeight = 'none';
         }
     });
-    observer.observe(listElement, {childList: true, subtree: true});
+    observer.observe(contentElement, {childList: true, subtree: true});
 }
-
 
 document.addEventListener("DOMContentLoaded", async function () {
     await initializeBaseScripts();
 
     try {
         const balanceAmountEl = document.getElementById('balance-amount');
-        if (userData && userData.balance !== undefined) { // Check if userData and balance are already populated
-            balanceAmountEl.innerHTML = formatCurrency(userData.balance);
-        } else {
-            await refreshUserData(); // refreshUserData should populate global `userData`
-            balanceAmountEl.innerHTML = userData.balance ? formatCurrency(userData.balance) : '$ 0.00';
-        }
+        window.auth.ready.then(async (isInitialized) => {
+            if (userData && userData.balance !== undefined) { // Check if userData and balance are already populated
+                balanceAmountEl.innerHTML = formatCurrency(userData.balance);
+            } else {
+                await refreshUserData(); // refreshUserData should populate global `userData`
+                if (balanceAmountEl) {
+                    balanceAmountEl.innerHTML = userData.balance ? formatCurrency(userData.balance) : '$ 0.00';
+                }
+            }
 
-        if (userData && userData.id) {
-            await Promise.all([fetchTransactions(), fetchDeposits()]);
-        } else { // Fallback if userData wasn't populated by base.html's initial call
-            await refreshUserData();
             if (userData && userData.id) {
                 await Promise.all([fetchTransactions(), fetchDeposits()]);
-            } else {
-                console.error("User data not available after refresh for overview page.");
-                // Display error messages in lists
-                document.getElementById('initial-transactions-list').innerHTML = "<div class='alert alert-danger mx-3'>Could not load user data for transactions.</div>";
-                document.getElementById('initial-deposits-list').innerHTML = "<div class='alert alert-danger mx-3'>Could not load user data for deposits.</div>";
+            } else { // Fallback if userData wasn't populated by base.html's initial call
+                await refreshUserData();
+                if (userData && userData.id) {
+                    await Promise.all([fetchTransactions(), fetchDeposits()]);
+                } else {
+                    console.error("User data not available after refresh for overview page.");
+                    // Display error messages in lists
+                    const transactionsList = document.getElementById('initial-transactions-list');
+                    const depositsList = document.getElementById('initial-deposits-list');
+
+                    if (transactionsList) {
+                        transactionsList.innerHTML = "<div class='alert alert-danger mx-3'>Could not load user data for transactions.</div>";
+                    }
+
+                    if (depositsList) {
+                        depositsList.innerHTML = "<div class='alert alert-danger mx-3'>Could not load user data for deposits.</div>";
+                    }
+                }
             }
+        }).then(() => {
+            document.dispatchEvent(new CustomEvent('pageContentLoaded', {bubbles: true}));
+        });
+
+        // Only attempt to set up toggles if elements exist
+        if (document.getElementById('transactions-toggle') && document.getElementById('transactions-list-content')) {
+            setupSectionToggle('transactions-toggle', 'transactions-list-content');
         }
 
-        setupSectionToggle('transactions-toggle', 'transactions-list-content');
-        setupSectionToggle('deposits-toggle', 'deposits-list-content');
-
-        document.dispatchEvent(new CustomEvent('pageContentLoaded', {bubbles: true}));
+        if (document.getElementById('deposits-toggle') && document.getElementById('deposits-list-content')) {
+            setupSectionToggle('deposits-toggle', 'deposits-list-content');
+        }
 
     } catch (error) {
         console.error('Error loading page content:', error);
-        document.getElementById('balance-amount').innerHTML = `<span class="text-danger" style="font-size: 1rem;">Error</span>`;
+        const balanceAmount = document.getElementById('balance-amount');
+        if (balanceAmount) {
+            balanceAmount.innerHTML = `<span class="text-danger" style="font-size: 1rem;">Error</span>`;
+        }
         document.dispatchEvent(new CustomEvent('pageContentLoaded')); // Still dispatch so loading screen hides
     }
 });

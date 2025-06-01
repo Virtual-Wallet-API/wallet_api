@@ -1,75 +1,355 @@
-// Initialize Flatpickr
+document.addEventListener('DOMContentLoaded', () => {
+    // State management
+    const state = {
+        filters: {},
+        sort: 'date_desc',
+        page: 1,
+        limit: 30, // Matches API default
+        totalPages: 1,
+        userId: null, // Will be set dynamically after authentication
+        transactions: [],
+        totalTransactions: 0,
+        showTransactions: true
+    };
 
-Promise.all([initializeTransactions()]),then(() => { document.dispatchEvent(new Event('pageContentLoaded')); })
+    // DOM elements
+    const elements = {
+        balanceAmount: $('#balance-amount'),
+        subtitle: $('#page-subtitle'),
+        totalTransactions: $('#total-transactions'),
+        avgAmount: $('#avg-amount'),
+        netMovement: $('#net-movement'),
+        filterType: $('#filter-type'),
+        sortBy: $('#sort-by'),
+        filterInputs: $('#filter-inputs'),
+        applyBtn: $('#apply-filters'),
+        resetBtn: $('#reset-filters'),
+        filterBadges: $('#filter-badges'),
+        list: $('#transactions-list'),
+        placeholder: $('#transactions-placeholder'),
+        loading: $('#transactions-loading'),
+        showTransactionsBtn: $('#show-transactions'),
+        prevBtn: $('#prev-page'),
+        nextBtn: $('#next-page'),
+        pageInfo: $('#page-info'),
+        modal: $('#transactionModal'),
+        modalDate: $('#detail-date'),
+        modalDescription: $('#detail-description'),
+        modalAmount: $('#detail-amount'),
+        modalStatus: $('#detail-status'),
+        modalSenderId: $('#detail-sender-id'),
+        modalReceiverId: $('#detail-receiver-id'),
+        modalCategory: $('#detail-category'),
+        filterBar: $('.filter-bar'),
+        filterHeader: $('.filter-bar .card-header')
+    };
 
-function initializeTransactions() {
-    document.addEventListener('DOMContentLoaded', function () {
-        flatpickr(".date-picker", {
-            dateFormat: "Y-m-d",
-            theme: "dark"
-        });
-    });
+    // Initialize Bootstrap modal
+    const modal = new bootstrap.Modal(elements.modal[0]);
 
-    // Color Transaction Amounts
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.transaction-item .amount').forEach(function (amountElement) {
-            const amountText = amountElement.textContent;
-            const amountValue = parseFloat(amountText.replace(/[+$]/, '')); // Remove $ and +
-            if (amountValue < 0) {
-                amountElement.classList.add('negative');
-            } else {
-                amountElement.classList.add('positive');
-            }
-        });
-    });
+    // Helper function to display messages
+    function showMessage(type, text) {
+        const alert = $(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${text}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `).css({ position: 'fixed', top: '20px', right: '20px', zIndex: 2000 });
+        $('body').append(alert);
+        setTimeout(() => alert.fadeOut(300, () => alert.remove()), 4000);
+    }
 
-
-    // Search Functionality
-    const searchInput = document.getElementById('search-input');
-    const categoryItems = document.querySelectorAll(".transaction-item");
-    const nothingFound = document.getElementById("nothingFound");
-
-    searchInput.addEventListener("input", function () {
-        const term = this.value.toLowerCase();
-        let visibleCount = 0;
-
-        categoryItems.forEach(item => {
-            const nameEl = item.querySelector(".description");
-            const descEl = item.querySelector(".amount");
-            if (!nameEl || !descEl) return;
-
-            const name = nameEl.textContent.toLowerCase();
-            const description = descEl.textContent.toLowerCase();
-            const match = name.includes(term) || description.includes(term);
-
-            if (match) {
-                item.classList.remove("hidden");
-                visibleCount++;
-            } else {
-                item.classList.add("hidden");
-            }
-        });
-
-        if (visibleCount === 0) {
-            nothingFound.classList.add("show");
+    // Fetch balance and update UI
+    function updateBalance() {
+        const userData = window.auth.getUserData();
+        if (userData && userData.balance !== undefined) {
+            elements.balanceAmount.text(`$${userData.balance.toFixed(2)}`);
         } else {
-            nothingFound.classList.remove("show");
+            elements.balanceAmount.text('N/A');
+        }
+    }
+
+    // Fetch transactions from API
+    async function fetchTransactions() {
+        try {
+            const token = window.auth.getToken();
+            if (!token) {
+                showMessage('danger', 'Please log in to view transactions');
+                throw new Error('No authentication token');
+            }
+
+            const queryParams = {
+                page: state.page,
+                limit: state.limit,
+                order_by: state.sort,
+                ...state.filters
+            };
+            const query = new URLSearchParams(queryParams).toString();
+            const response = await fetch(`/api/v1/transactions/?${query}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to fetch transactions');
+    }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            showMessage('danger', `Error: ${error.message}`);
+            return null;
+        }
+    }
+
+    // Initialize the page
+    async function initTransactions() {
+        elements.loading.show();
+        const data = await fetchTransactions();
+        if (data) {
+            state.transactions = data.transactions;
+            state.totalTransactions = data.total;
+            state.totalPages = Math.ceil(data.total / state.limit) || 1;
+            state.userId = state.userId || data.transactions[0]?.sender_id || data.transactions[0]?.receiver_id; // Infer user ID
+            elements.subtitle.text(`User ID: ${state.userId || 'Unknown'}`);
+            renderTransactions();
+            updateSummary(data);
+            updateBalance(); // Update balance display
+        } else {
+            elements.list.html('<p class="text-muted text-center">No transactions available</p>');
+        }
+        elements.loading.hide();
+    }
+
+    // Render transactions list
+    function renderTransactions() {
+        elements.list.empty();
+        if (state.transactions.length === 0) {
+            elements.placeholder.fadeIn(300);
+            elements.list.hide();
+        } else {
+            elements.placeholder.hide();
+            elements.list.show();
+            const grouped = {};
+            state.transactions.forEach(tx => {
+                const monthYear = new Date(tx.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+                grouped[monthYear] = grouped[monthYear] || [];
+                grouped[monthYear].push(tx);
+            });
+            Object.keys(grouped).forEach(monthYear => {
+                const $group = $('<div class="transaction-group"></div>');
+                $group.append($('<h6 class="transaction-group-header">' + monthYear + '</h6>'));
+                grouped[monthYear].forEach(tx => {
+                    const amountClass = tx.sender_id === state.userId ? 'amount-negative' : 'amount-positive';
+                    const amountText = tx.sender_id === state.userId ? '-$' + tx.amount.toFixed(2) : '+$' + tx.amount.toFixed(2);
+                    const $item = $('<div class="transaction-item" data-tx-id="' + tx.id + '">'
+                        + '<div class="transaction-date">' + new Date(tx.date).toLocaleDateString() + '</div>'
+                        + '<div class="transaction-details">' + (tx.description || 'N/A') + '</div>'
+                        + '<span class="status transaction-' + tx.status + '">' + tx.status + '</span>'
+                        + '<div class="transaction-amount ' + amountClass + '">' + amountText + '</div>'
+                        + '<span class="info-icon"><i class="bi bi-info-circle"></i></span>'
+                        + '</div>');
+                    $item.find('.info-icon').on('click', () => showTransactionDetails(tx));
+                    $group.append($item);
+                });
+                elements.list.append($group);
+            });
+        }
+        updatePagination();
+        updateFilterBadges();
+    }
+
+    // Update summary cards with API aggregate data
+    function updateSummary(data) {
+        elements.totalTransactions.text(data.total);
+        const avgAmount = data.total > 0 ? (data.incoming_total + data.outgoing_total) / data.total : 0;
+        elements.avgAmount.text(`$${avgAmount.toFixed(2)}`);
+        elements.netMovement.text(0).css({
+            color: 1 >= 0 ? 'var(--bs-success)' : 'var(--bs-danger)'
+        });
+    }
+
+    // Update pagination controls
+    function updatePagination() {
+        elements.pageInfo.text(`Page ${state.page} of ${state.totalPages}`);
+        elements.prevBtn.prop('disabled', state.page === 1);
+        elements.nextBtn.prop('disabled', state.page === state.totalPages);
+    }
+
+    // Update filter badges
+    function updateFilterBadges() {
+        elements.filterBadges.empty();
+        Object.entries(state.filters).forEach(([key, value]) => {
+            if (value) {
+                const displayKey = key.replace('_', ' ').toUpperCase();
+                const $badge = $('<span class="filter-badge">' + displayKey + ': ' + value + '<i class="bi bi-x"></i></span>');
+                $badge.on('click', () => {
+                    delete state.filters[key];
+                    initTransactions();
+                });
+                elements.filterBadges.append($badge);
+            }
+        });
+    }
+
+    // Show transaction details in modal
+    function showTransactionDetails(tx) {
+        elements.modalDate.text(new Date(tx.date).toLocaleString());
+        elements.modalDescription.text(tx.description || 'N/A');
+        const isOutgoing = tx.sender_id === state.userId;
+        elements.modalAmount.text(`${isOutgoing ? '-' : '+'}$${tx.amount.toFixed(2)}`);
+        elements.modalStatus.text(tx.status);
+        elements.modalSenderId.text(tx.sender_id);
+        elements.modalReceiverId.text(tx.receiver_id);
+        elements.modalCategory.parent().hide(); // Hide category as it's not in API response
+        modal.show();
+    }
+
+    // Update filters from UI inputs
+    function updateFilters() {
+        state.filters = {};
+        const type = elements.filterType.val();
+        if (type === 'date') {
+            const dateFrom = elements.filterInputs.find('#filter-date-from').val();
+            const dateTo = elements.filterInputs.find('#filter-date-to').val();
+            if (dateFrom) state.filters.date_from = dateFrom;
+            if (dateTo) state.filters.date_to = dateTo;
+        } else if (type === 'direction') {
+            const direction = elements.filterInputs.find('input[name="direction"]:checked').val();
+            if (direction) state.filters.direction = direction;
+        } else if (type === 'status') {
+            const status = elements.filterInputs.find('#filter-status').val();
+            if (status) state.filters.status = status;
+        }
+    }
+
+    // Validate filter inputs
+    function validateFilters() {
+        const { date_from, date_to } = state.filters;
+        if (date_from && !/^\d{4}-\d{2}-\d{2}$/.test(date_from)) {
+            showMessage('danger', 'Invalid "From" date format (YYYY-MM-DD)');
+            return false;
+        }
+        if (date_to && !/^\d{4}-\d{2}-\d{2}$/.test(date_to)) {
+            showMessage('danger', 'Invalid "To" date format (YYYY-MM-DD)');
+            return false;
+        }
+        if (date_from && date_to && new Date(date_from) > new Date(date_to)) {
+            showMessage('danger', '"From" date must be before "To" date');
+            return false;
+        }
+        return true;
+    }
+
+    // Event listeners
+    elements.filterType.on('change', () => {
+        const type = elements.filterType.val();
+        let inputHtml = '';
+        if (type === 'date') {
+            inputHtml = `
+                <div class="filter-input active">
+                    <div class="filter-group">
+                        <label for="filter-date-from">From</label>
+                        <input type="text" id="filter-date-from" class="form-control date-picker" placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-date-to">To</label>
+                        <input type="text" id="filter-date-to" class="form-control date-picker" placeholder="YYYY-MM-DD">
+                    </div>
+                </div>
+            `;
+        } else if (type === 'direction') {
+            inputHtml = `
+                <div class="filter-input active">
+                    <div class="filter-group">
+                        <label>Direction</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="direction" id="direction-out" value="out">
+                            <label class="form-check-label" for="direction-out">Outgoing</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="direction" id="direction-in" value="in">
+                            <label class="form-check-label" for="direction-in">Incoming</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (type === 'status') {
+            inputHtml = `
+                <div class="filter-input active">
+                    <div class="filter-group">
+                        <label for="filter-status">Status</label>
+                        <select id="filter-status" class="form-control">
+                            <option value="">All</option>
+                            <option value="pending">Pending</option>
+                            <option value="awaiting_acceptance">Awaiting Acceptance</option>
+                            <option value="completed">Completed</option>
+                            <option value="denied">Denied</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+        elements.filterInputs.hide().html(inputHtml).fadeIn(200);
+        if (type === 'date') {
+            flatpickr('.date-picker', { dateFormat: 'Y-m-d' });
         }
     });
-    return true;
-}
 
-// Transaction Modal
-$(document).ready(function () {
-    $('.transaction-item').on('click', function () {
-        const date = $(this).data('date');
-        const description = $(this).data('description');
-        const amount = $(this).data('amount');
-        const category = $(this).data('category');
-        $('#modal-date').text(date);
-        $('#modal-description').text(description);
-        $('#modal-amount').text(amount);
-        $('#modal-category').text(category);
-        $('#transactionModal').modal('show');
+    elements.applyBtn.on('click', async () => {
+        updateFilters();
+        if (!validateFilters()) return;
+        state.page = 1;
+        await initTransactions();
     });
+
+    elements.resetBtn.on('click', () => {
+        state.filters = {};
+        state.sort = 'date_desc';
+        state.page = 1;
+        elements.filterInputs.empty().hide();
+        elements.sortBy.val('date_desc');
+        elements.filterType.val('');
+        initTransactions();
+    });
+
+    elements.sortBy.on('change', () => {
+        state.sort = elements.sortBy.val();
+        state.page = 1;
+        initTransactions();
+    });
+
+    elements.prevBtn.on('click', () => {
+        if (state.page > 1) {
+            state.page--;
+            initTransactions();
+        }
+    });
+
+    elements.nextBtn.on('click', () => {
+        if (state.page < state.totalPages) {
+            state.page++;
+            initTransactions();
+        }
+    });
+
+    elements.showTransactionsBtn.on('click', () => {
+        state.showTransactions = true;
+        new bootstrap.Collapse('#transactions-content', { toggle: true });
+    });
+
+    // Initialize UI
+    function initUI() {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+        flatpickr('.date-picker', { dateFormat: 'Y-m-d' });
+    }
+
+    initUI();
+    initTransactions();
 });
