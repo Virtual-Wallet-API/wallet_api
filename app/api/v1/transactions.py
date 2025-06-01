@@ -1,21 +1,20 @@
-from fastapi import APIRouter, Depends, status, Query
-from sqlalchemy.orm import Session
-from typing import List, Optional, Annotated
-from datetime import datetime
+from typing import List, Annotated
 
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+from starlette import status
+
+from app.business import CategoryService
 from app.business.transaction import TransactionService
 from app.dependencies import get_db, get_user_except_pending_fpr
 from app.models import User
+from app.schemas.router import TransactionHistoryFilter
 from app.schemas.transaction import (
     TransactionHistoryResponse,
     TransactionResponse,
     TransactionCreate,
-    TransactionConfirm,
-    TransactionDetailResponse,
-    TransactionAccept,
-    TransactionDecline, TransactionStatusUpdate
+    TransactionStatusUpdate
 )
-from app.schemas.router import TransactionHistoryFilter
 
 router = APIRouter(tags=["Transactions"])
 
@@ -92,7 +91,7 @@ def create_transaction(transaction_data: TransactionCreate,
 
 
 @router.put("/status/{transaction_id}", response_model=TransactionResponse,
-             description="Update the status of a transaction.")
+            description="Update the status of a transaction.")
 def update_transaction_status(transaction_id: int,
                               status: TransactionStatusUpdate,
                               db: Session = Depends(get_db),
@@ -120,3 +119,31 @@ def get_transaction(transaction_id: int,
     :return: The transaction details.
     """
     return TransactionService.get_transaction_by_id(db, user, transaction_id)
+
+
+@router.put("/{transaction_id}/category", response_model=TransactionResponse)
+def add_transaction_to_category(transaction_id: int,
+                                category_id: int,
+                                db: Session = Depends(get_db),
+                                user: User = Depends(get_user_except_pending_fpr)):
+    """
+    Add a category to an existing transaction.
+
+    :param transaction_id: ID of the transaction to update.
+    :param category_id: ID of the"""
+
+    return CategoryService.add_transaction_to_category(db, user, transaction_id, category_id)
+
+
+@router.delete("/{transaction_id}/category", status_code=status.HTTP_204_NO_CONTENT)
+def remove_transaction_from_category(transaction_id: int,
+                                     category_id: int,
+                                     db: Session = Depends(get_db),
+                                     user: User = Depends(get_user_except_pending_fpr)):
+    """
+    Add a category to an existing transaction.
+
+    :param transaction_id: ID of the transaction to update.
+    :param category_id: ID of the"""
+
+    return CategoryService.remove_transaction_from_category(db, user, transaction_id, category_id)

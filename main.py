@@ -9,8 +9,12 @@ from app.business.transaction.transactions_recurring import RecurringService
 from app.infrestructure.database import Base, engine
 from app.infrestructure.scheduler import init_scheduler
 
+# biun
+import frontend.frontend #noqa dont't remove this import, it is needed for frontend to work
+
+
 # Ensure the database is not missing tables
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine, checkfirst=True)
 
 
 # Create lifespan event handler for FastAPI
@@ -34,7 +38,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}], lifespan=lifespan)
 
 # static files for frontend
-app.mount("/static", StaticFiles(directory="frontend/static", check_dir=True), name="static")
+app.mount("/static", StaticFiles(directory="frontend/public/static", check_dir=True), name="static")
 
 # Router insertion
 prefix = "/api/v1"

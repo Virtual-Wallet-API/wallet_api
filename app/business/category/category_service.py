@@ -293,3 +293,14 @@ class CategoryService:
                 for cat in most_used if cat.completed_transactions > 0
             ]
         }
+
+    @classmethod
+    def add_transaction_to_category(cls, db: Session, user: User, category_id: int, transaction_id: int):
+        #  TODO add transaction to category
+        pass
+
+    @classmethod
+    def remove_transaction_from_category(cls, db: Session, user: User, category_id: int = None, transaction_id: int = None):
+        #  TODO add transaction to category
+        pass
+

@@ -106,4 +106,4 @@ def test_auth_dependency(username: str = Depends(get_valid_user_data)):
 
 @router.get("/all-deposits", response_model=Dict)
 def user_deposits_search(request: Request):
-    return templates.TemplateResponse("payments/user_deposits.html", {"request": request})
+    return templates.TemplateResponse("payments/deposits_history.html", {"request": request})

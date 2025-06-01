@@ -99,6 +99,9 @@ class TransactionHistoryResponse(BaseModel):
     total: int = 0
     outgoing_total: float = 0.0
     incoming_total: float = 0.0
+    avg_outgoing_transaction: float = 0.0
+    avg_incoming_transaction: float = 0.0
+    net_total: float = 0.0
 
     class Config:
         from_attributes = True
