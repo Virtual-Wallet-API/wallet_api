@@ -1,0 +1,436 @@
+/* General Page Styles */
+.account-overview-container {
+    padding: 0; /* Use main-content padding from base.html */
+}
+
+.page-header h2 { /* Using a class for the header for more specific styling */
+    font-size: 2.25rem; /* Slightly adjusted from base page-title */
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Balance Box - Enhanced */
+.balance-box-wrapper {
+    margin-bottom: 2.5rem;
+}
+
+.balance-box {
+    background: var(--balance-bg); /* Use theme variable */
+    padding: 2rem 2.5rem; /* Increased padding */
+    border: 1px solid transparent; /* Keep border for structure, make transparent initially */
+    border-radius: 1rem; /* Consistent with other elements */
+    box-shadow: var(--balance-outer-shadow); /* Use theme variable */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Inter', sans-serif; /* Consistent font */
+    position: relative;
+    overflow: hidden;
+}
+
+.balance-box::before { /* Subtle decorative element */
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(var(--accent-color-rgb), 0.05) 0%, rgba(var(--accent-color-rgb), 0) 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 0;
+}
+
+.balance-box:hover::before {
+    opacity: 1;
+}
+
+.balance-box:hover {
+    transform: translateY(-5px); /* More subtle hover */
+    box-shadow: 0 12px 28px rgba(var(--accent-color-rgb), 0.2), var(--balance-inner-shadow);
+}
+
+.balance-content { /* Wrapper for content to be above pseudo-element */
+    position: relative;
+    z-index: 1;
+}
+
+.balance-title {
+    font-size: 1.1rem; /* Slightly smaller for "Current Balance" */
+    font-weight: 500;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.balance-amount-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* Space between icon and amount */
+}
+
+.balance-icon {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+}
+
+.balance-amount {
+    font-size: 2.75rem; /* Larger amount */
+    font-weight: 550;
+    color: var(--text-color);
+    line-height: 1.2;
+    margin-left: 0.5rem;
+}
+
+
+/* Action Buttons - Replaced and Restyled */
+.action-buttons-wrapper {
+    display: flex;
+    gap: 1rem; /* Spacing between buttons */
+    align-items: center; /* Align items if heights differ */
+}
+
+.btn-action { /* Common style for new action buttons */
+    padding: 0.875rem 1.75rem; /* Adjusted padding */
+    font-size: 1rem; /* Standardized font size */
+    font-weight: 600;
+    border-radius: 0.75rem; /* Consistent rounding */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem; /* Space between icon and text */
+    line-height: 1.5;
+}
+
+.btn-action i.bi {
+    font-size: 1.25rem; /* Icon size */
+}
+
+.btn-action.btn-primary { /* Using existing .btn-primary from base.html for one */
+    /* Styles inherited from base.html */
+}
+
+.btn-action.btn-outline-secondary { /* New style for the other button */
+    background-color: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.btn-action.btn-outline-secondary:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    border-color: var(--accent-color-hover);
+    color: var(--accent-color-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 7px rgba(var(--accent-color-rgb), 0.15);
+}
+
+[data-bs-theme="dark"] .btn-action.btn-outline-secondary {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+[data-bs-theme="dark"] .btn-action.btn-outline-secondary:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.15);
+    border-color: var(--accent-color-hover);
+    color: var(--accent-color-hover);
+}
+
+
+/* Section Toggles (for Transactions/Deposits) - Enhanced */
+.section-toggle {
+    color: var(--text-color); /* Use text color, accent for icon */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: var(--balance-bg); /* Use a consistent background, similar to balance box */
+    border-radius: 0.75rem;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1rem; /* Space before the list */
+    box-shadow: 0 2px 5px rgba(var(--accent-color-rgb), 0.08);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.section-toggle:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.05); /* Subtle hover */
+    box-shadow: 0 4px 8px rgba(var(--accent-color-rgb), 0.12);
+}
+
+[data-bs-theme="dark"] .section-toggle:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+}
+
+
+.section-toggle h3 {
+    margin: 0;
+    font-size: 1.25rem; /* Adjusted size */
+    font-weight: 600;
+    color: var(--text-color); /* Main text color */
+}
+
+.section-toggle i.bi-chevron-down { /* Chevron icon */
+    font-size: 1.25rem;
+    color: var(--accent-color);
+    transition: transform 0.3s ease;
+}
+
+.section-toggle i.bi-chevron-down.up {
+    transform: rotate(180deg);
+}
+
+/* Transaction/Deposit List Styling - Enhanced */
+.items-list-container { /* Wrapper for each list (transactions, deposits) */
+    margin-bottom: 2.5rem; /* Space between sections */
+}
+
+.items-list { /* Common class for transaction and deposit lists */
+    background-color: var(--background-color); /* Match page background or slightly off */
+    border-radius: 0.75rem;
+    /* box-shadow: 0 1px 3px rgba(var(--accent-color-rgb), 0.05); */ /* Optional subtle shadow for list container */
+    overflow: hidden; /* Important for max-height transition */
+    max-height: 0; /* Initially hidden for toggle */
+    opacity: 0;
+    transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding-top 0.5s ease-in-out, padding-bottom 0.5s ease-in-out;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.items-list.show { /* Class to show the list */
+    max-height: 2500px; /* Large enough for content */
+    opacity: 1;
+    padding-top: 1rem; /* Padding when shown */
+    padding-bottom: 1rem;
+}
+
+.item-entry { /* Replaces .transaction-item for common styling */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--bs-border-color); /* Separator */
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+
+.item-entry:last-child {
+    border-bottom: none;
+}
+
+.item-entry:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.03);
+}
+
+[data-bs-theme="dark"] .item-entry:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.08);
+}
+
+.item-entry .date,
+.item-entry .description, /* Renamed from .status for deposits for consistency */
+.item-entry .status { /* Keep .status if needed for specific transaction types */
+    font-size: 0.95rem; /* Adjusted size */
+    color: var(--text-color);
+    opacity: 0.9;
+    flex-basis: 30%; /* Distribute space */
+}
+
+.item-entry .description {
+    flex-grow: 1; /* Allow description to take more space */
+}
+
+.item-entry .amount {
+    font-size: 1rem;
+    font-weight: 600; /* Bolder amount */
+    color: var(--bs-danger); /* Default to danger color */
+    min-width: 100px; /* Ensure alignment */
+    text-align: right;
+    flex-basis: 20%;
+}
+
+.item-entry .amount.positive {
+    color: var(--bs-success);
+}
+
+.item-entry .info-icon {
+    font-size: 1.1rem; /* Adjusted size */
+    color: var(--accent-color);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    flex-basis: 10%;
+    text-align: right;
+}
+
+.item-entry:hover .info-icon {
+    opacity: 1;
+}
+
+/* Loading Container for lists */
+.list-loading-container {
+    font-size: 1.5rem; /* Smaller spinner for lists */
+    text-align: center;
+    width: 100%;
+    display: flex;
+    color: var(--accent-color);
+    justify-content: center;
+    align-items: center;
+    margin: 1rem auto;
+    padding: 1rem 0;
+    min-height: 80px; /* Give some space for spinner */
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+}
+
+.list-loading-container.hidden {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.list-loading-container .bi-arrow-repeat {
+    animation: spin 1.2s linear infinite; /* Consistent spin animation */
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* "View More" Button for lists */
+.view-more-button-container { /* Wrapper for centering */
+    text-align: center;
+    padding-top: 1rem; /* Space above button if list is short */
+}
+
+.btn-view-more { /* Common class for view more buttons */
+    /* Using .btn-outline-primary from base.html */
+}
+
+
+/* Modal Styling - Inherits from base.html, minor adjustments if needed */
+.modal-content {
+    font-family: 'Inter', sans-serif; /* Consistent font */
+    background: var(--background-color); /* Use page background for modal */
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bs-border-color);
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-body p {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+}
+
+.modal-body p strong {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--bs-border-color);
+    padding: 1rem 1.5rem;
+}
+
+.modal-footer .btn { /* General modal button styling */
+    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+    /* Tablet */
+    .balance-box-wrapper .row > div:first-child {
+        margin-bottom: 1.5rem; /* Space between balance and buttons on stack */
+    }
+
+    .action-buttons-wrapper {
+        justify-content: flex-start; /* Align buttons to start on stack */
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Mobile */
+    .page-header h2 {
+        font-size: 1.8rem;
+    }
+
+    .balance-box {
+        padding: 1.5rem;
+    }
+
+    .balance-amount {
+        font-size: 2.25rem;
+    }
+
+    .action-buttons-wrapper {
+        flex-direction: column; /* Stack buttons */
+        align-items: stretch; /* Make buttons full width */
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center; /* Center content in full-width button */
+        margin-bottom: 0.75rem; /* Space when stacked */
+    }
+
+    .action-buttons-wrapper .btn-action:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-toggle h3 {
+        font-size: 1.1rem;
+    }
+
+    .item-entry {
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    }
+
+    .item-entry .date, .item-entry .description, .item-entry .status {
+        font-size: 0.85rem;
+        flex-basis: 45%; /* Adjust basis for wrapping */
+        margin-bottom: 0.25rem;
+    }
+
+    .item-entry .amount {
+        font-size: 0.9rem;
+        flex-basis: 100%; /* Amount takes full width below */
+        text-align: left; /* Align left when wrapped */
+        margin-top: 0.25rem;
+    }
+
+    .item-entry .info-icon {
+        position: absolute; /* Position icon to top right */
+        top: 0.8rem;
+        right: 1rem;
+    }
+}
+
+/* Hide original additional-transactions if not used by JS logic anymore */
+.additional-transactions {
+    /* display: none !important; */ /* If JS still uses this, keep original styles */
+    /* The new .items-list.show handles visibility */
+}
+

@@ -1,0 +1,131 @@
+/* Theme Variables */
+[data-bs-theme="light"] {
+    --hero-gradient: linear-gradient(135deg, #6f42c1, #533c9f);
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --accent-color: #6f42c1;
+    --accent-color-hover: #533c9f;
+    --outline-btn-text: #ffffff;
+}
+
+[data-bs-theme="dark"] {
+    --hero-gradient: linear-gradient(135deg, #3700b3, #121212);
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --accent-color: #bb86fc;
+    --accent-color-hover: #3700b3;
+    --outline-btn-text: #bb86fc;
+}
+
+/* General Styles */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.hero-section {
+    background: var(--hero-gradient);
+    color: white;
+    padding: 100px 0;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color-hover);
+    border-color: var(--accent-color-hover);
+}
+
+.btn-outline-light {
+    color: var(--outline-btn-text);
+    border-color: var(--outline-btn-text);
+}
+
+.btn-outline-light:hover {
+    background-color: var(--accent-color-hover);
+    border-color: var(--accent-color-hover);
+    color: #ffffff;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--accent-color);
+}
+
+.wallet-icon {
+    font-size: 10rem;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .wallet-icon {
+        font-size: 5rem;
+    }
+}
+
+/* Dark Mode Modal Adjustments */
+[data-theme="dark"] .modal-content {
+    background-color: #333;
+    color: #fff;
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: #555;
+}
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1);
+}
+
+/* Larger Login and Sign Up Buttons */
+.btn-login, .btn-signup {
+    padding: 0.75rem 2rem; /* Increased padding for larger buttons */
+    font-size: 1.25rem; /* Larger font size */
+}
+
+/* Theme Toggle Button */
+#theme-toggle {
+    position: fixed; /* Fixed to bottom left */
+    bottom: 20px;
+    left: 20px;
+    padding: 0.6rem 1.1rem; /* Slightly larger than default */
+    font-size: 1.2rem; /* Slightly larger icon */
+    transition: all 0.3s ease;
+    z-index: 1000; /* Ensure it stays above other content */
+    border-radius: 15%; /* Rounded corners */
+}
+
+/* Light theme: use dark theme styles for the button */
+[data-theme="light"] #theme-toggle {
+    background: #fff; /* Dark theme gradient */
+    border-color: #bb86fc; /* Dark theme outline color */
+    color: #3700b3; /* Dark theme text/icon color */
+}
+
+/* Dark theme: use light theme styles for the button */
+[data-theme="dark"] #theme-toggle {
+    background: #6f42c1;
+    border-color: #ffffff; /* Light theme outline color */
+    color: #ffffff; /* Light theme text/icon color */
+}
+
+/* Company Logo */
+.company-logo {
+    font-size: 3rem; /* Matches wallet-icon prominence */
+    font-weight: 700; /* Bold for logo-like appearance */
+    color: #ffffff; /* White for visibility against hero-gradient */
+    font-family: 'Poppins', sans-serif; /* Matches theme typography */
+    /*text-transform: uppercase; !* Professional logo style *!*/
+    letter-spacing: 1px; /* Slight spacing for clarity */
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+    .company-logo {
+        font-size: 2rem; /* Smaller on mobile */
+    }
+}
