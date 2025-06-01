@@ -1,0 +1,202 @@
+<!-- transactions.html -->
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/old/old_static/css/payments/transactions.css">
+{% endblock %}
+
+{% block content %}
+<div class="transactions-page-container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="page-title-section">
+            <h2 class="page-title">Transactions</h2>
+            <p class="header-subtitle" id="page-subtitle">All Transactions</p>
+        </div>
+        <div class="current-balance">
+            <div class="balance-icon-wrapper">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="balance-details">
+                <span class="balance-label">Available Balance</span>
+                <span class="balance-amount" id="balance-amount">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-bar">
+        <div class="action-card">
+            <a href="/fe/send" class="action-text" data-bs-toggle="tooltip" title="Send Money" aria-label="Send Money">
+                <i class="bi bi-send"></i> Send
+            </a>
+        </div>
+        <div class="action-card">
+            <a href="/fe/deposits" class="action-text" data-bs-toggle="tooltip" title="Deposit" aria-label="Deposit">
+                <i class="bi bi-plus-circle"></i> Deposit
+            </a>
+        </div>
+        <div class="action-card">
+            <a href="/fe/withdrawals" class="action-text" data-bs-toggle="tooltip" title="Withdraw" aria-label="Withdraw">
+                <i class="bi bi-arrow-up-circle"></i> Withdraw
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row summary-cards">
+        <div class="col-md-4 mb-4">
+            <div class="summary-card">
+                <div class="summary-icon-wrapper">
+                    <i class="bi bi-list-check summary-icon"></i>
+                </div>
+                <div class="summary-content">
+                    <h3 class="summary-title">Total Transactions</h3>
+                    <p class="summary-value" id="total-transactions">0</p>
+                    <p class="summary-details">Based on filters</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="summary-card">
+                <div class="summary-icon-wrapper">
+                    <i class="bi bi-bar-chart summary-icon"></i>
+                </div>
+                <div class="summary-content">
+                    <h3 class="summary-title">Average Transaction</h3>
+                    <p class="summary-value" id="avg-amount">$0.00</p>
+                    <p class="summary-details">Based on filters</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="summary-card">
+                <div class="summary-icon-wrapper">
+                    <i class="bi bi-graph-up summary-icon"></i>
+                </div>
+                <div class="summary-content">
+                    <h3 class="summary-title">Net Movement</h3>
+                    <p class="summary-value" id="net-movement">$0.00</p>
+                    <p class="summary-details">Based on filters</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Transactions</h5>
+        </div>
+        <div class="card-body">
+            <div class="filter-selector">
+                <select id="filter-type" class="form-control">
+                    <option value="">Add Filter</option>
+                    <option value="date">Date Period</option>
+                    <option value="user">User</option>
+                    <option value="direction">Direction</option>
+                    <option value="status">Status</option>
+                </select>
+                <select id="sort-by" class="form-control">
+                    <option value="date_desc">Date (Newest)</option>
+                    <option value="date_asc">Date (Oldest)</option>
+                    <option value="amount_desc">Amount (High to Low)</option>
+                    <option value="amount_asc">Amount (Low to High)</option>
+                </select>
+            </div>
+            <div class="filter-inputs" id="filter-inputs"></div>
+            <div class="filter-badges" id="filter-badges"></div>
+            <div class="filter-actions">
+                <button class="btn btn-confirm-deposit" id="apply-filters" aria-label="Apply Filters">Apply</button>
+                <button class="btn btn-secondary" id="reset-filters" aria-label="Reset Filters">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Card -->
+    <div class="recent-deposits-card card collapsible" id="transactions-card">
+        <div class="card-header d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#transactions-content" aria-expanded="true">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Transactions</h5>
+            <i class="bi bi-chevron-down toggle-icon"></i>
+        </div>
+        <div class="card-body p-0 collapse show" id="transactions-content">
+            <div class="list-loading-container" id="transactions-loading" style="display: none;">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="recent-deposits-list" id="transactions-list"></div>
+            <div class="transactions-placeholder" id="transactions-placeholder" style="display: none;">
+                <div class="empty-state">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2">
+                        <path d="M21 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
+                        <path d="M8 12h8"/>
+                        <path d="M10 9h4"/>
+                    </svg>
+                    <p class="text-muted">No transactions found.</p>
+                    <button class="btn btn-confirm-deposit" id="show-transactions" aria-label="Show Transactions">Show Transactions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" id="pagination-container">
+        <button class="btn btn-confirm-deposit" id="prev-page" disabled aria-label="Previous Page">Previous</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button class="btn btn-confirm-deposit" id="next-page" disabled aria-label="Next Page">Next</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel"><i class="bi bi-info-circle"></i> Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value" id="detail-date"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Description:</span>
+                    <span class="detail-value" id="detail-description"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="detail-amount"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" id="detail-status"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Sender ID:</span>
+                    <span class="detail-value" id="detail-sender-id"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Receiver ID:</span>
+                    <span class="detail-value" id="detail-receiver-id"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Category:</span>
+                    <select class="form-control" id="detail-category">
+                        <option value="">Select Category</option>
+                        <!-- Options populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script type="text/javascript" src="/old/old_static/js/payments/transactions.js"></script>
+{% endblock %}
