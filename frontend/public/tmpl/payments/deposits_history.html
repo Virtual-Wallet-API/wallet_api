@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/css/payments/deposits_history.css" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="deposit-title">Deposit History</div>
+<div class="deposit-subtitle">Track and manage all your deposit transactions</div>
+
+<!-- Filter Form -->
+<div class="filter-form">
+    <form id="filter-form">
+        <div class="row">
+            <div class="form-group" style="flex: 0 0 250px;">
+                <select id="search_by" name="search_by" class="form-control">
+                    <option value="" disabled selected>Filters</option>
+                    <option value="date_period">Date Period</option>
+                    <option value="amount_range">Amount Range</option>
+                    <option value="status">Status</option>
+                </select>
+            </div>
+            <div class="form-group" id="query-inputs" style="flex: 1 1 auto;">
+                <div class="no-filter">Choose a filter</div>
+            </div>
+            <div class="form-group" style="flex: 0 0 140px;">
+                <button type="button" class="order-by-btn" data-value="desc">Newest</button>
+            </div>
+            <div class="form-group" style="flex: 0 0 140px;">
+                <button type="submit" class="filter-btn">Apply Filter</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Deposits List -->
+<div class="transaction-list" id="deposits-list">
+    <div class="limit-selector">
+        <label for="limit-select">Show:</label>
+        <select id="limit-select" class="form-control limit-select">
+            {% for i in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] %}
+                <option value="{{ i }}" {% if i == 10 %}selected{% endif %}>{{ i }} per page</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="pagination" id="pagination-top" style="display: none;"></div>
+    <div class="loading-container" id="deposits-loading-alert">
+        <i class="bi bi-arrow-repeat"></i>
+        <div class="loading-text">Loading your deposits...</div>
+    </div>
+    <div id="deposits-container"></div>
+    <div class="pagination" id="pagination-bottom" style="display: none;"></div>
+    <div id="deposit-invite" style="display: none;">
+        <div class="deposit-invite-box">
+            <div class="invite-icon">💳</div>
+            <p>Ready to add funds? Make a deposit to keep your wallet active!</p>
+            <a href="/deposit" class="confirm-btn">Make a Deposit</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Deposit Details Modal -->
+<div aria-hidden="true" aria-labelledby="depositModalLabel" class="modal fade" id="depositModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="depositModalLabel">Deposit Details</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Date:</strong> <span id="modal-date"></span></p>
+                <p><strong>Card:</strong> <span id="modal-card"></span></p>
+                <p><strong>Amount:</strong> <span id="modal-amount"></span></p>
+                <p><strong>Status:</strong> <span id="modal-status"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn confirm-btn" data-bs-dismiss="modal" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="/js/payments/deposits_history.js"></script>
+{% endblock %}

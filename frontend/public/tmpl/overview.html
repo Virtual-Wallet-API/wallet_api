@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="/css/account.css">
+{% endblock %}
+
+{% block content %}
+<div class="account-overview-container">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <h2>Account Overview</h2>
+        <div class="account-actions d-none d-md-block">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="accountActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear"></i> Account Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountActionsDropdown">
+                    <li><a class="dropdown-item" href="/fe/profile"><i class="bi bi-person"></i> Profile Settings</a></li>
+                    <li><a class="dropdown-item" href="/fe/security"><i class="bi bi-shield-lock"></i> Security</a></li>
+                    <li><a class="dropdown-item" href="/fe/notifications"><i class="bi bi-bell"></i> Notifications</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/fe/support"><i class="bi bi-question-circle"></i> Support</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Summary Cards -->
+    <div class="row summary-cards mb-4">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card balance-card">
+                <div class="card-body">
+                    <div class="card-title-wrapper">
+                        <h5 class="card-title">Current Balance</h5>
+                        <i class="bi bi-wallet2 balance-icon"></i>
+                    </div>
+                    <h2 class="balance-amount mb-0" id="balance-amount"><i class="bi bi-arrow-repeat"></i></h2>
+                    <div class="balance-trend">
+                        <span class="trend-indicator text-success"><i class="bi bi-arrow-up"></i> 2.4%</span>
+                        <span class="trend-period">this month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card summary-card income-card">
+                <div class="card-body">
+                    <div class="card-title-wrapper">
+                        <h5 class="card-title">Income</h5>
+                        <i class="bi bi-graph-up-arrow summary-icon text-success"></i>
+                    </div>
+                    <h3 class="summary-amount" id="income-amount"><i class="bi bi-arrow-repeat"></i></h3>
+                    <p class="summary-period">Last 30 days</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card summary-card spending-card">
+                <div class="card-body">
+                    <div class="card-title-wrapper">
+                        <h5 class="card-title">Spending</h5>
+                        <i class="bi bi-graph-down-arrow summary-icon text-danger"></i>
+                    </div>
+                    <h3 class="summary-amount" id="spending-amount"><i class="bi bi-arrow-repeat"></i></h3>
+                    <p class="summary-period">Last 30 days</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="row action-buttons mb-4">
+        <div class="col-6 col-md-3 mb-3">
+            <a href="/fe/send" class="btn btn-action btn-lg w-100">
+                <i class="bi bi-send"></i>
+                <span>Send</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <a href="/fe/deposits" class="btn btn-action btn-lg w-100">
+                <i class="bi bi-plus-circle"></i>
+                <span>Deposit</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <a href="/fe/withdrawals" class="btn btn-action btn-lg w-100">
+                <i class="bi bi-dash-circle"></i>
+                <span>Withdraw</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <a href="/fe/transactions" class="btn btn-action btn-lg w-100">
+                <i class="bi bi-clock-history"></i>
+                <span>History</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Transactions -->
+        <div class="col-lg-7 mb-4">
+            <div class="card transactions-card">
+                <div class="card-header d-flex justify-content-between align-items-center" id="transactions-toggle" role="button" aria-expanded="true">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                    <div class="d-flex align-items-center">
+                        <a href="/fe/transactions" class="btn btn-sm btn-link me-2">View All</a>
+                        <i class="bi bi-chevron-down up"></i>
+                    </div>
+                </div>
+                <div class="card-body p-0 show" id="transactions-list-content">
+                    <div class="list-loading-container" id="transactions-loading-alert">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <div class="transaction-list" id="initial-transactions-list">
+                        <!-- Transaction items will be inserted here -->
+                    </div>
+                    <div class="transaction-list" id="additional-transactions-list" style="max-height: 0; opacity: 0;">
+                        <!-- Additional transactions will be loaded here -->
+                    </div>
+                    <div class="text-center py-3" id="view-transactions-btn-container" style="display: none;">
+                        <button class="btn btn-sm btn-outline-primary" id="view-transactions-btn">View More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Deposits -->
+        <div class="col-lg-5 mb-4">
+            <div class="card deposits-card">
+                <div class="card-header d-flex justify-content-between align-items-center" id="deposits-toggle" role="button" aria-expanded="true">
+                    <h5 class="mb-0">Recent Deposits</h5>
+                    <div class="d-flex align-items-center">
+                        <a href="/fe/deposits" class="btn btn-sm btn-link me-2">View All</a>
+                        <i class="bi bi-chevron-down up"></i>
+                    </div>
+                </div>
+                <div class="card-body p-0 show" id="deposits-list-content">
+                    <div class="list-loading-container" id="deposits-loading-alert">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <div class="deposit-list" id="initial-deposits-list">
+                        <!-- Deposit items will be inserted here -->
+                    </div>
+                    <div class="deposit-list" id="additional-deposits-list" style="max-height: 0; opacity: 0;">
+                        <!-- Additional deposits will be loaded here -->
+                    </div>
+                    <div class="text-center py-3" id="view-deposits-btn-container" style="display: none;">
+                        <button class="btn btn-sm btn-outline-primary" id="view-deposits-btn">View More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value" id="modal-date"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Description:</span>
+                    <span class="detail-value" id="modal-description"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="modal-amount"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Category:</span>
+                    <span class="detail-value" id="modal-category"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" id="modal-status"></span>
+                </div>
+                <div class="transaction-detail-item">
+                    <span class="detail-label">Reference ID:</span>
+                    <span class="detail-value" id="modal-ref-id"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="transaction-details-action">View Details</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="/js/account.js"></script>
+{% endblock %}
