@@ -9,7 +9,7 @@
 }
 
 .transactions-page-container {
-    max-width: 1200px;
+    max-width: 85%;
     margin: 0 auto;
     padding: 2rem 1.5rem;
     animation: fadeIn 0.4s ease-out;

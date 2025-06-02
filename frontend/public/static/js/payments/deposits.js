@@ -1,6 +1,6 @@
 let stripeInstance;
 let stripeElements;
-let stripeCardElement;
+let stripeCardElement; // Single card element instance, globally accessible
 let currentSavedCards = []; // To store fetched saved cards
 
 const brandIconClasses = {
@@ -175,13 +175,13 @@ async function authenticatedFetch(url, options = {}) {
         ...options.headers
     };
 
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, {...options, headers});
     if (!response.ok) {
         let errorData;
         try {
             errorData = await response.json();
         } catch {
-            errorData = { detail: `HTTP ${response.status}: Request failed.` };
+            errorData = {detail: `HTTP ${response.status}: Request failed.`};
         }
         throw new Error(errorData.detail || 'Request failed.');
     }
@@ -202,7 +202,7 @@ async function initializeStripeElements() {
 
     try {
         const configResponse = await authenticatedFetch(`${API_BASE}/cards/config`);
-        const { publishable_key } = await configResponse.json();
+        const {publishable_key} = await configResponse.json();
         stripeInstance = Stripe(publishable_key);
         stripeElements = stripeInstance.elements();
 
@@ -213,17 +213,23 @@ async function initializeStripeElements() {
                 fontFamily: '"Inter", sans-serif',
                 fontSize: '16px',
                 fontWeight: '500',
-                '::placeholder': { color: isDark ? '#6c757d' : '#adb5bd' },
+                '::placeholder': {color: isDark ? '#6c757d' : '#adb5bd'},
                 iconColor: isDark ? '#bb86fc' : '#6f42c1',
             },
-            invalid: { color: '#dc3545', iconColor: '#dc3545' }
+            invalid: {color: '#dc3545', iconColor: '#dc3545'}
         };
 
-        stripeCardElement = stripeElements.create('card', { style, hidePostalCode: true });
+        stripeCardElement = stripeElements.create('card', {style, hidePostalCode: true});
         stripeCardElement.mount('#stripe-card-element');
 
         stripeCardElement.on('change', event => {
-            const displayError = document.getElementById('stripe-card-error-message');
+            let displayError;
+            const currentContainer = stripeCardElement._component.parentElement;
+            if (currentContainer.id === 'modal-stripe-card-element') {
+                displayError = document.getElementById('modal-stripe-card-error-message');
+            } else {
+                displayError = document.getElementById('stripe-card-error-message');
+            }
             if (!displayError) return;
 
             if (event.error) {
@@ -390,7 +396,7 @@ async function handleRemoveCard(event) {
     if (cardItem) cardItem.classList.add('removing');
 
     try {
-        await authenticatedFetch(`${API_BASE}/cards/${cardId}`, { method: 'DELETE' });
+        await authenticatedFetch(`${API_BASE}/cards/${cardId}`, {method: 'DELETE'});
         displayModalMessage('Card removed successfully.', 'success');
 
         if (cardItem) {
@@ -426,15 +432,21 @@ async function handleSetDefaultCard(event) {
     button.disabled = true;
 
     try {
-        await authenticatedFetch(`${API_BASE}/cards/${cardId}/set-default`, { method: 'POST' });
-        displayModalMessage('Default card updated.', 'success');
+        let defaultUpdate = await authenticatedFetch(`${API_BASE}/cards/${cardId}/default`, {method: 'PUT'});
 
-        const cardItem = button.closest('.saved-card-entry');
-        if (cardItem) {
-            cardItem.classList.add('highlight-success');
-            setTimeout(() => loadSavedCards(), 700);
-        } else {
+        if (defaultUpdate.ok) {
             loadSavedCards();
+            displayModalMessage('Default card updated.', 'success');
+            const cardItem = button.closest('.saved-card-entry');
+            if (cardItem) {
+                cardItem.classList.add('highlight-success');
+                setTimeout(() => loadSavedCards(), 700);
+            } else {
+                loadSavedCards();
+            }
+        } else {
+            const errorData = await defaultUpdate.json();
+            throw new Error(errorData.detail || 'Failed to set default card.');
         }
     } catch (error) {
         displayModalMessage(error.message || 'Could not set default card.', 'error');
@@ -443,12 +455,21 @@ async function handleSetDefaultCard(event) {
     }
 }
 
+function setModalLoadingState(isLoading) {
+    const formLoadingOverlay = document.querySelector('#add-card-form-container .form-loading-overlay');
+    if (formLoadingOverlay) {
+        formLoadingOverlay.style.display = isLoading ? 'flex' : 'none';
+    }
+    const formElements = document.querySelectorAll('#add-card-form input, #add-card-form button');
+    formElements.forEach(el => el.disabled = isLoading);
+}
+
 // ### Deposit Submission
 document.getElementById('deposit-form-main')?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!stripeInstance || !stripeElements || !stripeCardElement) {
-        console.error('Stripe not initialized:', { stripeInstance, stripeElements, stripeCardElement });
+        console.error('Stripe not initialized:', {stripeInstance, stripeElements, stripeCardElement});
         displayFormMessage('Payment system not ready. Please refresh the page.', 'error');
         return;
     }
@@ -456,7 +477,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
     const token = auth.getToken();
     const userData = auth.getUserData();
     if (!API_BASE || !token) {
-        console.error('API configuration missing:', { API_BASE, token });
+        console.error('API configuration missing:', {API_BASE, token});
         displayFormMessage('System configuration error. Please try again later.', 'error');
         return;
     }
@@ -500,10 +521,10 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
     try {
         let paymentMethodToUse = selectedPaymentMethodId;
         if (isNewCard) {
-            const { paymentMethod, error } = await stripeInstance.createPaymentMethod({
+            const {paymentMethod, error} = await stripeInstance.createPaymentMethod({
                 type: 'card',
                 card: stripeCardElement,
-                billing_details: { name: userData?.username || 'VWallet User' }
+                billing_details: {name: userData?.username || 'VWallet User'}
             });
             if (error) throw new Error(error.message || 'Failed to create payment method.');
             paymentMethodToUse = paymentMethod.id;
@@ -511,7 +532,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
 
         const intentResponse = await authenticatedFetch(`${API_BASE}/deposits/payment-intent`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 amount_cents: Math.round(amount * 100),
                 payment_method_id: paymentMethodToUse,
@@ -519,7 +540,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
             })
         });
 
-        const { client_secret, payment_intent_id } = await intentResponse.json();
+        const {client_secret, payment_intent_id} = await intentResponse.json();
         if (!client_secret || !payment_intent_id) throw new Error('Invalid response from payment server.');
 
         const confirmResult = await stripeInstance.confirmCardPayment(client_secret, {
@@ -530,7 +551,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
 
         await authenticatedFetch(`${API_BASE}/deposits/confirm`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 payment_intent_id,
                 save_card: saveCard,
@@ -777,7 +798,7 @@ function setupQuickAmountButtons() {
             quickAmounts.forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
             amountInput.value = button.dataset.amount;
-            amountInput.dispatchEvent(new Event('input', { bubbles: true }));
+            amountInput.dispatchEvent(new Event('input', {bubbles: true}));
             button.classList.add('pulse');
             setTimeout(() => button.classList.remove('pulse'), 500);
         });
@@ -818,14 +839,14 @@ async function updateDepositStatistics() {
         const data = await response.json();
 
         const updates = [
-            { el: 'monthly-deposits-value', value: data.monthly_total / 100, animate: true },
-            { el: 'deposit-frequency', value: `${data.frequency} per month` },
-            { el: 'average-deposit-value', value: data.average_amount / 100, animate: true },
-            { el: 'total-deposits-count', value: data.total_count },
-            { el: 'deposit-trend-percentage', value: `${data.trend_percentage}%` }
+            {el: 'monthly-deposits-value', value: data.monthly_total / 100, animate: true},
+            {el: 'deposit-frequency', value: `${data.frequency} per month`},
+            {el: 'average-deposit-value', value: data.average_amount / 100, animate: true},
+            {el: 'total-deposits-count', value: data.total_count},
+            {el: 'deposit-trend-percentage', value: `${data.trend_percentage}%`}
         ];
 
-        updates.forEach(({ el, value, animate }) => {
+        updates.forEach(({el, value, animate}) => {
             console.log(`Updating ${el} with value:`, value);
             const element = document.getElementById(el);
             if (element && value !== undefined) {
@@ -836,13 +857,13 @@ async function updateDepositStatistics() {
     } catch (error) {
         console.error('Error fetching deposit statistics:', error);
         const placeholders = [
-            { el: 'monthly-deposits-value', value: 325.00, animate: true },
-            { el: 'deposit-frequency', value: '2 per month' },
-            { el: 'average-deposit-value', value: 162.50, animate: true },
-            { el: 'total-deposits-count', value: '6' },
-            { el: 'deposit-trend-percentage', value: '15%' }
+            {el: 'monthly-deposits-value', value: 325.00, animate: true},
+            {el: 'deposit-frequency', value: '2 per month'},
+            {el: 'average-deposit-value', value: 162.50, animate: true},
+            {el: 'total-deposits-count', value: '6'},
+            {el: 'deposit-trend-percentage', value: '15%'}
         ];
-        placeholders.forEach(({ el, value, animate }) => {
+        placeholders.forEach(({el, value, animate}) => {
             const element = document.getElementById(el);
             if (element) {
                 if (animate) animateBalanceChange(element, 0, value);
@@ -906,6 +927,122 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const selectEl = document.getElementById('select-payment-method');
     if (selectEl) selectEl.addEventListener('change', updateFormForSelection);
+
+    const manageCardsModal = document.getElementById('manageCardsModal');
+    if (manageCardsModal) {
+        manageCardsModal.addEventListener('shown.bs.modal', () => {
+            const modalError = document.getElementById('modal-stripe-card-error-message');
+            if (modalError) {
+                modalError.textContent = '';
+                modalError.style.display = 'none';
+            }
+            if (stripeCardElement) {
+                stripeCardElement.unmount(); // Remove from main form
+                stripeCardElement.mount('#modal-stripe-card-element'); // Mount to modal
+                stripeCardElement.clear(); // Clear for new input
+            }
+        });
+
+        manageCardsModal.addEventListener('hidden.bs.modal', () => {
+            if (stripeCardElement) {
+                stripeCardElement.unmount(); // Remove from modal
+                stripeCardElement.mount('#stripe-card-element'); // Restore to main form
+            }
+            // Reset modal to show "Manage Cards" content
+            const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
+            const addCardFormContainer = document.getElementById('add-card-form-container');
+            if (savedCardsContainer && addCardFormContainer) {
+                savedCardsContainer.style.display = 'block';
+                addCardFormContainer.style.display = 'none';
+                savedCardsContainer.classList.remove('slide-up', 'slide-down');
+                addCardFormContainer.classList.remove('slide-up', 'slide-down');
+            }
+        });
+    }
+
+    function showAddCardForm() {
+        const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
+        const addCardFormContainer = document.getElementById('add-card-form-container');
+        savedCardsContainer.classList.add('slide-up');
+        savedCardsContainer.addEventListener('animationend', function handler() {
+            savedCardsContainer.style.display = 'none';
+            savedCardsContainer.classList.remove('slide-up');
+            addCardFormContainer.style.display = 'block';
+            addCardFormContainer.classList.add('slide-down');
+            savedCardsContainer.removeEventListener('animationend', handler);
+            document.getElementById('cardholder-name').value = '';
+            //if (modalStripeCardElement) modalStripeCardElement.clear();
+        }, {once: true});
+    }
+
+    function showSavedCardsList() {
+        const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
+        const addCardFormContainer = document.getElementById('add-card-form-container');
+        addCardFormContainer.classList.add('slide-up');
+        addCardFormContainer.addEventListener('animationend', function handler() {
+            addCardFormContainer.style.display = 'none';
+            addCardFormContainer.classList.remove('slide-up');
+            savedCardsContainer.style.display = 'block';
+            savedCardsContainer.classList.add('slide-down');
+            addCardFormContainer.removeEventListener('animationend', handler);
+        }, {once: true});
+    }
+
+    const btnAddNewCard = document.getElementById('btn-add-new-card-modal');
+    const btnCancelAddCard = document.getElementById('btn-cancel-add-card');
+    if (btnAddNewCard && btnCancelAddCard) {
+        btnAddNewCard.addEventListener('click', showAddCardForm);
+        btnCancelAddCard.addEventListener('click', showSavedCardsList);
+    }
+
+    const addCardForm = document.getElementById('add-card-form');
+    if (addCardForm) {
+        addCardForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const cardholderName = document.getElementById('cardholder-name').value.trim();
+            if (!cardholderName) {
+                displayModalMessage('Please enter the cardholder name.', 'error');
+                return;
+            }
+
+            setModalLoadingState(true);
+
+            try {
+                const setupIntentResponse = await authenticatedFetch(`${API_BASE}/cards/setup-intent`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                const {client_secret} = await setupIntentResponse.json();
+
+                const {setupIntent, error} = await stripeInstance.confirmCardSetup(client_secret, {
+                    payment_method: {
+                        card: stripeCardElement,
+                        billing_details: {name: cardholderName}
+                    }
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                const paymentMethodId = setupIntent.payment_method;
+                await authenticatedFetch(`${API_BASE}/cards`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({payment_method_id: paymentMethodId, cardholder_name: cardholderName})
+                });
+
+                await loadSavedCards();
+                displayModalMessage('Card added successfully.', 'success');
+                showSavedCardsList();
+            } catch (error) {
+                console.error('Error adding card:', error);
+                displayModalMessage(error.message || 'Failed to add card.', 'error');
+            } finally {
+                setModalLoadingState(false);
+            }
+        });
+    }
 
     updateBalance();
     setInterval(updateBalance, 20000);

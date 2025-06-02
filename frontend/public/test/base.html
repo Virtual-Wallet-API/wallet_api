@@ -172,7 +172,8 @@
 
         // Display username in sidebar
         const usernameDisplay = document.getElementById('username-display');
-        if (usernameDisplay && userData && userData.username) {
+        if (usernameDisplay) {
+            userData = auth.getUserData();
             usernameDisplay.textContent = userData.username;
         }
     });

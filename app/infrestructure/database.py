@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine
+from fastapi import HTTPException
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -18,3 +19,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@event.listens_for(engine, "handle_error")
+def handle_db_error(context):
+    print(f"Database error: {str(context.original_exception)}")
+    raise HTTPException(status_code=500, detail="Database error occurred")

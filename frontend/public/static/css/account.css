@@ -1,6 +1,12 @@
 /* Account Overview Page Styles */
 .account-overview-container {
+    max-width: 85%;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    animation: fadeIn 0.4s ease-out;
     width: 100%;
+    box-sizing: border-box;
+    opacity: 1;
 }
 
 .page-header h2 {

@@ -71,6 +71,16 @@
     100% { transform: translateX(0); }
 }
 
+@keyframes slideUp {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .deposit-page-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -737,6 +747,14 @@ select.form-control {
     border-radius: var(--card-radius);
     border: none;
     background-color: var(--card-bg);
+}
+
+.modal-content .slide-up {
+    animation: slideUp 0.3s ease forwards;
+}
+
+.modal-content .slide-down {
+    animation: slideDown 0.3s ease forwards;
 }
 
 .modal-header {

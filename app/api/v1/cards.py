@@ -7,7 +7,7 @@ from app.dependencies import get_db, get_user_except_fpr
 from app.models.user import User
 from app.schemas.card import (
     CardResponse, CardUpdate, CardListResponse,
-    PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse
+    PaymentIntentCreate, PaymentIntentResponse, SetupIntentResponse, AddCard
 )
 
 router = APIRouter(tags=["Cards"])
@@ -42,15 +42,13 @@ async def create_payment_intent(
 
 @router.post("/save-payment-method", response_model=CardResponse)
 async def save_payment_method(
-        payment_method_id: str,
-        cardholder_name: str = None,
-        design: str = None,
+        card_data: AddCard,
         user: User = Depends(get_user_except_fpr),
         db: Session = Depends(get_db)
 ):
     """Save a payment method as a card after successful setup"""
     return await StripeCardService.save_card_from_payment_method(
-        db, user, payment_method_id, cardholder_name, design
+        db, user, **card_data.model_dump()
     )
 
 
@@ -99,7 +97,7 @@ async def delete_card(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.put("/default", response_model=CardResponse)
+@router.put("/{card_id}/default", response_model=CardResponse)
 def set_default_card(
         card_id: int,
         user: User = Depends(get_user_except_fpr),
@@ -108,3 +106,12 @@ def set_default_card(
     """Set a card as the default payment method"""
     card_update = CardUpdate(is_default=True)
     return CardService.update_card(db, user, card_id, card_update)
+
+
+@router.post("/", response_model=CardResponse)
+async def add_card(
+    card_data: AddCard,
+    user: User = Depends(get_user_except_fpr),
+    db: Session = Depends(get_db)
+):
+    return await StripeCardService.save_card_from_payment_method(db, user, **card_data.model_dump())

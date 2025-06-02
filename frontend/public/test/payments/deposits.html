@@ -257,6 +257,29 @@
                     <!-- Saved cards list populated by JS -->
                     <p id="no-saved-cards-message" style="display:none;">You have no saved cards.</p>
                 </div>
+                <div id="add-card-form-container" style="display: none; position: relative;">
+                    <div class="form-loading-overlay" style="display: none;">
+                        <div class="loading-spinner">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                    </div>
+                    <h6>Add New Card</h6>
+                    <form id="add-card-form">
+                        <div class="form-group">
+                            <label for="cardholder-name">Cardholder Name</label>
+                            <input type="text" id="cardholder-name" class="form-control" placeholder="Enter cardholder name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-stripe-card-element">Card Information</label>
+                            <div class="stripe-element" id="modal-stripe-card-element"></div>
+                            <div class="card-error-message-stripe" id="modal-stripe-card-error-message" style="display: none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Save Card</button>
+                            <button type="button" class="btn btn-secondary" id="btn-cancel-add-card">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

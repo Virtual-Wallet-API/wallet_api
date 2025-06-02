@@ -143,4 +143,10 @@ class CardListResponse(BaseModel):
         from_attributes = True
 
 
+class AddCard(BaseModel):
+    payment_method_id: str
+    cardholder_name: str
+    design: Optional[str] = '{"color": "purple"}'
+
+
 CardPublicResponse.model_rebuild()

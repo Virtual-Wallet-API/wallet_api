@@ -121,14 +121,14 @@ class StripeCardService:
     async def save_card_from_payment_method(
             db: Session,
             user: User,
-            stripe_payment_method_id: str,
+            payment_method_id: str,
             cardholder_name: Optional[str] = None,
             design: Optional[str] = None
     ) -> Card:
         """Save a card to database after successful Stripe payment method creation"""
         UAuth.verify_user_can_add_card(user)
         # Retrieve payment method from Stripe
-        payment_method = await StripeService.retrieve_payment_method(stripe_payment_method_id)
+        payment_method = await StripeService.retrieve_payment_method(payment_method_id)
         if payment_method["type"] != "card":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -151,7 +151,7 @@ class StripeCardService:
             card_data = payment_method["card"]
             card = Card(
                 user_id=user.id,
-                stripe_payment_method_id=stripe_payment_method_id,
+                stripe_payment_method_id=payment_method_id,
                 stripe_customer_id=user.stripe_customer_id,
                 stripe_card_fingerprint=card_fingerprint,
                 last_four=card_data["last4"],

@@ -419,11 +419,14 @@ async function loadRecentWithdrawals() {
                     item.style.opacity = '0';
                     item.style.transform = 'translateX(-20px)';
 
+                    let withdrawalAmount = parseFloat(withdrawal.amount);
+                    withdrawalAmount = parseFloat(withdrawal.amount) > 999.99 ? (withdrawalAmount / 1000).toFixed(1) + " K" : withdrawalAmount.toFixed(2);
+
                     item.innerHTML = `
                         <span class="date">${new Date(withdrawal.created_at).toLocaleDateString()}</span>
                         <span class="card-details">Card **** ${withdrawal.card_last_four || 'N/A'}</span>
                         <span class="status">${withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}</span>
-                        <span class="amount text-danger">-$${parseFloat(withdrawal.amount).toFixed(2)}</span>
+                        <span class="amount text-danger">-$${withdrawalAmount}</span>
                         <span class="info-icon"><i class="bi bi-info-circle" data-withdrawal-id="${withdrawal.id}"></i></span>
                     `;
 

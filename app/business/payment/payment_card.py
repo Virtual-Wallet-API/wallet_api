@@ -100,7 +100,9 @@ class CardService:
         if card_update.is_default is not None and card_update.is_default:
             # Remove default from other cards
             dcard = db.query(Card).filter(Card.user_id == user.id, Card.is_default == True).first()
-            dcard.is_default = False
+            if dcard:
+                dcard.is_default = False
+
             card.is_default = True
 
         db.commit()
