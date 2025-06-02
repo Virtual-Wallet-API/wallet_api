@@ -21,13 +21,13 @@ class Auth {
             const success = await this.refreshUserData();
             if (!success) {
                 console.log('Initialization failed, redirecting to login.');
-                window.location.href = '/login';
-                return false;
+                // window.location.href = '/login';
+                /return false;
             }
             return true;
         }
         console.log('Not logged in or preventAuth is true, redirecting to login.');
-        window.location.href = '/login';
+        // window.location.href = '/login';
         return false;
     }
 
