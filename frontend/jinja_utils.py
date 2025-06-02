@@ -2,7 +2,7 @@ from enum import Enum
 
 from jinja2 import Environment, FileSystemLoader
 
-jenv = Environment(loader=FileSystemLoader("frontend/public/test"), cache_size=0)
+jenv = Environment(loader=FileSystemLoader("frontend/public/tmpl"), cache_size=0)
 
 ## Card statuses
 def card_status(card: dict):

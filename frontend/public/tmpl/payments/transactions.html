@@ -2,7 +2,8 @@
 {% extends "base.html" %}
 
 {% block styles %}
-<link rel="stylesheet" href="/css/payments/transactions.css">
+<link rel="stylesheet" href="/static/css/payments/transactions.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock %}
 
 {% block content %}
@@ -197,6 +198,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script type="text/javascript" src="/static/js/payments/transactions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script type="text/javascript" src="/js/payments/transactions.js"></script>
 {% endblock %}
