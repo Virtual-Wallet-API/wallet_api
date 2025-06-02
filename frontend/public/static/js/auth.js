@@ -22,7 +22,7 @@ class Auth {
             if (!success) {
                 console.log('Initialization failed, redirecting to login.');
                 // window.location.href = '/login';
-                /return false;
+                return false;
             }
             return true;
         }
