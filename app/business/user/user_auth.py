@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from app.business.user.user_validators import UserValidators as UVal, UserValidators
+from app.business.utils import NotificationService
+from app.business.user.user_validators import UserValidators as UVal
+from app.business.utils.notification_service import EmailTemplates
 from app.dependencies import get_db
-from app.infrestructure import generate_token, data_validators, auth, DataValidators
+from app.infrestructure import generate_token, data_validators, auth, DataValidators, hash_email
 from app.models import User, UStatus
 from app.schemas.user import UserCreate, UserUpdate
 
@@ -28,14 +30,42 @@ class UserAuthService:
             raise HTTPException(status_code=400, detail="Username, email or phone number is already in use")
 
         user = User(username=user_data.username,
-                    hashed_password=user_data.password,
+                    hashed_password=user_data.password,  # TODO: hash passwords
                     email=user_data.email,
-                    phone_number=user_data.phone_number)
+                    phone_number=user_data.phone_number,
+                    email_key=hash_email(user_data.email).replace("/", ""))
 
         db.add(user)
         db.commit()
         db.refresh(user)
+
+        print(NotificationService.notify_from_template(EmailTemplates.EMAIL_VERIFICATION, user, key=user.email_key))
+
         return user
+
+    @classmethod
+    def verifty_email(cls,
+                      db: Session,
+                      key: str = None):
+        """Verify a user email using unique email key"""
+
+        exc = HTTPException(status_code=403, detail="Invalid activation link")
+        if not key:
+            raise exc
+
+        key_check = db.query(User).filter(User.email_key == key).first()
+
+        if not key_check or key_check.email_key != key:
+            raise exc
+
+        if key_check.status != UStatus.EMAIL:
+            raise HTTPException(status_code=400, detail="No pending email verification found")
+
+        key_check.status = UStatus.PENDING
+        key_check.email_key = None
+        db.commit()
+
+        return {"detail": "Email successfully verified"}
 
     @classmethod
     def login(cls,

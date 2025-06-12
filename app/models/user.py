@@ -15,6 +15,7 @@ from app.models.withdrawal import Withdrawal, WithdrawalType, WithdrawalStatus
 
 
 class UserStatus(str, Enum):
+    EMAIL = "email_verification"
     BLOCKED = "blocked"
     DEACTIVATED = "deactivated"
     REACTIVATION = "reactivation"
@@ -37,7 +38,8 @@ class User(Base):
     status = Column(CEnum(UserStatus, name="user_status",
                           values_callable=lambda obj: [e.value for e in obj]),
                     nullable=False,
-                    default=UserStatus.PENDING)
+                    default=UserStatus.EMAIL)
+    email_key = Column(String, nullable=True)
 
     forced_password_reset = Column(Boolean, nullable=False, default=False)
 

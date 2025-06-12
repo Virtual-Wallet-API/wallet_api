@@ -100,6 +100,15 @@ Best,
 The VWallet Team"""
                          }
 
+    EMAIL_VERIFICATION = {"subject": "Verify your email",
+                          "body": """Dear {user.username},
+
+Please follow this link to verify your email: http://vwallet.ninja/verify/{key}
+
+Best,
+The VWallet Team"""
+                          }
+
     def format(self, user, **kwargs):
         return {k: v.format(user=user, **kwargs) for k, v in self.value.items()}
 
@@ -109,7 +118,7 @@ class NotificationService:
 
     @classmethod
     def email_factory(cls, to: User, subject: str = None, body: str = None) -> Dict:
-        mail = {"form": "VWallet <admin@vwallet.ninja>",
+        mail = {"from": "VWallet <admin@vwallet.ninja>",
                 "to": f"{to.username} <{to.email}>",
                 "subject": subject,
                 "text": body}
@@ -117,9 +126,10 @@ class NotificationService:
 
     @classmethod
     def send_email(cls, to: User, subject: str, body: str) -> Response:
-        return requests.post(url="https://api.mailgun.net/v3/vwallet.ninja/messages",
+        sent = requests.post(url="https://api.mailgun.net/v3/vwallet.ninja/messages",
                              auth=("api", os.getenv(MAILGUN_API_KEY, MAILGUN_API_KEY)),
                              data=cls.email_factory(to, subject, body))
+        return sent
 
     @classmethod
     def notify_from_template(cls, template: EmailTemplates, user: User, **kwargs) -> Response:

@@ -7,7 +7,7 @@ from starlette import status
 
 from app.config import ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+hash_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 exception_headers = {"WWW-Authenticate": "Bearer"}
 
@@ -33,6 +33,13 @@ forbidden_access = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
     detail="Access denied"
 )
+
+email_verification_user = HTTPException(
+    status_code=status.HTTP_412_PRECONDITION_FAILED,
+    detail="Unconfirmed email, please check your email and follow the instructions to verify your email"
+)
+
+unknown_verification_key = HTTPException
 
 pending_user = HTTPException(
     status_code=status.HTTP_403_FORBIDDEN,
@@ -60,8 +67,15 @@ def hash_password(password: str) -> str:
     """
         Hashes a password using bcrypt.
     """
-    # return pwd_context.hash(password, rounds=12, salt_size=16)
+    # return hash_context.hash(password, rounds=12, salt_size=22)
     return password  # TODO disable dev testing
+
+
+def hash_email(email: str) -> str:
+    """
+        Hashes a password using bcrypt.
+    """
+    return hash_context.hash(email, rounds=12, salt_size=22)
 
 
 def check_hashed_password(plain_password: str, hashed_password: str) -> bool:

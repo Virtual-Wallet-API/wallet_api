@@ -36,6 +36,12 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return UAuth.register(user, db)
 
 
+@router.post("/email/{key}", response_model=Dict)
+def verify_email(key: str,
+                 db: Session = Depends(get_db)):
+    return UAuth.verifty_email(db, key)
+
+
 @router.patch("/", response_model=UserPublicResponse,
               description="Update user details - phone, email, password and avatar")
 def update_user(update_data: UserUpdate,

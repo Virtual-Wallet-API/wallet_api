@@ -10,6 +10,7 @@ CardPublicResponse = ForwardRef("CardPublicResponse")
 
 
 class Status(str, Enum):
+    email = "email_verification"
     blocked = "blocked"
     deactivated = "deactivated"
     pending = "pending"

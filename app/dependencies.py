@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access, pending_user, \
-    deactivated_user, blocked_user, forced_password_reset
+    deactivated_user, blocked_user, forced_password_reset, email_verification_user
 from app.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
@@ -25,6 +25,8 @@ def getValidUser(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise invalid_credentials
+    if user.status == "email_verification":
+        raise email_verification_user
     if user.status == "deactivated":
         raise deactivated_user
     return user
