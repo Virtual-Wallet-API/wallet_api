@@ -378,7 +378,7 @@
 
 .empty-state i {
     font-size: 3rem;
-    color: var (--text-muted);
+    color: var(--text-muted);
     margin-bottom: 1rem;
 }
 

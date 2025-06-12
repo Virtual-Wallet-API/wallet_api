@@ -377,7 +377,7 @@
 }
 
 .card-header {
-    paddingVim padding: 1rem 1.25rem;
+    padding: 1rem 1.25rem;
     background-color: transparent;
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
