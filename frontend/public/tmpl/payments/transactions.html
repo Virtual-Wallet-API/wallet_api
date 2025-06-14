@@ -150,47 +150,46 @@
 
 {% block modals %}
 <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="transactionModalLabel"><i class="bi bi-info-circle"></i> Transaction Details</h5>
+                <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Date:</span>
-                    <span class="detail-value" id="detail-date"></span>
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <p id="modal-date" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Description:</span>
-                    <span class="detail-value" id="detail-description"></span>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <p id="modal-description" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Amount:</span>
-                    <span class="detail-value" id="detail-amount"></span>
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <p id="modal-amount" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Status:</span>
-                    <span class="detail-value" id="detail-status"></span>
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <p id="modal-status" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Sender ID:</span>
-                    <span class="detail-value" id="detail-sender-id"></span>
+                <div class="mb-3">
+                    <label class="form-label">Sender ID</label>
+                    <p id="modal-sender-id" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Receiver ID:</span>
-                    <span class="detail-value" id="detail-receiver-id"></span>
+                <div class="mb-3">
+                    <label class="form-label">Receiver ID</label>
+                    <p id="modal-receiver-id" class="form-control-static"></p>
                 </div>
-                <div class="transaction-detail-item">
-                    <span class="detail-label">Category:</span>
-                    <select class="form-control" id="detail-category">
+                <div class="mb-3">
+                    <label for="detail-category" class="form-label">Category</label>
+                    <select class="form-select" id="detail-category">
                         <option value="">Select Category</option>
-                        <!-- Options populated dynamically -->
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
