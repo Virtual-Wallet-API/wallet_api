@@ -35,7 +35,24 @@ async def lifespan(app: FastAPI):
 
 
 # FastAPI app
-app = FastAPI(openapi_tags=[{"name": "Virtual Wallet API"}], lifespan=lifespan)
+app = FastAPI(
+    title="Virtual Wallet API",
+    description="""
+    The Virtual Wallet API allows users to register, manage their profile, cards, contacts, and perform transactions such as deposits, withdrawals, and transfers. 
+    
+    - Register/login/logout
+    - Manage credit/debit cards
+    - Make deposits and withdrawals
+    - Send and receive money
+    - Categorize transactions
+    - Admin endpoints for user and transaction management
+    
+    See the [Swagger UI](/docs) for full details and try out the endpoints interactively.
+    """,
+    version="1.0.0",
+    openapi_tags=[{"name": "Virtual Wallet API"}],
+    lifespan=lifespan
+)
 
 # static files for frontend
 app.mount("/static", StaticFiles(directory="frontend/public/static", check_dir=True), name="static")
