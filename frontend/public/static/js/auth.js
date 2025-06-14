@@ -401,6 +401,9 @@ document.addEventListener('DOMContentLoaded', function () {
             avatarImg.src = u.avatar;
         } else {
             avatarImg.src = '/static/img/default-avatar.png';
+            avatarImg.onerror = function() {
+                avatarImg.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/person-circle.svg';
+            };
         }
     }
     const avatarForm = document.getElementById('avatar-upload-form');
@@ -416,11 +419,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('user-avatar-img').src = url;
                 statusSpan.textContent = 'Uploaded!';
                 statusSpan.style.display = 'inline';
+                statusSpan.classList.remove('text-danger');
+                statusSpan.classList.add('text-success');
                 // Optionally update userData and localStorage
                 userData.avatar = url;
                 localStorage.setItem('user_data', JSON.stringify(userData));
             } catch (err) {
-                statusSpan.textContent = 'Upload failed';
+                statusSpan.textContent = err.message || 'Upload failed';
                 statusSpan.style.display = 'inline';
                 statusSpan.classList.remove('text-success');
                 statusSpan.classList.add('text-danger');
