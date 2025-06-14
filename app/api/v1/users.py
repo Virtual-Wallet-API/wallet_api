@@ -1,4 +1,5 @@
 from typing import List, Dict
+import time
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
@@ -14,17 +15,12 @@ from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactC
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
 import cloudinary
 import cloudinary.uploader
-from app.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+from app.config import CLOUDINARY_URL
+
+# Initialize Cloudinary (auto-loads from CLOUDINARY_URL)
+cloudinary.config()
 
 router = APIRouter(tags=["Users"])
-
-# Initialize Cloudinary
-cloudinary.config(
-    cloud_name=CLOUDINARY_CLOUD_NAME,
-    api_key=CLOUDINARY_API_KEY,
-    api_secret=CLOUDINARY_API_SECRET
-)
-
 
 @router.post("/", response_model=UserPublicResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -146,14 +142,52 @@ def upload_avatar(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_active_user_except_blocked)
 ):
-    if file.content_type not in ["image/jpeg", "image/png", "image/gif"]:
-        raise HTTPException(status_code=400, detail="Invalid image type. Only JPEG, PNG, and GIF are allowed.")
+    """
+    Upload a user's profile photo (avatar) to Cloudinary.
+    """
+    # Validate file type
+    if file.content_type not in ["image/jpeg", "image/png", "image/gif", "image/webp"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image type. Only JPEG, PNG, GIF, and WEBP are allowed."
+        )
     try:
-        result = cloudinary.uploader.upload(file.file, folder="vwallet/avatars", public_id=f"user_{current_user.id}", overwrite=True)
-        avatar_url = result["secure_url"]
+        file.file.seek(0)
+        upload_params = {
+            "folder": "vwallet/avatars",
+            "public_id": f"user_{current_user.id}",
+            "overwrite": True,
+            "resource_type": "image",
+        }
+        result = cloudinary.uploader.upload(
+            file.file,
+            **upload_params
+        )
+        avatar_url = result.get("secure_url")
+        if not avatar_url:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to get secure URL from Cloudinary response"
+            )
         current_user.avatar = avatar_url
         db.commit()
         db.refresh(current_user)
         return {"avatar_url": avatar_url}
+    except cloudinary.exceptions.Error as e:
+        error_msg = str(e)
+        if "Invalid Signature" in error_msg:
+            raise HTTPException(
+                status_code=500,
+                detail="Cloudinary authentication failed. Please check API credentials."
+            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Cloudinary upload failed: {error_msg}"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Avatar upload failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Avatar upload failed: {str(e)}"
+        )
+    finally:
+        file.file.close()
