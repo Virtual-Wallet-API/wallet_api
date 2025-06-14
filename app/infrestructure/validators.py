@@ -33,11 +33,10 @@ class DataValidators:
     @classmethod
     def validate_username(cls, v: str) -> str:
         """
-            Check if a username is between 2 and 20 characters long
+            Check if a username is between 3 and 20 alphanumeric characters
         """
-        if len(v) < 2 or len(v) > 20:
-            raise HTTPException(status_code=400, detail="Username must be between 2 and 20 characters long")
-
+        if not (3 <= len(v) <= 20) or not v.isalnum():
+            raise HTTPException(status_code=400, detail="Username must be 3-20 alphanumeric characters")
         return v
 
     @classmethod
