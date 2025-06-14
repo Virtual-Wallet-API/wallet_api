@@ -1,29 +1,44 @@
+from dotenv import load_dotenv
 import os
+from pathlib import Path
+
+# Get the project root directory
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+env_path = ROOT_DIR / '.env'
+if not env_path.exists():
+    raise FileNotFoundError(f".env file not found at {env_path}")
+
+load_dotenv(env_path)
+
+def get_env_var(name: str, required: bool = True) -> str:
+    """Get environment variable with validation."""
+    value = os.getenv(name)
+    if required and not value:
+        raise ValueError(f"Required environment variable {name} is not set")
+    return value
 
 # Base URL
 BASE_URL = "/fe"
 
 # Connection
-DB_URL = "postgresql+psycopg2://siso:siso@172.245.56.116:6789/wallet_test"
+DB_URL = get_env_var("DB_URL")
 
 # Authentication
-SECRET_KEY = "ahf807gt087TG)87tgB*^Tv8B^vrb*^*&BNT8B7T*B^T86BVR&VI^%R75V75VR5IR7R(67r9v^R&^AR^dr9^RDB^O*^"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 3600
+SECRET_KEY = get_env_var("SECRET_KEY")
+ALGORITHM = get_env_var("ALGORITHM", required=False) or "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(get_env_var("ACCESS_TOKEN_EXPIRE_MINUTES", required=False) or "3600")
 
 # Stripe Configuration
-STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY",
-                                   "pk_test_51RT1Qx4CifUjVaUzYmM09yyumjpR1GS6pS0RwsiTcvkpEGrGMH7rw3lTksZKswyxFdAnF8xxc0tiucjd7NnQNcPk00DxMVbyPn")
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY",
-                              "sk_test_51RT1Qx4CifUjVaUzRu8Nv8htWrmS91inHDpkEGdncJxnUzZuhbn1zCKtjkAOczQY2Hyak0y80dDX2yc4Erei3FXz00ihSFLEPj")
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")  # Will be set when webhook is configured
+STRIPE_PUBLISHABLE_KEY = get_env_var("STRIPE_PUBLISHABLE_KEY", required=False)
+STRIPE_SECRET_KEY = get_env_var("STRIPE_SECRET_KEY", required=False)
+# STRIPE_WEBHOOK_SECRET = get_env_var("STRIPE_WEBHOOK_SECRET")  # Commented out as not currently used
 
-# Mailjet API config
-MAILGUN_API_KEY = "da42b9bd5579054489ca67d71d218399-7c5e3295-ca3aecf8"
-MAILGUN_SANDBOX_DOMAIN = "sandboxf19a484ec51645d0ab033bc4bcbff140.mailgun.org"
-MAILGUN_URL = "https://api.mailgun.net/"
+# Mailgun API config
+MAILGUN_API_KEY = get_env_var("MAILGUN_API_KEY", required=False)
+MAILGUN_SANDBOX_DOMAIN = get_env_var("MAILGUN_SANDBOX_DOMAIN", required=False)
+MAILGUN_URL = get_env_var("MAILGUN_URL", required=False)
 
-# Cloudinary configuration
-CLOUDINARY_CLOUD_NAME = "dp326ucz3"
-CLOUDINARY_API_KEY = "981533717626427"
-CLOUDINARY_API_SECRET = "a2CBF2NqdmbQgplQ7bPEy319tzs"
+# Cloudinary configuration (now only using CLOUDINARY_URL)
+CLOUDINARY_URL = get_env_var("CLOUDINARY_URL")
