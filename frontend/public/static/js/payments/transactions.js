@@ -47,6 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Bootstrap modal
     const modal = new bootstrap.Modal(elements.modal[0]);
 
+    // Category Management
+    let categories = [];
+    let currentTransactionId = null;
+
     // Helper function to display messages
     function showMessage(type, text) {
         const alert = $(`
@@ -197,7 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Show transaction details in modal
-    function showTransactionDetails(tx) {
+    async function showTransactionDetails(tx) {
+        currentTransactionId = tx.id;
+        
+        // Update existing fields
         elements.modalDate.text(new Date(tx.date).toLocaleString());
         elements.modalDescription.text(tx.description || 'N/A');
         const isOutgoing = tx.sender_id === state.userId;
@@ -205,7 +212,40 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.modalStatus.text(tx.status);
         elements.modalSenderId.text(tx.sender_id);
         elements.modalReceiverId.text(tx.receiver_id);
-        elements.modalCategory.parent().hide(); // Hide category as it's not in API response
+        
+        // Load and populate categories
+        if (categories.length === 0) {
+            await loadCategories();
+        }
+        
+        const categorySelect = document.getElementById('detail-category');
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            if (tx.category_id === category.id) {
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+        
+        // Show category section
+        categorySelect.parentElement.style.display = 'block';
+        
+        // Add event listener for category changes
+        categorySelect.onchange = async function() {
+            const categoryId = this.value;
+            if (categoryId) {
+                await updateTransactionCategory(currentTransactionId, parseInt(categoryId));
+            } else {
+                await removeTransactionCategory(currentTransactionId);
+            }
+            // Refresh transaction list to show updated category
+            initTransactions();
+        };
+        
         modal.show();
     }
 
@@ -348,6 +388,69 @@ document.addEventListener('DOMContentLoaded', () => {
     function initUI() {
         $('[data-bs-toggle="tooltip"]').tooltip();
         flatpickr('.date-picker', { dateFormat: 'Y-m-d' });
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/api/v1/categories', {
+                headers: {
+                    'Authorization': `Bearer ${auth.getToken()}`
+                }
+            });
+            const data = await response.json();
+            categories = data.categories;
+            return categories;
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            showMessage('danger', 'Error loading categories');
+            return [];
+        }
+    }
+
+    async function updateTransactionCategory(transactionId, categoryId) {
+        try {
+            const response = await fetch(`/api/v1/transactions/${transactionId}/category`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({ category_id: categoryId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update category');
+            }
+
+            showMessage('success', 'Category updated successfully');
+            return true;
+        } catch (error) {
+            console.error('Error updating category:', error);
+            showMessage('danger', 'Error updating category');
+            return false;
+        }
+    }
+
+    async function removeTransactionCategory(transactionId) {
+        try {
+            const response = await fetch(`/api/v1/transactions/${transactionId}/category`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${auth.getToken()}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to remove category');
+            }
+
+            showMessage('success', 'Category removed successfully');
+            return true;
+        } catch (error) {
+            console.error('Error removing category:', error);
+            showMessage('danger', 'Error removing category');
+            return false;
+        }
     }
 
     initUI();
