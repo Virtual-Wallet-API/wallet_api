@@ -6,6 +6,7 @@ from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
 from frontend.services.dependencies import get_valid_user_data
+from app.dependencies import get_active_user_except_blocked
 
 router = APIRouter()
 
@@ -19,8 +20,7 @@ def root(request: Request):
 
 @router.get("/account", response_model=None)
 def account_overview(request: Request):
-    data = {"request": request,
-            "page": "account overview"}
+    data = {"request": request, "page": "account overview"}
     return templates.TemplateResponse("overview.html", data)
 
 
@@ -107,3 +107,15 @@ def test_auth_dependency(username: str = Depends(get_valid_user_data)):
 @router.get("/all-deposits", response_model=Dict)
 def user_deposits_search(request: Request):
     return templates.TemplateResponse("payments/deposits_history.html", {"request": request})
+
+
+@router.get("/profile", response_model=None)
+def profile_settings(request: Request):
+    data = {"request": request, "page": "profile settings"}
+    return templates.TemplateResponse("profile.html", data)
+
+
+@router.get("/security", response_model=None)
+def security_settings(request: Request):
+    data = {"request": request, "page": "security settings"}
+    return templates.TemplateResponse("security.html", data)

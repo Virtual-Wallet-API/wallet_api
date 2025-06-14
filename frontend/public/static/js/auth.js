@@ -85,6 +85,8 @@ class Auth {
         console.log(JSON.stringify(uData));
         userData.id = uData.id;
         userData.username = uData.username;
+        userData.email = uData.email;
+        userData.phone_number = uData.phone_number;
         userData.balance = uData.balance;
         userData.avatar = uData.avatar;
         userData.status = uData.status;
@@ -369,3 +371,60 @@ if (!preventAuth) {
 }
 
 console.log("Auth.js load completed.")
+
+// Avatar upload logic
+async function uploadAvatar(file) {
+    const token = auth.getToken();
+    if (!token) throw new Error('No token found');
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch('/api/v1/users/avatar', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    });
+    if (!response.ok) {
+        const { detail } = await response.json();
+        throw new Error(detail || 'Failed to upload avatar');
+    }
+    return (await response.json()).avatar_url;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Set avatar image from userData if available
+    const avatarImg = document.getElementById('user-avatar-img');
+    if (avatarImg) {
+        const u = auth.getUserData();
+        if (u && u.avatar) {
+            avatarImg.src = u.avatar;
+        } else {
+            avatarImg.src = '/static/img/default-avatar.png';
+        }
+    }
+    const avatarForm = document.getElementById('avatar-upload-form');
+    if (avatarForm) {
+        avatarForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('avatar-upload');
+            const statusSpan = document.getElementById('avatar-upload-status');
+            if (!fileInput.files.length) return;
+            statusSpan.style.display = 'none';
+            try {
+                const url = await uploadAvatar(fileInput.files[0]);
+                document.getElementById('user-avatar-img').src = url;
+                statusSpan.textContent = 'Uploaded!';
+                statusSpan.style.display = 'inline';
+                // Optionally update userData and localStorage
+                userData.avatar = url;
+                localStorage.setItem('user_data', JSON.stringify(userData));
+            } catch (err) {
+                statusSpan.textContent = 'Upload failed';
+                statusSpan.style.display = 'inline';
+                statusSpan.classList.remove('text-success');
+                statusSpan.classList.add('text-danger');
+            }
+        });
+    }
+});
