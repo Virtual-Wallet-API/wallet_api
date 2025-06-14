@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
@@ -8,12 +8,22 @@ from starlette import status
 from app.business import UAuth, UVal
 from app.business.user.user_contacts import UserContacts
 from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr, \
-    get_current_admin
+    get_current_admin, get_active_user_except_blocked
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
+import cloudinary
+import cloudinary.uploader
+from app.config import CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 
 router = APIRouter(tags=["Users"])
+
+# Initialize Cloudinary
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET
+)
 
 
 @router.post("/", response_model=UserPublicResponse)
@@ -128,3 +138,22 @@ def remove_contact(contact_id: int,
     Removes a contact from the authenticated user's list of contacts.
     """
     return UserContacts.remove_contact(db, user, contact_id)
+
+
+@router.post("/avatar", summary="Upload user profile photo (avatar)")
+def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_active_user_except_blocked)
+):
+    if file.content_type not in ["image/jpeg", "image/png", "image/gif"]:
+        raise HTTPException(status_code=400, detail="Invalid image type. Only JPEG, PNG, and GIF are allowed.")
+    try:
+        result = cloudinary.uploader.upload(file.file, folder="vwallet/avatars", public_id=f"user_{current_user.id}", overwrite=True)
+        avatar_url = result["secure_url"]
+        current_user.avatar = avatar_url
+        db.commit()
+        db.refresh(current_user)
+        return {"avatar_url": avatar_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Avatar upload failed: {str(e)}")
