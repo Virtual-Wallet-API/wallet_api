@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block styles %}
+<link rel="stylesheet" href="/static/css/account.css">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Security Settings</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card p-4" id="change-password">
+                <h5 class="mb-3">Change Password</h5>
+                <form id="change-password-form">
+                    <div class="mb-3">
+                        <label for="current-password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current-password" required autocomplete="current-password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new-password" required autocomplete="new-password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm-password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm-password" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                    <span id="password-status" class="ms-2"></span>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card p-4" id="change-email">
+                <h5 class="mb-3">Change Email</h5>
+                <form id="change-email-form">
+                    <div class="mb-3">
+                        <label for="new-email" class="form-label">New Email</label>
+                        <input type="email" class="form-control" id="new-email" required autocomplete="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm-email" class="form-label">Confirm New Email</label>
+                        <input type="email" class="form-control" id="confirm-email" required autocomplete="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password-for-email" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="password-for-email" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Change Email</button>
+                    <span id="email-status" class="ms-2"></span>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card p-4" id="change-phone">
+                <h5 class="mb-3">Change Phone Number</h5>
+                <form id="change-phone-form">
+                    <div class="mb-3">
+                        <label for="new-phone" class="form-label">New Phone Number</label>
+                        <input type="text" class="form-control" id="new-phone" required autocomplete="tel">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm-phone" class="form-label">Confirm New Phone Number</label>
+                        <input type="text" class="form-control" id="confirm-phone" required autocomplete="tel">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password-for-phone" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="password-for-phone" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Change Phone Number</button>
+                    <span id="phone-status" class="ms-2"></span>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/security.js"></script>
+{% endblock %} 
