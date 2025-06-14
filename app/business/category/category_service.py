@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_, func
 from app.models import Category, User, Transaction
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 from app.business.category.category_validators import CategoryValidators
+from app.business.transaction.transaction_validators import TransactionValidators
 
 
 class CategoryService:
@@ -295,12 +296,60 @@ class CategoryService:
         }
 
     @classmethod
-    def add_transaction_to_category(cls, db: Session, user: User, category_id: int, transaction_id: int):
-        #  TODO add transaction to category
-        pass
+    def add_transaction_to_category(cls, db: Session, user: User, transaction_id: int, category_id: int) -> Transaction:
+        """
+        Add a transaction to a category.
+
+        Args:
+            db: Database session
+            user: Authenticated user
+            transaction_id: ID of the transaction to update
+            category_id: ID of the category to assign
+
+        Returns:
+            Updated transaction object
+
+        Raises:
+            HTTPException: If transaction or category not found, or if user doesn't own either
+        """
+        # Validate transaction exists and belongs to user
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_ownership(transaction, user)
+
+        # Validate category exists and belongs to user
+        category = CategoryValidators.validate_category_ownership(db, user.id, category_id)
+
+        # Update transaction's category
+        transaction.category_id = category.id
+        db.commit()
+        db.refresh(transaction)
+
+        return transaction
 
     @classmethod
-    def remove_transaction_from_category(cls, db: Session, user: User, category_id: int = None, transaction_id: int = None):
-        #  TODO add transaction to category
-        pass
+    def remove_transaction_from_category(cls, db: Session, user: User, transaction_id: int) -> Transaction:
+        """
+        Remove a transaction from its category.
+
+        Args:
+            db: Database session
+            user: Authenticated user
+            transaction_id: ID of the transaction to update
+
+        Returns:
+            Updated transaction object
+
+        Raises:
+            HTTPException: If transaction not found or doesn't belong to user
+        """
+        # Validate transaction exists and belongs to user
+        transaction = TransactionValidators.validate_transaction_exists(transaction_id, db)
+        TransactionValidators.validate_transaction_ownership(transaction, user)
+
+        # Remove category from transaction
+        transaction.category_id = None
+        db.commit()
+        db.refresh(transaction)
+
+        return transaction
 
