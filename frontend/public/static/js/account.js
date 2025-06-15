@@ -166,7 +166,7 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
     }
 
     if (!items || items.length === 0) {
-        initialListEl.innerHTML = `<div class='alert alert-info mx-3'>${noItemsMessage}</div>`;
+        initialListEl.innerHTML = `<div class='alert alert-info mx-3 mt-3'>${noItemsMessage}</div>`;
         if (viewBtnContainerEl) {
             viewBtnContainerEl.style.display = 'none';
         }
@@ -324,7 +324,10 @@ async function fetchTransactions() {
             method: 'GET',
             headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}
         });
-        if (!response.ok) throw new Error(`Failed to fetch transactions: ${response.status}`);
+        if (!response.ok) {
+            console.log(response.json());
+            throw new Error(`Failed to fetch transactions: ${response.status}`);
+        }
 
         const data = await response.json();
         const transactions = data.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -337,10 +340,11 @@ async function fetchTransactions() {
             document.getElementById('view-transactions-btn'),
             'transaction',
             'No transactions yet.',
-            '/fe/transactions' // URL for "See All"
+            '/transactions' // URL for "See All"
         );
     } catch (error) {
         console.error('Error fetching transactions:', error);
+        console.log()
         if (initialList) {
             initialList.innerHTML = "<div class='alert alert-danger mx-3'>Could not load transactions.</div>";
         }
@@ -368,6 +372,9 @@ async function fetchDeposits() {
 
         const data = await response.json();
         const deposits = data.deposits.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        document.getElementById("income-amount").textContent = "$" + data.total_amount.toFixed(2);
+        const money_out = (data.total_amount - window.userData.balance).toFixed(2)
+        document.getElementById("spending-amount").textContent = "$" + money_out
 
         renderItems(
             deposits.slice(0, 12), // Show up to 12
@@ -377,7 +384,7 @@ async function fetchDeposits() {
             document.getElementById('view-deposits-btn'),
             'deposit',
             'No deposits yet.',
-            '/fe/deposits' // URL for "See All"
+            '/deposits' // URL for "See All"
         );
     } catch (error) {
         console.error('Error fetching deposits:', error);

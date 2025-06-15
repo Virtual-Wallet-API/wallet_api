@@ -73,7 +73,11 @@ class Auth {
 
     // Get user data from global userData variable
     getUserData() {
-        return localStorage.getItem(this.userKey) ? JSON.parse(localStorage.getItem(this.userKey)) : null;
+        if (window.userData) {
+            return window.userData
+        } else {
+            return localStorage.getItem(this.userKey) ? JSON.parse(localStorage.getItem(this.userKey)) : null;
+        }
     }
 
     loggedIn() {

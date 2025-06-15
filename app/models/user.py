@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import List
 
-from sqlalchemy import Integer, Column, String, Boolean, Float, or_, select
+from sqlalchemy import Integer, Column, String, Boolean, Float, or_, select, DateTime
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import validates, relationship, Session, Query
 from sqlalchemy.types import Enum as CEnum
@@ -30,6 +30,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     email = Column(String, nullable=False, index=True, unique=True)
     phone_number = Column(String, nullable=False, unique=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.now)
     balance = Column(Float, nullable=False, default=0)
     reserved_balance = Column(Float, nullable=False, default=0)  # For pending transactions
     admin = Column(Boolean, nullable=False, default=False)
@@ -145,6 +146,14 @@ class User(Base):
     def withdrawals_count(self) -> int:
         return len(self.withdrawals)
 
+
+    @property
+    def months_since_creation(self):
+        if not self.created_at:
+            return 0
+        days = (datetime.now() - self.created_at).days
+        return max(1, int(days / 30.42))
+
     # Deposits and withdrawals properties
 
     @property
@@ -155,6 +164,22 @@ class User(Base):
     def completed_deposits(self) -> List[Deposit]:
         return [deposit for deposit in self.deposits
                 if deposit.status == DepositStatus.COMPLETED]
+
+    @property
+    def deposits_per_month(self):
+        return round(self.completed_deposits_count / self.months_since_creation, 2)
+
+    @property
+    def deposit_avg_monthly(self):
+        if self.total_deposit_amount <= 0:
+            return 0
+        return round(self.total_deposit_amount / self.months_since_creation, 2)
+
+    @property
+    def average_deposit_amount(self):
+        if self.completed_deposits_count == 0:
+            return 0
+        return round(self.total_deposit_amount / self.completed_deposits_count, 2)
 
     @property
     def completed_deposits_count(self) -> int:

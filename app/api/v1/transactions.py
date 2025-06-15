@@ -6,7 +6,7 @@ from starlette import status
 
 from app.business import CategoryService
 from app.business.transaction import TransactionService
-from app.dependencies import get_db, get_user_except_pending_fpr
+from app.dependencies import get_db, get_user_except_pending_fpr, getValidUser
 from app.models import User
 from app.schemas.router import TransactionHistoryFilter
 from app.schemas.transaction import (
@@ -23,7 +23,7 @@ router = APIRouter(tags=["Transactions"])
 def get_transaction_history(
         filter_params: Annotated[TransactionHistoryFilter, Query()],
         db: Session = Depends(get_db),
-        user: User = Depends(get_user_except_pending_fpr)
+        user: User = Depends(getValidUser)
 ):
     """
     Get transaction history for the authenticated user with advanced filtering and sorting.
