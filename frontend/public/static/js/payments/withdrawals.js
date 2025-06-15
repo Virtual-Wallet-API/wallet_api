@@ -615,6 +615,7 @@ document.getElementById('withdrawal-form')?.addEventListener('submit', async (ev
     const amount = parseFloat(amountInput.value);
     if (isNaN(amount) || amount < 0.50) {
         displayFormMessage('Minimum withdrawal amount is $0.50.', 'error');
+        console.log("3: " + amount);
 
         // Highlight the amount input with error style
         amountInput.classList.add('is-invalid');
@@ -627,7 +628,7 @@ document.getElementById('withdrawal-form')?.addEventListener('submit', async (ev
     }
 
     // Convert userData.balance from cents to dollars for comparison
-    const currentBalance = userData && userData.balance ? userData.balance / 100 : 0;
+    const currentBalance = userData && userData.balance ? userData.balance : 0;
     if (amount > currentBalance) {
         displayFormMessage(`Insufficient balance. Your current balance is $${currentBalance.toFixed(2)}.`, 'error');
 
@@ -754,8 +755,8 @@ function setupEnhancedInteractions() {
             const value = parseFloat(e.target.value);
             const amountHint = amountInput.parentElement.parentElement.querySelector('.amount-hint');
             const userData = auth.getUserData();
-            const currentBalance = userData && userData.balance ? userData.balance / 100 : 0;
-
+            const currentBalance = userData && userData.balance ? userData.balance : 0;
+            console.log("1: " + currentBalance);
             if (value >= 0.5 && value <= Math.min(10000, currentBalance)) {
                 amountInput.classList.remove('is-invalid');
                 amountInput.classList.add('is-valid');
@@ -801,7 +802,7 @@ function setupQuickAmountButtons() {
     const quickAmounts = document.querySelectorAll('.quick-amount');
     const amountInput = document.getElementById('withdrawal-amount');
     const userData = auth.getUserData();
-    const currentBalance = userData && userData.balance ? userData.balance / 100 : 0;
+    const currentBalance = userData && userData.balance ? userData.balance : 0;
 
     if (!quickAmounts.length || !amountInput) return;
 
@@ -811,6 +812,7 @@ function setupQuickAmountButtons() {
         if (amount > currentBalance) {
             button.classList.add('disabled');
             button.setAttribute('title', 'Insufficient balance');
+            console.log("2: " + currentBalance);
         } else {
             button.addEventListener('click', () => {
                 // Remove selected class from all buttons
@@ -923,17 +925,17 @@ async function updateWithdrawalStatistics() {
         }
 
     } catch (error) {
-        console.error('Error fetching withdrawal statistics:', error);
+        console.log('Error fetching withdrawal statistics:', error);
         // Use placeholder values if API call fails
 
         // Set placeholder values with animation
         const placeholders = [
-            {id: 'monthly-withdrawals-value', value: '$225.00'},
-            {id: 'withdrawal-frequency', value: '1 per month'},
-            {id: 'average-withdrawal-value', value: '$112.50'},
-            {id: 'total-withdrawals-count', value: '4'},
-            {id: 'withdrawal-trend-percentage', value: '10%'},
-            {id: 'last-withdrawal-date', value: 'Last week'}
+            {id: 'monthly-withdrawals-value', value: '-'},
+            {id: 'withdrawal-frequency', value: '- per month'},
+            {id: 'average-withdrawal-value', value: '-'},
+            {id: 'total-withdrawals-count', value: '-'},
+            {id: 'withdrawal-trend-percentage', value: '-%'},
+            {id: 'last-withdrawal-date', value: 'unknown'}
         ];
 
         placeholders.forEach(item => {
