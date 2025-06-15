@@ -839,11 +839,10 @@ async function updateDepositStatistics() {
         const data = await response.json();
 
         const updates = [
-            {el: 'monthly-deposits-value', value: data.monthly_total / 100, animate: true},
-            {el: 'deposit-frequency', value: `${data.frequency} per month`},
-            {el: 'average-deposit-value', value: data.average_amount / 100, animate: true},
-            {el: 'total-deposits-count', value: data.total_count},
-            {el: 'deposit-trend-percentage', value: `${data.trend_percentage}%`}
+            {el: 'monthly-deposits-value', value: data.monthly_average, animate: true},
+            {el: 'deposit-frequency', value: `${data.monthly_deposits}`},
+            {el: 'average-deposit-value', value: data.average_deposit, animate: true},
+            {el: 'total-deposits-count', value: data.total_deposits}
         ];
 
         updates.forEach(({el, value, animate}) => {
@@ -857,11 +856,10 @@ async function updateDepositStatistics() {
     } catch (error) {
         console.error('Error fetching deposit statistics:', error);
         const placeholders = [
-            {el: 'monthly-deposits-value', value: 325.00, animate: true},
-            {el: 'deposit-frequency', value: '2 per month'},
-            {el: 'average-deposit-value', value: 162.50, animate: true},
-            {el: 'total-deposits-count', value: '6'},
-            {el: 'deposit-trend-percentage', value: '15%'}
+            {el: 'monthly-deposits-value', value: "-", animate: true},
+            {el: 'deposit-frequency', value: '- per month'},
+            {el: 'average-deposit-value', value: "-", animate: true},
+            {el: 'total-deposits-count', value: '-'}
         ];
         placeholders.forEach(({el, value, animate}) => {
             const element = document.getElementById(el);

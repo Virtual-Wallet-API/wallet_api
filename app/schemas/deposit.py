@@ -126,6 +126,9 @@ class DepositHistoryResponse(BaseModel):
     total_matching: int
     total_amount: float
     pending_amount: float
+    monthly_deposits: Optional[float] = 0
+    monthly_average: Optional[float] = 0
+    average_deposit: Optional[float] = 0
 
     class Config:
         from_attributes = True
@@ -142,6 +145,9 @@ class DepositStatsResponse(BaseModel):
     failed_deposits: int
     completed_withdrawals: int
     average_amount: float
+    monthly_deposits: Optional[float] = 0
+    monthly_average: Optional[float] = 0
+    average_deposit: Optional[float] = 0
 
     class Config:
         from_attributes = True

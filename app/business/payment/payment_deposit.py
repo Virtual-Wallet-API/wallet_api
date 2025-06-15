@@ -132,5 +132,8 @@ class DepositService:
             pending_deposits=pending_deposits,
             failed_deposits=failed_deposits,
             completed_withdrawals=completed_withdrawals,
-            average_amount=average_amount
+            average_amount=average_amount,
+            monthly_deposits=user.deposits_per_month,
+            monthly_average=user.deposit_avg_monthly,
+            average_deposit=user.average_deposit_amount
         )
