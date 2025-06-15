@@ -33,7 +33,7 @@ class UserAuthService:
                     hashed_password=user_data.password,  # TODO: hash passwords
                     email=user_data.email,
                     phone_number=user_data.phone_number,
-                    email_key=hash_email(user_data.email).replace("/", ""))
+                    email_key=hash_email(user_data.email).replace("/", "").replace(".", ""))
 
         db.add(user)
         db.commit()

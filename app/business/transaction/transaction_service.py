@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional, Annotated
 
 from fastapi import HTTPException, Query
@@ -262,9 +263,11 @@ class TransactionService:
                 status_code=400,
                 detail=f"Cannot cancel transaction with status: {transaction.status.value}. Only pending and awaiting confirmation transactions can be cancelled."
             )
-
+        print("Cancelling transaction")
         try:
             transaction.status = TransactionStatus.CANCELLED
+            user.release_reserved_funds(transaction.amount)
+
             db.commit()
             db.refresh(transaction)
 
@@ -301,8 +304,14 @@ class TransactionService:
         """
         # Start with base query for user transactions
         query = user.get_transactions(db)
-        date_from = history_filter.date_from
-        date_to = history_filter.date_to
+        if history_filter.date_from:
+            date_from = history_filter.date_from
+        else:
+            date_from = None
+        if history_filter.date_to:
+            date_to = history_filter.date_to + timedelta(days=2)
+        else:
+            date_to = None
         sender_id = history_filter.sender_id
         receiver_id = history_filter.receiver_id
         direction = history_filter.direction
@@ -355,7 +364,7 @@ class TransactionService:
         total_count = len(transactions)
 
         # For financial totals, only include COMPLETED transactions from filtered results
-        completed_filtered = [t for t in transactions if t.status == TransactionStatus.COMPLETED]
+        completed_filtered = [t for t in transactions if t.status == TransactionStatus.COMPLETED or t.status == TransactionStatus.AWAITING_ACCEPTANCE]
         outgoing_total = sum([t.amount for t in completed_filtered if t.sender_id == user.id])
         incoming_total = sum([t.amount for t in completed_filtered if t.receiver_id == user.id])
 

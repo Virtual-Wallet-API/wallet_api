@@ -88,6 +88,7 @@ class UserPublicResponse(UserPublicBase):
 class UserResponse(UserBase):
     id: int
     balance: float = 0.0
+    reserved_balance: float = 0.0
     status: Status = Status.pending
     admin: bool = False
 

@@ -90,7 +90,7 @@ def create_transaction(transaction_data: TransactionCreate,
     return TransactionService.create_pending_transaction(db, user, transaction_data)
 
 
-@router.put("/status/{transaction_id}", response_model=TransactionResponse,
+@router.put("/{transaction_id}/status", response_model=TransactionResponse,
             description="Update the status of a transaction.")
 def update_transaction_status(transaction_id: int,
                               status: TransactionStatusUpdate,

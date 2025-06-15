@@ -87,7 +87,11 @@ class Auth {
         userData.username = uData.username;
         userData.email = uData.email;
         userData.phone_number = uData.phone_number;
-        userData.balance = uData.balance;
+        if (uData.reserved_balance) {
+            userData.balance = uData.balance - uData.reserved_balance;
+        } else {
+            userData.balance = uData.balance;
+        }
         userData.avatar = uData.avatar;
         userData.status = uData.status;
         token = access_token;
@@ -296,6 +300,7 @@ class Auth {
                 return null;
             }
 
+            console.log(udata);
             this.setUserData(udata, token);
             this.setLastRefreshTimestamp();
             userDataLoaded = true;

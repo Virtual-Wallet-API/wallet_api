@@ -20,8 +20,8 @@ class TransactionValidators:
         if amount <= 0:
             raise HTTPException(status_code=400, detail="Transaction amount must be positive")
 
-        if amount > 999999.99:  # Set reasonable upper limit
-            raise HTTPException(status_code=400, detail="Transaction amount exceeds maximum limit")
+        if amount > 10000:  # Set reasonable upper limit
+            raise HTTPException(status_code=400, detail="Transaction amount exceeds maximum limit ($10,000)")
 
         # Round to 2 decimal places for currency precision
         return round(amount, 2)

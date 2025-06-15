@@ -236,7 +236,7 @@ class Auth {
 
         const now = new Date().getTime();
         const lastRefresh = await this.getLastRefreshTimestamp();
-        const fiveMinutes = 5 * 60 * 1000;
+        const fiveMinutes = 1 * 60 * 1000;
         if (lastRefresh && now - lastRefresh < fiveMinutes) {
             this.setUserData(this.getUserData() || {}, token);
             console.log('Skipping refresh, less than 5 minutes since last refresh.');

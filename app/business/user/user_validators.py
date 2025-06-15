@@ -20,15 +20,20 @@ class UserValidators:
         :return: The user object if found, otherwise returns False.
         """
         identifier_map = {
-            "id": User.id,
-            "username": User.username,
-            "email": User.email,
-            "phone": User.phone_number
+            "id": int,
+            "username": str,
+            "email": str,
+            "phone": str
         }
 
         user = None
         for field, value in identifier_map.items():
+            if not isinstance(identifier, value):
+                continue
+
             user = UserValidators.find_user_with(field, identifier, db)
+            print("Tested: ", field, identifier)
+            print("===")
             if user:
                 return user
 
