@@ -296,9 +296,10 @@ class StripeDepositService:
                 if confirm_data.save_card and pmethod:
                     card = None
                     try:
+                        cardholder = confirm_data.cardholder_name if confirm_data.cardholder_name else user.username
                         card = await StripeCardService.save_card_from_payment_method(
                             db, user, pmethod,
-                            user.username
+                            cardholder
                         )
                     except Exception as e:
                         traceback.print_tb(e.__traceback__)

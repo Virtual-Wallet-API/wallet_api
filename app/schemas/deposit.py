@@ -61,6 +61,7 @@ class DepositWithCard(BaseModel):
     card_id: int
     description: Optional[str] = None
     currency_code: str = "USD"
+    cardholder_name: Optional[str] = None
 
     @field_validator('amount_cents')
     @classmethod
@@ -160,6 +161,7 @@ class DepositPaymentIntentCreate(BaseModel):
     description: Optional[str] = "Wallet deposit"
     save_payment_method: bool = False
     payment_method_id: str
+    cardholder_name: Optional[str] = None
 
     @field_validator('amount_cents')
     @classmethod

@@ -279,6 +279,7 @@ function updateFormForSelection() {
     const selectEl = document.getElementById('select-payment-method');
     const cardIconEl = document.getElementById('selected-card-brand-icon');
     const newCardGroup = document.getElementById('stripe-card-element-group');
+    const cardholderNameGroup = document.getElementById('cardholder-name-group');
     const saveCardOption = document.getElementById('save-new-card-option');
 
     if (!selectEl || !cardIconEl) return;
@@ -290,25 +291,19 @@ function updateFormForSelection() {
     cardIconEl.className = getCardBrandIcon(brand);
 
     if (selectedValue === 'new') {
-        if (newCardGroup) {
-            newCardGroup.style.display = 'block';
-            newCardGroup.style.opacity = '0';
-            setTimeout(() => {
-                newCardGroup.style.opacity = '1';
-                newCardGroup.style.transform = 'translateY(0)';
-            }, 10);
-        }
-        if (saveCardOption) {
-            saveCardOption.style.display = 'flex';
-            saveCardOption.style.opacity = '0';
-            setTimeout(() => {
-                saveCardOption.style.opacity = '1';
-                saveCardOption.style.transform = 'translateY(0)';
-            }, 150);
-        }
+        [newCardGroup, cardholderNameGroup, saveCardOption].forEach(el => {
+            if (el) {
+                el.style.display = 'block';
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 10);
+            }
+        });
         if (stripeCardElement) setTimeout(() => stripeCardElement.focus(), 300);
     } else {
-        [newCardGroup, saveCardOption].forEach(el => {
+        [newCardGroup, cardholderNameGroup, saveCardOption].forEach(el => {
             if (el) {
                 el.style.opacity = '0';
                 el.style.transform = 'translateY(-10px)';
@@ -518,13 +513,34 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
     const saveCardCheckbox = document.getElementById('checkbox-save-card');
     const saveCard = isNewCard && saveCardCheckbox?.checked;
 
+    let cardholderName = '';
+    if (isNewCard) {
+        const cardholderNameInput = document.getElementById('deposit-cardholder-name');
+        if (!cardholderNameInput) {
+            console.error('Cardholder name input not found');
+            displayFormMessage('Form error: Cardholder name field missing.', 'error');
+            setLoadingState(false);
+            return;
+        }
+        cardholderName = cardholderNameInput.value.trim();
+        if (!cardholderName) {
+            displayFormMessage('Please enter the cardholder name.', 'error');
+            cardholderNameInput.classList.add('is-invalid');
+            setTimeout(() => cardholderNameInput.classList.remove('is-invalid'), 3000);
+            setLoadingState(false);
+            return;
+        }
+        cardholderNameInput.classList.add('is-valid');
+        setTimeout(() => cardholderNameInput.classList.remove('is-valid'), 2000);
+    }
+
     try {
         let paymentMethodToUse = selectedPaymentMethodId;
         if (isNewCard) {
             const {paymentMethod, error} = await stripeInstance.createPaymentMethod({
                 type: 'card',
                 card: stripeCardElement,
-                billing_details: {name: userData?.username || 'VWallet User'}
+                billing_details: {name: cardholderName}
             });
             if (error) throw new Error(error.message || 'Failed to create payment method.');
             paymentMethodToUse = paymentMethod.id;
@@ -536,7 +552,8 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
             body: JSON.stringify({
                 amount_cents: Math.round(amount * 100),
                 payment_method_id: paymentMethodToUse,
-                save_payment_method: saveCard
+                save_payment_method: saveCard,
+                cardholder_name: isNewCard ? cardholderName : undefined
             })
         });
 
@@ -555,7 +572,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
             body: JSON.stringify({
                 payment_intent_id,
                 save_card: saveCard,
-                cardholder_name: userData?.username || 'VWallet User'
+                cardholder_name: isNewCard ? cardholderName : userData?.username || 'VWallet User'
             })
         });
 
@@ -567,6 +584,7 @@ document.getElementById('deposit-form-main')?.addEventListener('submit', async (
         }
 
         if (isNewCard && stripeCardElement) stripeCardElement.clear();
+        if (isNewCard) document.getElementById('deposit-cardholder-name').value = '';
 
         displayFormMessage(`Deposit of $${amount.toFixed(2)} successful!`, 'success');
 

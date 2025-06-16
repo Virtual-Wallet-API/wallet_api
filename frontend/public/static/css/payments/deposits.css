@@ -185,7 +185,7 @@
     transition: color 0.2s ease;
 }
 
-.balance-updated {
+.balance-updating {
     animation: shake 0.5s;
 }
 
@@ -311,7 +311,7 @@
     display: flex;
     align-items: center;
     font-size: 0.8rem;
-    color: #28a745;
+    color: var(--bs-success);
 }
 
 .trend-indicator i {
@@ -385,7 +385,8 @@
     font-size: 0.9rem;
 }
 
-.amount-input-group {
+.amount-input-group,
+.cardholder-input-group {
     display: flex;
     align-items: center;
     position: relative;
@@ -402,7 +403,8 @@
     z-index: 5;
 }
 
-input[type="number"].form-control {
+input[type="number"].form-control,
+input[type="text"].form-control {
     padding-left: 3.5rem;
     height: 2.75rem;
     background-color: var(--input-bg);
@@ -413,9 +415,23 @@ input[type="number"].form-control {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+#deposit-cardholder-name.form-control {
+    padding-left: 1rem; /* No icon prefix for cardholder name */
+}
+
 .form-control:focus {
     border-color: var(--accent-color);
     box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.15);
+}
+
+.form-control.is-valid {
+    border-color: var(--bs-success);
+    background-image: none;
+}
+
+.form-control.is-invalid {
+    border-color: var(--bs-danger);
+    background-image: none;
 }
 
 .amount-hint {
@@ -423,6 +439,15 @@ input[type="number"].form-control {
     color: var(--text-muted);
     margin-top: 0.4rem;
     text-align: right;
+    transition: color 0.2s ease;
+}
+
+.amount-hint.text-success {
+    color: var(--bs-success);
+}
+
+.amount-hint.text-danger {
+    color: var(--bs-danger);
 }
 
 .saved-cards-input-group {
@@ -438,10 +463,15 @@ select.form-control {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
-    border-radius: var(--card-radius); /* Match other inputs */
+    border-radius: var(--card-radius);
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);
     transition: all 0.2s ease;
+}
+
+select.form-control:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.15);
 }
 
 .stripe-element {
@@ -450,6 +480,12 @@ select.form-control {
     padding: 0.75rem;
     background-color: var(--input-bg);
     transition: all var(--animation-timing);
+}
+
+.stripe-element:focus,
+.stripe-element--focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.15);
 }
 
 /* Deposit Options - Refined */
@@ -493,7 +529,10 @@ select.form-control {
     color: var(--accent-color);
     font-weight: 600;
     transform: scale(1.05);
-    background-color: rgba(var(--accent-color-rgb), 0.2);
+}
+
+.quick-amount.pulse {
+    animation: subtlePulse 0.5s ease;
 }
 
 /* Button Styling - Refined */
@@ -519,6 +558,12 @@ select.form-control {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.btn-confirm-deposit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-manage-cards {
     background: transparent;
     border: none;
@@ -528,6 +573,11 @@ select.form-control {
     align-items: center;
     padding: 0;
     cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.btn-manage-cards:hover {
+    color: var(--accent-color-hover);
 }
 
 .btn-manage-cards i {
@@ -541,16 +591,20 @@ select.form-control {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    opacity: 0;
+    transition: opacity var(--animation-timing), transform var(--animation-timing);
 }
 
 .save-card-option input {
     margin: 0;
+    cursor: pointer;
 }
 
 .save-card-option label {
     font-size: 0.85rem;
     margin-bottom: 0;
     cursor: pointer;
+    color: var(--text-color);
 }
 
 /* Recent Deposits Card - Refined */
@@ -648,6 +702,10 @@ select.form-control {
     position: relative;
 }
 
+.deposit-list-item .info-icon:hover {
+    opacity: 1;
+}
+
 .deposit-list-item .info-icon::before {
     content: '';
     position: absolute;
@@ -702,6 +760,7 @@ select.form-control {
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
     font-weight: 500;
+    color: var(--text-color);
 }
 
 .tip-content p {
@@ -767,6 +826,7 @@ select.form-control {
     font-weight: 600;
     display: flex;
     align-items: center;
+    color: var(--text-color);
 }
 
 .modal-header h5 i {
@@ -840,6 +900,12 @@ select.form-control {
     opacity: 1;
 }
 
+.btn-set-default {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    transition: all var(--animation-timing);
+}
+
 .transaction-detail-item {
     display: flex;
     justify-content: space-between;
@@ -888,6 +954,52 @@ select.form-control {
     animation: spin 1.5s infinite linear;
 }
 
+/* Stripe Critical Error Box */
+.stripe-critical-error-box {
+    text-align: center;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity var(--animation-timing);
+}
+
+.stripe-critical-error-box .error-icon i {
+    font-size: 2rem;
+    color: var(--bs-danger);
+    margin-bottom: 0.5rem;
+}
+
+.btn-refresh-page {
+    margin-top: 1rem;
+}
+
+/* Toggle Icon for Recent Deposits */
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon.up {
+    transform: rotate(180deg);
+}
+
+.toggle-icon.hover-effect {
+    transform: scale(1.2);
+}
+
+/* Form Input Focus State */
+.input-focused {
+    transform: translateY(-2px);
+}
+
+.input-focused .form-control,
+.input-focused .stripe-element {
+    box-shadow: 0 0 0 0.2rem rgba(var(--accent-color-rgb), 0.15);
+}
+
+/* Success Animation for Form Submission */
+.deposit-form-card.success {
+    animation: subtlePulse 0.5s ease;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 991.98px) {
     .page-header {
@@ -902,6 +1014,10 @@ select.form-control {
 
     .options-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .action-card {
+        min-width: 100px;
     }
 }
 
@@ -926,8 +1042,13 @@ select.form-control {
         left: 0.75rem;
     }
 
-    input[type="number"].form-control {
+    input[type="number"].form-control,
+    input[type="text"].form-control {
         padding-left: 2.75rem;
+    }
+
+    #deposit-cardholder-name.form-control {
+        padding-left: 1rem;
     }
 }
 
@@ -953,5 +1074,13 @@ select.form-control {
 
     .deposit-list-item .status {
         margin-left: 0;
+    }
+
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-amount {
+        padding: 0.5rem;
     }
 }
