@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.innerHTML = '';
             if (data.transactions && data.transactions.length > 0) {
                 data.transactions.forEach(transaction => {
-                    container.appendChild(createTransactionElement(transaction));
+                    container.appendChild(createTransactionElement(transaction, status));
                 });
                 viewMoreContainer.style.display = data.has_more ? 'block' : 'none';
             } else {
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return data
     }
 
-    function createTransactionElement(transaction) {
+    function createTransactionElement(transaction, status) {
         const div = document.createElement('div');
         div.className = 'transaction-item';
         div.dataset.id = transaction.id;
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="status">${transaction.status.replace('_', ' ')}</span>
             <span class="amount">$${transaction.amount.toFixed(2)}</span>
         `;
-        div.addEventListener('click', () => showTransactionDetails(transaction));
+        div.addEventListener('click', () => showTransactionDetails(transaction, status));
         return div;
     }
 
@@ -283,6 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('modal-description').textContent = transactionData.description || 'No description';
             window.currentTransactionId = data.id;
             showSuccess('Transaction created successfully');
+            document.getElementById("confirm-transaction-btn2").style.display = 'block';
             transactionConfirmModal.show();
             // Add to pending transactions
             const transactionElement = createTransactionElement({
@@ -291,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 description: transactionData.description,
                 status: 'pending',
                 amount: transactionData.amount
-            });
+            }, "pending");
             document.getElementById('initial-pending').prepend(transactionElement);
             await loadSummaryData();
             await updateBalanceDisplay();
@@ -401,7 +402,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function showTransactionDetails(transaction) {
+    function showTransactionDetails(transaction, status) {
         document.getElementById('detail-modal-date').textContent = new Date(transaction.date).toLocaleString();
         document.getElementById('detail-modal-receiver').textContent = transaction.receiver_id || transaction.identifier;
         document.getElementById('detail-modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
@@ -412,6 +413,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const cancelButton = document.getElementById('cancel-transaction-btn');
         cancelButton.style.display = transaction.status === 'pending' ? 'inline-block' : 'inline-block';
 
+        if (status == "awaiting") {
+            document.getElementById("confirm-transaction-btn2").style.display = 'none';
+        } else {
+            document.getElementById("confirm-transaction-btn2").style.display = 'block';
+        }
         transactionDetailsModal.show();
     }
 
