@@ -109,6 +109,7 @@ class WithdrawalPublicResponse(BaseModel):
     created_at: datetime
     completed_at: Optional[datetime]
     card_info: Optional[CardPublicResponse] = None
+    card_last_four: str
 
     # @field_validator('withdrawal_type', mode='before')
     # @classmethod
@@ -177,6 +178,10 @@ class WithdrawalStatsResponse(BaseModel):
     total_payouts: int
     refund_amount: float
     payout_amount: float
+    total_lasts_month: int
+    total_amount_last_month: float
+    withdraw_frequency: int
+    average_last_month: float
 
     class Config:
         from_attributes = True

@@ -107,6 +107,10 @@ class Withdrawal(Base):
     # Properties
 
     @property
+    def card_last_four(self):
+        return self.card.last_four
+
+    @property
     def is_completed(self) -> bool:
         """Check if withdrawal is completed"""
         return self.status == WithdrawalStatus.COMPLETED

@@ -237,7 +237,11 @@ class WithdrawalService:
             total_refunds=len(refunds),
             total_payouts=len(payouts),
             refund_amount=sum(r.amount for r in refunds if r.is_completed),
-            payout_amount=sum(p.amount for p in payouts if p.is_completed)
+            payout_amount=sum(p.amount for p in payouts if p.is_completed),
+            total_lasts_month=user.total_withdrawals_last_month,
+            total_amount_last_month=user.total_withdrawn_amount_last_month,
+            withdraw_frequency=user.withdrawal_frequency,
+            average_last_month=user.average_last_month
         )
 
     @staticmethod

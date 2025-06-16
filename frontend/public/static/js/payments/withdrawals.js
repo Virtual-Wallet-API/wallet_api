@@ -142,7 +142,7 @@ function displayFormMessage(message, type = 'error') {
             setTimeout(() => {
                 messageDiv.style.display = 'none';
             }, 500); // Wait for transition to complete
-        }, 6000);
+        }, 30000);
     }
 }
 
@@ -424,7 +424,7 @@ async function loadRecentWithdrawals() {
 
                     item.innerHTML = `
                         <span class="date">${new Date(withdrawal.created_at).toLocaleDateString()}</span>
-                        <span class="card-details">Card **** ${withdrawal.card_last_four || 'N/A'}</span>
+                        <span class="card-details">Card ${withdrawal.card_last_four || '****'}</span>
                         <span class="status">${withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}</span>
                         <span class="amount text-danger">-$${withdrawalAmount}</span>
                         <span class="info-icon"><i class="bi bi-info-circle" data-withdrawal-id="${withdrawal.id}"></i></span>
@@ -482,7 +482,11 @@ async function loadRecentWithdrawals() {
 
     } catch (error) {
         console.error('Error loading recent withdrawals:', error);
-        listContainer.innerHTML = '<p class="text-danger p-3 text-center">Could not load recent withdrawals.</p>';
+        if (window.userData.status === "pending") {
+            listContainer.innerHTML = '<p class="text-danger p-3 text-center">You account is currently pending approval.</p>';
+        } else {
+            listContainer.innerHTML = '<p class="text-danger p-3 text-center">Could not load recent withdrawals.</p>';
+        }
         loadingDiv.style.display = 'none';
     }
 }
@@ -890,36 +894,44 @@ async function updateWithdrawalStatistics() {
 
         // Update monthly withdrawals value
         const monthlyWithdrawalsEl = document.getElementById('monthly-withdrawals-value');
-        if (monthlyWithdrawalsEl && data.monthly_total) {
-            animateBalanceChange(monthlyWithdrawalsEl, 0, data.monthly_total / 100);
+        console.log("Updating .... ")
+        if (monthlyWithdrawalsEl && data.total_amount_last_month) {
+            if (data.total_lasts_month > 0) {
+                animateBalanceChange(monthlyWithdrawalsEl, 0, data.total_amount_last_month);
+            }
         }
 
         // Update withdrawal frequency
         const frequencyEl = document.getElementById('withdrawal-frequency');
-        if (frequencyEl && data.frequency) {
-            frequencyEl.textContent = `${data.frequency} per month`;
+        console.log("Updating .... ")
+        if (frequencyEl && data.withdraw_frequency) {
+            frequencyEl.textContent = `${data.withdraw_frequency}`;
         }
 
         // Update average withdrawal
         const avgWithdrawalEl = document.getElementById('average-withdrawal-value');
-        if (avgWithdrawalEl && data.average_amount) {
-            animateBalanceChange(avgWithdrawalEl, 0, data.average_amount / 100);
+        console.log("Updating .... ")
+        if (avgWithdrawalEl && data.average_last_month) {
+            animateBalanceChange(avgWithdrawalEl, 0, data.average_last_month);
         }
 
         // Update total withdrawals count
         const totalCountEl = document.getElementById('total-withdrawals-count');
-        if (totalCountEl && data.total_count) {
-            totalCountEl.textContent = data.total_count;
+        console.log("Updating .... ")
+        if (totalCountEl && data.total_lasts_month) {
+            totalCountEl.textContent = data.total_lasts_month;
         }
 
         // Update trend percentage
         const trendEl = document.getElementById('withdrawal-trend-percentage');
+        console.log("Updating .... ")
         if (trendEl && data.trend_percentage) {
             trendEl.textContent = `${data.trend_percentage}%`;
         }
 
         // Update last withdrawal date
         const lastDateEl = document.getElementById('last-withdrawal-date');
+        console.log("Updating .... ")
         if (lastDateEl && data.last_withdrawal_date) {
             lastDateEl.textContent = new Date(data.last_withdrawal_date).toLocaleDateString();
         }
@@ -929,31 +941,33 @@ async function updateWithdrawalStatistics() {
         // Use placeholder values if API call fails
 
         // Set placeholder values with animation
-        const placeholders = [
-            {id: 'monthly-withdrawals-value', value: '-'},
-            {id: 'withdrawal-frequency', value: '- per month'},
-            {id: 'average-withdrawal-value', value: '-'},
-            {id: 'total-withdrawals-count', value: '-'},
-            {id: 'withdrawal-trend-percentage', value: '-%'},
-            {id: 'last-withdrawal-date', value: 'unknown'}
-        ];
-
-        placeholders.forEach(item => {
-            const el = document.getElementById(item.id);
-            if (el) {
-                if (item.id.includes('value')) {
-                    const numValue = parseFloat(item.value.replace('$', ''));
-                    animateBalanceChange(el, 0, numValue);
-                } else {
-                    el.textContent = item.value;
-                }
-            }
-        });
+        // const placeholders = [
+        //     {id: 'monthly-withdrawals-value', value: '-'},
+        //     {id: 'withdrawal-frequency', value: '-'},
+        //     {id: 'average-withdrawal-value', value: '-'},
+        //     {id: 'total-withdrawals-count', value: '-'},
+        //     {id: 'withdrawal-trend-percentage', value: '-'},
+        //     {id: 'last-withdrawal-date', value: '-'}
+        // ];
+        //
+        // placeholders.forEach(item => {
+        //     const el = document.getElementById(item.id);
+        //     if (el) {
+        //         if (item.id.includes('value')) {
+        //             const numValue = parseFloat(item.value.replace('$', ''));
+        //             animateBalanceChange(el, 0, numValue);
+        //         } else {
+        //             el.textContent = item.value;
+        //         }
+        //     }
+        // });
     }
 }
 
 // Enhanced initial setup
 document.addEventListener('DOMContentLoaded', async () => {
+
+
     console.log('Withdrawals page loaded - initializing with enhanced styling');
 
     // Apply page entrance animation
@@ -978,6 +992,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ensure balance updates on page load
     if (typeof refreshUserData === 'function') {
         await refreshUserData();
+        if (window.userData.status === "pending") {
+            displayFormMessage("You cannot currently withdraw money from your account due to its pending status. To get approved, add a card if you haven't already and await approval from an administrator.", "error");
+            document.getElementById("btn-submit-withdrawal").setAttribute("disabled", "true");
+        }
     }
     updateBalance();
 

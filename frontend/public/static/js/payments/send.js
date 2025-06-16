@@ -151,7 +151,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             let ddata = calculateOutTrend(data.transactions);
             document.getElementById('money-sent-value').textContent = `$${ddata.total_without_pending.toFixed(2)}`;
-            document.getElementById('avg-transaction-value').textContent = `$${(ddata.total_without_pending / (ddata.total_awaiting + ddata.total_completed)).toFixed(2)}`;
+            if (ddata.total_without_pending > 0) {
+                document.getElementById('avg-transaction-value').textContent = `$${(ddata.total_without_pending / (ddata.total_awaiting + ddata.total_completed)).toFixed(2)}`;
+            }
             document.getElementById('total-transactions-count').textContent = ddata.total_awaiting;
             document.getElementById('transaction-trend-value').textContent = `${ddata.total_completed.toFixed(0)}`;
         } catch (error) {

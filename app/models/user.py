@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import List
 
@@ -258,6 +258,32 @@ class User(Base):
         """Get all payouts for this withdrawal"""
         return [withdrawal for withdrawal in self.withdrawals
                 if withdrawal.withdrawal_type == WithdrawalType.PAYOUT]
+
+    @property
+    def total_withdrawals_last_month(self):
+        return sum([1 for w in self.withdrawals
+                    if datetime.now() + timedelta(days=2) >= w.completed_at >= datetime.now() - timedelta(days=30)])
+
+    @property
+    def total_withdrawn_amount_last_month(self):
+        return sum([w.amount for w in self.withdrawals
+                    if datetime.now() + timedelta(days=2) >= w.completed_at >= datetime.now() - timedelta(days=30)])
+
+    @property
+    def average_last_month(self):
+        if self.total_withdrawn_amount_last_month == 0:
+            return 0
+        return round(self.total_withdrawn_amount_last_month / self.total_withdrawals_last_month, 2)
+
+    @property
+    def withdrawal_frequency(self):
+        start = self.created_at
+        months = 0
+        while start < datetime.now():
+            months += 1
+            start += timedelta(days=30.5)
+
+        return int(len(self.withdrawals) / months)
 
     # Reserved balance methods for improved transaction flow
 
