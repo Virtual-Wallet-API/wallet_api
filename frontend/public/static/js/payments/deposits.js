@@ -343,7 +343,14 @@ function populateManageCardsModal(cards) {
 
     listContainer.innerHTML = '';
     if (!cards || cards.length === 0) {
-        if (noCardsMsg) noCardsMsg.style.display = 'block';
+        // Create and show the "no cards" message
+        const noCardsMsg = document.createElement('p');
+        noCardsMsg.id = 'no-saved-cards-message';
+        noCardsMsg.textContent = 'You have no saved cards.';
+        noCardsMsg.style.textAlign = 'center';
+        noCardsMsg.style.color = 'var(--text-muted)';
+        noCardsMsg.style.marginTop = '1rem';
+        listContainer.appendChild(noCardsMsg);
         return;
     }
 
