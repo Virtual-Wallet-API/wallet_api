@@ -10,6 +10,7 @@ from app.business.utils.notification_service import EmailTemplates
 from app.dependencies import get_db
 from app.infrestructure import generate_token, data_validators, auth, DataValidators, hash_email
 from app.models import User, UStatus
+from app.models.user import UserStatus
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -87,6 +88,9 @@ class UserAuthService:
         # TODO: Hash password
         if not user.hashed_password == user_data.password:
             raise exc
+
+        if user.status == UserStatus.EMAIL:
+            raise HTTPException(status_code=412, detail="Your email address is not verified, please check your inbox")
 
         if user.status == UStatus.BLOCKED:
             raise HTTPException(status_code=403, detail="Your account is blocked. Please contact support.")
