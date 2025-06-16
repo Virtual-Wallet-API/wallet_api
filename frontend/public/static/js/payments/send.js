@@ -102,22 +102,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await updateBalanceDisplay();
 
-    async function loadCategories() {
+    async function loadCategories(name = null) {
         try {
             const response = await fetch('/api/v1/categories', {
                 headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
             const data = await response.json();
             if (data.categories && data.categories.length > 0) {
-                categorySelect.innerHTML = '<option value="">Select a category</option>';
+                categorySelect.innerHTML = '<option value="">Select a category</option> <option value="add-category">Create new category</option>';
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
+                    if (category.name === name) {
+                        setTimeout( () => {
+                            categorySelect.value = category.id
+                        }, 1750);
+                    }
                 });
             } else {
-                document.getElementById('category-group').style.display = 'none';
+                categorySelect.innerHTML = '<option value="">Select a category</option> <option value="add-category">Create new category</option>';
+                categorySelect.value = ''
             }
             return data.categories;
         } catch (error) {
@@ -318,7 +324,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             addCategoryForm.reset();
             addCategoryModal.hide();
             showManageCategoriesSuccess('Category added successfully');
-            await loadCategories();
+            await loadCategories(name);
+
             await handleOpenManageCategories({
                 preventDefault: () => {
                 }
