@@ -659,4 +659,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             categorySelect.value = ''; // Reset to default
         }
     });
+
+    if (window.location.hash.startsWith("#contact-")) {
+        document.getElementById("receiver-identifier").value = window.location.hash.replace("#contact-", "");
+    }
 });
