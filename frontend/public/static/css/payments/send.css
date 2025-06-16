@@ -787,6 +787,10 @@ select.form-control {
     animation: spin 1.5s infinite linear;
 }
 
+#category-name {
+    padding-left: 0.75rem !important;
+}
+
 /* Responsive Adjustments (Copied from deposits.css) */
 @media (max-width: 991.98px) {
     .page-header {

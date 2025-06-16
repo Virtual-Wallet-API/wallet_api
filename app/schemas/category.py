@@ -1,5 +1,6 @@
 from typing import Optional, List, Dict, Any
 
+from fastapi import HTTPException
 from pydantic import BaseModel, field_validator
 
 from app.schemas.transaction import CategoryTransactionResponse
@@ -12,19 +13,19 @@ class CategoryBase(BaseModel):
     @field_validator('name')
     def validate_name(cls, v: str) -> str:
         if len(v) < 3 or len(v) > 32:
-            raise ValueError('Name must be between 3 and 32 characters long')
-        elif not v.isalnum():
-            raise ValueError('Name must only contain alphanumeric characters')
+            raise HTTPException(status_code=400, detail='Name must be between 3 and 32 characters long')
+        elif not v.replace(" ", "").isalnum():
+            raise HTTPException(status_code=400, detail='Name must only contain alphanumeric characters and spaces')
         return v
 
     @field_validator('description')
     def validate_description(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
-        if len(v) > 120:
-            raise ValueError('Description must be between 3 and 120 characters long')
+        if not 121 > len(v) > 2:
+            raise HTTPException(status_code=400, detail='Description must be between 3 and 120 characters long')
         elif not v.replace(",", "").replace(".", "").replace(" ", "").isalnum():
-            raise ValueError('Description must only contain alphanumeric characters, commas, periods, and spaces')
+            raise HTTPException(status_code=400, detail='Description must only contain alphanumeric characters, commas, periods, and spaces')
         return v
 
 

@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const formLoadingOverlay = document.getElementById('form-loading-overlay');
     const addCategoryCheckbox = document.getElementById('add-category-checkbox');
     const categoryGroup = document.getElementById('category-group');
+    const addCategoryModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+    const categoryNameInput = document.getElementById('category-name');
+    const categoryDescriptionInput = document.getElementById('category-description');
+    const submitCategoryBtn = document.getElementById('submit-category-btn');
+    const categoryErrorMessage = document.getElementById('category-error-message');
 
     // Modals
     const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
@@ -56,6 +61,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             button.classList.add('selected');
         });
     });
+    categorySelect.addEventListener('change', () => {
+        if (categorySelect.value === 'add_new') {
+            addCategoryModal.show();
+            categorySelect.value = '';
+        }
+    });
+    submitCategoryBtn.addEventListener('click', handleAddCategory);
+    document.getElementById('addCategoryModal').addEventListener('show.bs.modal', resetCategoryForm);
 
     // Load Data
     await Promise.all([
@@ -95,23 +108,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
             const data = await response.json();
+            categorySelect.innerHTML = '<option value="">Select a category</option>';
+            const addNewOption = document.createElement('option');
+            addNewOption.value = 'add_new';
+            addNewOption.textContent = 'Add a new category';
+            categorySelect.appendChild(addNewOption);
             if (data.categories && data.categories.length > 0) {
-                categorySelect.innerHTML = '<option value="">Choose a category</option>';
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
                 });
-                categorySelect.disabled = false;
-            } else {
-                categorySelect.innerHTML = '<option value="">You have no categories</option>';
-                categorySelect.disabled = true;
             }
+            categorySelect.disabled = false; // Never disable, even with no categories
         } catch (error) {
             console.error('Error loading categories:', error);
-            categorySelect.innerHTML = '<option value="">Error loading categories</option>';
-            categorySelect.disabled = true;
+            categorySelect.innerHTML = '<option value="">Select a category</option>' +
+                                     '<option value="add_new">Add a new category</option>';
+            categorySelect.disabled = false; // Keep enabled even on error
         }
     }
 
@@ -286,8 +301,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             transactionData.category_id = categorySelect.value;
         }
 
-        console.log(transactionData);
-
         setLoading(true);
         try {
             const response = await fetch('/api/v1/transactions', {
@@ -448,5 +461,68 @@ document.addEventListener('DOMContentLoaded', async () => {
             errorMessage.classList.remove('visible');
             setTimeout(() => errorMessage.style.display = 'none', 300);
         }, 10000);
+    }
+
+    function setCategoryLoading(isLoading) {
+        categoryNameInput.disabled = isLoading;
+        categoryDescriptionInput.disabled = isLoading;
+        submitCategoryBtn.disabled = isLoading;
+        if (isLoading) {
+            submitCategoryBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Adding...';
+        } else {
+            submitCategoryBtn.innerHTML = 'Add Category';
+        }
+    }
+
+    function showCategoryError(message) {
+        categoryErrorMessage.textContent = message;
+        categoryErrorMessage.style.display = 'block';
+        categoryErrorMessage.classList.add('visible');
+        setTimeout(() => {
+            categoryErrorMessage.classList.remove('visible');
+            setTimeout(() => categoryErrorMessage.style.display = 'none', 300);
+        }, 10000);
+    }
+
+    function resetCategoryForm() {
+        categoryNameInput.value = '';
+        categoryDescriptionInput.value = '';
+        categoryErrorMessage.style.display = 'none';
+    }
+
+    async function handleAddCategory() {
+        const name = categoryNameInput.value.trim();
+        const description = categoryDescriptionInput.value.trim();
+        if (!name) {
+            showCategoryError('Category name is required');
+            return;
+        }
+        setCategoryLoading(true);
+        try {
+            const response = await fetch('/api/v1/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({ name: name, description: description })
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to create category');
+            }
+            await loadCategories();
+            const newCategoryOption = Array.from(categorySelect.options).find(option => option.textContent === name);
+            if (newCategoryOption) {
+                categorySelect.value = newCategoryOption.value;
+            }
+
+            showSuccess('Category created successfully');
+            addCategoryModal.hide();
+        } catch (error) {
+            showCategoryError(error.message);
+        } finally {
+            setCategoryLoading(false);
+        }
     }
 });
