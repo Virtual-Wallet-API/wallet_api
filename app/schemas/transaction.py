@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -30,7 +30,7 @@ class TransactionCreate(BaseModel):
     category_id: Optional[int] = None
     currency_id: int = 1
     recurring: bool = False
-    interval: Optional[int] = 1
+    interval: Optional[Literal["day", "week", "month"]] = None
 
     @field_validator('category_id')
     def category_id_must_be_positive(cls, v):

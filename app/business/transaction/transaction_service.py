@@ -421,7 +421,7 @@ class TransactionService:
                 status_code=400,
                 detail=f"Cannot confirm transaction with status: {transaction.status.value}. Only pending transactions can be confirmed."
             )
-        transaction.status = TransactionStatus.AWAITING_ACCEPTANCE
+        transaction.status = TransactionStatus.ACCEPTED
         db.commit()
         db.refresh(transaction)
         return transaction
