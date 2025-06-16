@@ -110,7 +110,7 @@ The VWallet Team"""
                           }
 
     def format(self, user, **kwargs):
-        return {k: v.format(user=user, **kwargs) for k, v in self.value.items()}
+        return {k: v.format(user=user,support_email='admin@vwallet.ninja', **kwargs) for k, v in self.value.items()}
 
 
 class NotificationService:

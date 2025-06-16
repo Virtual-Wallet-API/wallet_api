@@ -9,7 +9,7 @@ from starlette import status
 from app.business import UAuth, UVal
 from app.business.user.user_contacts import UserContacts
 from app.dependencies import get_db, get_user_except_pending_fpr, get_user_except_fpr, get_user_even_with_fpr, \
-    get_current_admin, get_active_user_except_blocked
+    get_current_admin, get_active_user_except_blocked, getValidUser
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
 from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
@@ -140,7 +140,7 @@ def remove_contact(contact_id: int,
 def upload_avatar(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_active_user_except_blocked)
+    current_user: User = Depends(getValidUser)
 ):
     """
     Upload a user's profile photo (avatar) to Cloudinary.
