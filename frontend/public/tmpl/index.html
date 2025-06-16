@@ -169,6 +169,9 @@
                     <div class="mb-3">
                         <label class="form-label" for="password">Password</label>
                         <input class="form-control" id="password" required type="password" placeholder="Password">
+                        <div class="d-flex justify-content-end">
+                            <a href="#" id="forgot-password-link" class="small">Forgotten password?</a>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -221,9 +224,46 @@
         </div>
     </div>
 
+<!-- Password Reset Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="resetPasswordMessage" class="alert d-none"></div>
+                <form id="resetPasswordForm">
+                    <div class="mb-3">
+                        <label for="resetEmail" class="form-label">Enter your email address</label>
+                        <input type="email" class="form-control" id="resetEmail" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="resetPasswordForm">Send Reset Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap JS and jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 <script src="/static/js/index.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            const resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+            resetModal.show();
+        });
+    }
+});
+</script>
 </html>
