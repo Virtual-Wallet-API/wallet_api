@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
+import jwt, datetime
 
 from app.business.utils import NotificationService
 from app.business.user.user_validators import UserValidators as UVal
@@ -12,6 +13,7 @@ from app.infrestructure import generate_token, data_validators, auth, DataValida
 from app.models import User, UStatus
 from app.models.user import UserStatus
 from app.schemas.user import UserCreate, UserUpdate
+from app.config import SECRET_KEY, ALGORITHM
 
 
 class UserAuthService:
@@ -219,3 +221,51 @@ class UserAuthService:
         db.commit()
         db.refresh(user)
         return user
+
+    @classmethod
+    def request_password_reset(cls, db, email):
+        """
+        Generate a password reset token and send a reset link to the user's email.
+        - If the email exists, sends a reset link with a secure, time-limited token.
+        - Always returns a generic message for security.
+        """
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            return {"detail": "If the email exists, a reset link has been sent."}
+        payload = {
+            "sub": user.username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+            "purpose": "password_reset"
+        }
+        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        reset_link = f"http://127.0.0.1:8000/fe/reset-password?token={token}"
+        NotificationService.notify_from_template(EmailTemplates.PASSWORD_RESET, user, reset_link=reset_link)
+        return {"detail": "If the email exists, a reset link has been sent."}
+
+    @classmethod
+    def reset_password(cls, db, token, new_password):
+        """
+        Reset the user's password using the provided token.
+        - Verifies the token and sets the new password.
+        - Raises HTTP 400 if the token is invalid or expired.
+        """
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            if payload.get("purpose") != "password_reset":
+                raise jwt.InvalidTokenError()
+            username = payload["sub"]
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found")
+        
+        # Validate the new password
+        validated_password = DataValidators.validate_password(new_password)
+        
+        # Hash the password before storing
+        user.hashed_password = auth.hash_password(validated_password)
+        db.commit()
+        
+        return {"detail": "Password has been reset successfully."}
