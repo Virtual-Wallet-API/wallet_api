@@ -20,29 +20,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     const awaitingToggle = document.getElementById('toggle-awaiting-transactions');
     const awaitingContent = document.getElementById('awaiting-transactions-list-content');
     const formLoadingOverlay = document.getElementById('form-loading-overlay');
+    const addCategoryCheckbox = document.getElementById('add-category-checkbox');
+    const categoryGroup = document.getElementById('category-group');
+    const addCategoryModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+    const categoryNameInput = document.getElementById('category-name');
+    const categoryDescriptionInput = document.getElementById('category-description');
+    const submitCategoryBtn = document.getElementById('submit-category-btn');
+    const categoryErrorMessage = document.getElementById('category-error-message');
 
     // Modals
     const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
     const transactionDetailsModal = new bootstrap.Modal(document.getElementById('transactionDetailsModal'));
+    const manageCategoriesModal = new bootstrap.Modal(document.getElementById('manageCategoriesModal'));
 
     // Initial Setup
     balanceAmount.style.opacity = '0';
     balanceAmountLoading.style.display = 'block';
     pendingContent.style.display = 'block';
-    // pendingContent.style.maxHeight = `${pendingContent.scrollHeight}px`;
     pendingContent.style.opacity = '1';
     pendingToggle.setAttribute('aria-expanded', 'true');
     pendingToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
-
     awaitingContent.style.display = 'block';
-    // awaitingContent.style.maxHeight = `${awaitingContent.scrollHeight}px`;
     awaitingContent.style.opacity = '1';
     awaitingToggle.setAttribute('aria-expanded', 'true');
     awaitingToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
+    categoryGroup.style.display = 'none'; // Initially hide category group
 
     // Event Listeners
     sendForm.addEventListener('submit', handleFormSubmit);
     recurringCheckbox.addEventListener('change', toggleIntervalGroup);
+    addCategoryCheckbox.addEventListener('change', toggleCategoryGroup);
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     awaitingToggle.addEventListener('click', () => toggleSection(awaitingToggle, awaitingContent));
     document.getElementById('confirm-transaction-btn').addEventListener('click', confirmTransaction);
@@ -54,6 +61,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
         });
+    });
+    categorySelect.addEventListener('change', () => {
+        if (categorySelect.value === 'add_new') {
+            addCategoryModal.show();
+            categorySelect.value = '';
+        }
+    });
+    submitCategoryBtn.addEventListener('click', handleAddCategory);
+    document.getElementById('addCategoryModal').addEventListener('show.bs.modal', resetCategoryForm);
+    document.getElementById('open-manage-categories-modal').addEventListener('click', async () => {
+        await loadCategoriesForManagement();
+        manageCategoriesModal.show();
     });
 
     // Load Data
@@ -94,6 +113,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
             const data = await response.json();
+            categorySelect.innerHTML = '<option value="">Select a category</option>';
+            const addNewOption = document.createElement('option');
+            addNewOption.value = 'add_new';
+            addNewOption.textContent = 'Add a new category';
+            categorySelect.appendChild(addNewOption);
             if (data.categories && data.categories.length > 0) {
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
@@ -101,12 +125,131 @@ document.addEventListener('DOMContentLoaded', async () => {
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
                 });
-            } else {
-                document.getElementById('category-group').style.display = 'none';
             }
+            categorySelect.disabled = false; // Never disable, even with no categories
         } catch (error) {
             console.error('Error loading categories:', error);
-            document.getElementById('category-group').style.display = 'none';
+            categorySelect.innerHTML = '<option value="">Select a category</option>' +
+                                     '<option value="add_new">Add a new category</option>';
+            categorySelect.disabled = false; // Keep enabled even on error
+        }
+    }
+
+    async function loadCategoriesForManagement() {
+        const listContainer = document.getElementById('categories-list-container');
+        const noCategoriesMsg = document.getElementById('no-categories-message');
+
+        if (!listContainer || !noCategoriesMsg) return;
+
+        listContainer.innerHTML = '';
+        noCategoriesMsg.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/v1/categories', {
+                headers: { 'Authorization': `Bearer ${auth.getToken()}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch categories');
+            const data = await response.json();
+            const categories = data.categories || [];
+
+            if (categories.length === 0) {
+                noCategoriesMsg.style.display = 'block';
+                return;
+            }
+
+            categories.forEach((category, index) => {
+                const item = document.createElement('div');
+                item.className = 'category-entry';
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                item.innerHTML = `
+                    <div class="category-info">
+                        <span>${category.name}</span>
+                    </div>
+                    <div class="category-actions">
+                        <button type="button" class="btn-remove-category" data-category-id="${category.id}" aria-label="Delete category">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            listContainer.querySelectorAll('.btn-remove-category').forEach(btn => {
+                btn.addEventListener('click', handleDeleteCategory);
+            });
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            displayModalMessage('Could not load categories.', 'error', 'manageCategoriesModal');
+        }
+    }
+
+    async function handleDeleteCategory(event) {
+        const categoryId = event.currentTarget.dataset.categoryId;
+        if (!confirm('Are you sure you want to delete this category?')) return;
+
+        const token = auth.getToken();
+        if (!token) {
+            displayModalMessage('Authorization required. Please refresh the page.', 'error', 'manageCategoriesModal');
+            return;
+        }
+
+        const categoryItem = event.currentTarget.closest('.category-entry');
+        if (categoryItem) categoryItem.classList.add('removing');
+
+        try {
+            const response = await fetch(`/api/v1/categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to delete category.');
+            }
+
+            displayModalMessage('Category deleted successfully.', 'success', 'manageCategoriesModal');
+            if (categoryItem) {
+                categoryItem.style.height = `${categoryItem.offsetHeight}px`;
+                categoryItem.style.opacity = '0';
+                categoryItem.style.transform = 'translateX(50px)';
+                setTimeout(() => {
+                    categoryItem.style.height = '0';
+                    categoryItem.style.marginBottom = '0';
+                    categoryItem.style.padding = '0';
+                    setTimeout(() => {
+                        loadCategoriesForManagement();
+                        loadCategories();
+                    }, 300);
+                }, 300);
+            } else {
+                loadCategoriesForManagement();
+                loadCategories();
+            }
+        } catch (error) {
+            displayModalMessage(error.message || 'Could not delete category.', 'error', 'manageCategoriesModal');
+            if (categoryItem) categoryItem.classList.remove('removing');
+        }
+    }
+
+    function displayModalMessage(message, type = 'error', modalId = 'manageCategoriesModal') {
+        const messageId = type === 'success' ? 'manage-categories-success' : 'manage-categories-error';
+        const messageDiv = document.getElementById(messageId);
+        const otherMessageId = type === 'success' ? 'manage-categories-error' : 'manage-categories-success';
+        const otherMessageDiv = document.getElementById(otherMessageId);
+
+        if (otherMessageDiv) otherMessageDiv.style.display = 'none';
+        if (messageDiv) {
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            messageDiv.classList.add('visible');
+            setTimeout(() => {
+                messageDiv.classList.remove('visible');
+                setTimeout(() => messageDiv.style.display = 'none', 500);
+            }, 5000);
         }
     }
 
@@ -141,10 +284,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadSummaryData() {
         try {
-            // Calculate dates
-            const dateTo = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD
-            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
-
+            const dateTo = new Date().toISOString().split('T')[0];
+            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             const response = await fetch(`/api/v1/transactions/?date_from=${dateFrom}&date_to=${dateTo}&direction=out`, {
                 headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
@@ -169,7 +310,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             total_without_pending: 0,
             total_awaiting: 0
         };
-
         transactions.forEach((t) => {
             if (t.status === "completed") {
                 data.total_completed++;
@@ -185,8 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         });
-
-        return data
+        return data;
     }
 
     function createTransactionElement(transaction, status) {
@@ -218,6 +357,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 intervalGroup.style.display = 'none';
             }, 300);
+        }
+    }
+
+    function toggleCategoryGroup() {
+        if (addCategoryCheckbox.checked) {
+            categoryGroup.style.display = 'block';
+            setTimeout(() => {
+                categoryGroup.style.maxHeight = `${categoryGroup.scrollHeight}px`;
+                categoryGroup.style.opacity = '1';
+                categoryGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            }, 10);
+        } else {
+            categoryGroup.style.maxHeight = '0';
+            categoryGroup.style.opacity = '0';
+            categoryGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            setTimeout(() => {
+                categoryGroup.style.display = 'none';
+            }, 300);
+            categorySelect.value = '';
         }
     }
 
@@ -258,12 +416,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             identifier: receiverInput.value,
             amount: amount,
             description: descriptionInput.value,
-            category_id: categorySelect.value || null,
             recurring: recurringCheckbox.checked,
             interval: recurringCheckbox.checked ? intervalSelect.value : null
         };
 
-        console.log(transactionData)
+        if (addCategoryCheckbox.checked && categorySelect.value) {
+            transactionData.category_id = categorySelect.value;
+        }
 
         setLoading(true);
         try {
@@ -285,7 +444,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             showSuccess('Transaction created successfully');
             document.getElementById("confirm-transaction-btn2").style.display = 'block';
             transactionConfirmModal.show();
-            // Add to pending transactions
             const transactionElement = createTransactionElement({
                 id: data.id,
                 date: new Date().toISOString(),
@@ -309,8 +467,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('no-pending'),
             document.getElementById('no-awaiting'),
             document.getElementById('error-pending'),
-            document.getElementById('error-awaiting')]
-
+            document.getElementById('error-awaiting')
+        ];
         boxMessages.forEach(message => {
             if (message) {
                 message.remove();
@@ -337,28 +495,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             transactionConfirmModal.hide();
             showSuccess('Transaction confirmed successfully');
-
-            // // Move transaction to awaiting
-            // const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
-            // if (transactionElement) {
-            //     transactionElement.style.opacity = '0';
-            //     setTimeout(() => {
-            //         transactionElement.remove();
-            //         const awaitingElement = createTransactionElement({
-            //             id: transactionId,
-            //             date: new Date().toISOString(),
-            //             description: document.getElementById('modal-description').textContent,
-            //             status: 'awaiting_acceptance',
-            //             amount: parseFloat(document.getElementById('modal-amount').textContent.replace('$', ''))
-            //         });
-            //         document.getElementById('initial-awaiting').prepend(awaitingElement);
-            //     }, 300);
-            // }
             await auth.refreshOnEvent();
             await updateBalanceDisplay();
             sendForm.reset();
-            // toggleIntervalGroup();
-            // document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
             setTimeout(() => {
                 location.reload();
             }, 100);
@@ -389,7 +528,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await auth.refreshOnEvent();
             transactionDetailsModal.hide();
             showSuccess('Transaction cancelled successfully');
-
             const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
             if (transactionElement) {
                 transactionElement.style.opacity = '0';
@@ -446,5 +584,68 @@ document.addEventListener('DOMContentLoaded', async () => {
             errorMessage.classList.remove('visible');
             setTimeout(() => errorMessage.style.display = 'none', 300);
         }, 10000);
+    }
+
+    function setCategoryLoading(isLoading) {
+        categoryNameInput.disabled = isLoading;
+        categoryDescriptionInput.disabled = isLoading;
+        submitCategoryBtn.disabled = isLoading;
+        if (isLoading) {
+            submitCategoryBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Adding...';
+        } else {
+            submitCategoryBtn.innerHTML = 'Add Category';
+        }
+    }
+
+    function showCategoryError(message) {
+        categoryErrorMessage.textContent = message;
+        categoryErrorMessage.style.display = 'block';
+        categoryErrorMessage.classList.add('visible');
+        setTimeout(() => {
+            categoryErrorMessage.classList.remove('visible');
+            setTimeout(() => categoryErrorMessage.style.display = 'none', 300);
+        }, 10000);
+    }
+
+    function resetCategoryForm() {
+        categoryNameInput.value = '';
+        categoryDescriptionInput.value = '';
+        categoryErrorMessage.style.display = 'none';
+    }
+
+    async function handleAddCategory() {
+        const name = categoryNameInput.value.trim();
+        const description = categoryDescriptionInput.value.trim();
+        if (!name) {
+            showCategoryError('Category name is required');
+            return;
+        }
+        setCategoryLoading(true);
+        try {
+            const response = await fetch('/api/v1/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${auth.getToken()}`
+                },
+                body: JSON.stringify({ name: name, description: description })
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to create category');
+            }
+            await loadCategories();
+            const newCategoryOption = Array.from(categorySelect.options).find(option => option.textContent === name);
+            if (newCategoryOption) {
+                categorySelect.value = newCategoryOption.value;
+            } else {
+                showCategoryError('Failed to select the new category');
+            }
+            addCategoryModal.hide();
+        } catch (error) {
+            showCategoryError(error.message);
+        } finally {
+            setCategoryLoading(false);
+        }
     }
 });

@@ -14,6 +14,7 @@ class TransactionBase(BaseModel):
     amount: float
     description: Optional[str] = None
     category_id: Optional[int] = None
+    category_name: Optional[str] = None
     currency_id: int
 
 
