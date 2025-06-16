@@ -238,7 +238,7 @@ class UserAuthService:
             "purpose": "password_reset"
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        reset_link = f"http://127.0.0.1:8000/fe/reset-password?token={token}"
+        reset_link = f"http://127.0.0.1:8000/fe/reset-password?token={token}" # TODO: fix to use base URL from config when ready
         NotificationService.notify_from_template(EmailTemplates.PASSWORD_RESET, user, reset_link=reset_link)
         return {"detail": "If the email exists, a reset link has been sent."}
 

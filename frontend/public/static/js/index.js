@@ -9,7 +9,7 @@ function showMessage(elementId, message, isSuccess) {
 async function login() {
     if (auth.loggedIn()) {
         showMessage('loginMessage', 'You are already logged in, redirecting', true);
-        setTimeout(() => window.location.href = '/fe/account', 2500);
+        setTimeout(() => window.location.href = '/account', 1500);
         return;
     }
 
@@ -25,6 +25,7 @@ async function login() {
 
     if (loginAttempt.success) {
         showMessage('loginMessage', loginAttempt.message, true);
+        window.location.href = '/account';
         return true;
     } else {
         showMessage('loginMessage', loginAttempt.message, false);
@@ -123,8 +124,21 @@ if (resetPasswordForm) {
 }
 
 // Check if the URL ends with #email-confirmed
-if (window.location.hash === '#email-confirmed') {
+if (window.location.hash === '#login-email') {
     const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
     loginModal.show();
     showMessage('loginMessage', 'Your email has been successfully verified. You can now log in.', true);
+}
+
+// Check if the URL ends with #login
+if (window.location.hash === '#login-error') {
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
+    showMessage('loginMessage', 'Something went wrong, please log in again.', false);
+}
+
+// Check if the URL ends with #login
+if (window.location.hash === '#login') {
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
 }

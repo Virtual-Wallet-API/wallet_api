@@ -1,61 +1,51 @@
-let isInitialized = false;
-
 async function initializeBaseScripts() {
-    if (isInitialized) {
-        return;
+
+    try {
+        if (isInitialized) return;
+    } catch (error) {
+        isInitialized = true;
     }
-    isInitialized = true;
 
     const pageContentLoaded = new Promise(resolve => {
-        const timeoutId = setTimeout(() => {
-            resolve();
-        }, 1000);
-
+        const timeoutId = setTimeout(resolve, 1000);
         document.addEventListener('pageContentLoaded', () => {
             clearTimeout(timeoutId);
             resolve();
-        }, {once: true});
+        }, { once: true });
     });
 
-    // const logoutButton = document.getElementById("logout-btn")
-    // if (logoutButton) {
-    //     logoutButton.addEventListener('click', async (e) => {
-    //         e.preventDefault();
-    //         await auth.logout();
-    //         window.location.href = '/fe/';
-    //     })}
-    // }
+    const logoutButton = document.getElementById("logout-btn");
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await auth.logout();
+            window.location.href = '/';
+        });
+    }
 
     try {
-        // Base requirements
         if (typeof jQuery === 'undefined' || typeof bootstrap === 'undefined') {
             throw new Error('jQuery or Bootstrap not loaded');
         }
 
-        // Fetch user data early
-        udata = auth.getUserData();
-        if (!udata || !udata.id) {
-            await auth.refreshUserData()
-        }
-
+        // Wait for page content to be fully loaded
         await pageContentLoaded;
 
-        // Page loaded
         const loadingScreen = document.getElementById('loading-screen');
         const mainContent = document.getElementById('main-content');
 
-        if (loadingScreen) loadingScreen.classList.add('hidden');
-        if (mainContent) {
-            mainContent.classList.remove('loading');
-            mainContent.classList.add('loaded');
-        }
-
-        // Ensure loading screen is removed from DOM after transition
-        if (loadingScreen) {
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500); // Match CSS transition duration
-        }
+        setTimeout(() => {
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500); // Match CSS transition duration
+            }
+            if (mainContent) {
+                mainContent.classList.remove('loading');
+                mainContent.classList.add('loaded');
+            }
+        }, 500);
 
     } catch (error) {
         console.error('Error initializing base scripts:', error);
@@ -70,8 +60,6 @@ async function initializeBaseScripts() {
         if (mainContent) {
             mainContent.classList.remove('loading');
             mainContent.classList.add('loaded');
-            // Optionally display an error message in main content
-            // mainContent.innerHTML = `<p class="text-danger text-center">Error loading page content.</p>`;
         }
     }
 }

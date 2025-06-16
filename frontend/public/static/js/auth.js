@@ -21,14 +21,24 @@ class Auth {
             const success = await this.refreshUserData();
             if (!success) {
                 console.log('Initialization failed, redirecting to login.');
-                // window.location.href = '/login';
+                window.location.href = '/#login';
                 return false;
             }
             return true;
         }
-        console.log('Not logged in or preventAuth is true, redirecting to login.');
-        // window.location.href = '/login';
-        return false;
+        let href = window.location.href;
+        href = href.endsWith("#login") ? href.slice(0, -7) : href;
+        href = href.endsWith("#login-email") ? href.slice(0, -13) : href;
+        href = href.endsWith("#login-error") ? href.slice(0, -13) : href;
+        href = href.endsWith("/") ? href.slice(0, -1) : href;
+
+        if (window.location.origin.toString() === href.toString()) {
+            return true;
+        } else {
+            console.log('Not logged in or preventAuth is true, redirecting to login.');
+            window.location.href = '/#login';
+            return false;
+        }
     }
 
 
@@ -296,7 +306,7 @@ class Auth {
             if (userDataLoaded && udata.username !== userData.username) {
                 console.log('User data changed, clearing auth data.');
                 this.clearAuthData();
-                window.location.reload();
+                window.location.href = '/#login';
                 return null;
             }
 
@@ -333,7 +343,7 @@ class Auth {
     // Logout user
     logout() {
         this.clearAuthData();
-        //window.location.reload();
+        window.location.href = '/';
     }
 }
 
@@ -369,7 +379,7 @@ if (typeof preventAuth === 'undefined') {
 if (!preventAuth) {
     if (!auth.loggedIn()) {
         console.log("Not logged in.");
-        window.location.href = '/fe/';
+        window.location.href = '/#login';
     } else {
         auth.refreshUserData(); // Call instance method
     }

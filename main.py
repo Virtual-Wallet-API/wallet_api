@@ -65,7 +65,7 @@ app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 app.include_router(transactions_router, prefix=prefix + "/transactions")
 
 # Frontend routes
-app.include_router(root_router, tags=["Frontend"], prefix="/fe")
+app.include_router(root_router, tags=["Frontend"])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
