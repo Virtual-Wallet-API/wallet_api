@@ -1,7 +1,7 @@
 from typing import List, Dict
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette import status
@@ -12,10 +12,17 @@ from app.dependencies import get_db, get_user_except_pending_fpr, get_user_excep
     get_current_admin, get_active_user_except_blocked, getValidUser
 from app.models import User, Contact
 from app.schemas.contact import ContactResponse, ContactPublicResponse, ContactCreate
-from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate
+from app.schemas.user import UserCreate, UserPublicResponse, UserResponse, UserUpdate, PasswordResetRequest, PasswordResetConfirm
 import cloudinary
 import cloudinary.uploader
-from app.config import CLOUDINARY_URL
+from app.config import CLOUDINARY_URL, SECRET_KEY, ALGORITHM
+from fastapi.responses import JSONResponse
+from app.infrestructure import auth
+from app.business.utils import NotificationService
+from app.business.utils.notification_service import EmailTemplates
+import jwt, datetime
+from app.business.user.user_auth import UserAuthService
+from pydantic import BaseModel
 
 # Initialize Cloudinary (auto-loads from CLOUDINARY_URL)
 cloudinary.config()
@@ -191,3 +198,22 @@ def upload_avatar(
         )
     finally:
         file.file.close()
+
+@router.post("/forgot-password", response_model=Dict)
+def forgot_password(request: PasswordResetRequest, db: Session = Depends(get_db)):
+    """
+    Initiate a password reset by sending a reset link to the user's email.
+    - If the email exists, a reset link is sent.
+    - Always returns 200 to avoid leaking which emails are registered.
+    """
+    return UserAuthService.request_password_reset(db, request.email)
+
+@router.post("/reset-password", response_model=Dict)
+def reset_password(request: PasswordResetConfirm, db: Session = Depends(get_db)):
+    """
+    Reset the user's password using a valid reset token.
+    - token: The JWT token from the reset link.
+    - new_password: The new password to set.
+    - Returns 200 on success, 400 on invalid/expired token.
+    """
+    return UserAuthService.reset_password(db, request.token, request.new_password)
