@@ -237,7 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
+            console.log('receive.js: Confirming transaction:', transactionId);
+            const response = await fetch(`/api/v1/transactions/${transactionId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -279,7 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
+            console.log('receive.js: Declining transaction:', transactionId);
+            const response = await fetch(`/api/v1/transactions/${transactionId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
