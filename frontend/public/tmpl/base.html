@@ -97,15 +97,16 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="sidebar-user" id="user-info">
+                <a href="/fe/profile" class="sidebar-user" id="user-info" style="text-decoration: none; color: inherit;">
                     <div class="user-avatar" id="user-avatar">
-                        <i class="bi bi-person-circle"></i>
+                        <img id="sidebar-avatar-img" src="" alt="User Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="bi bi-person-circle" id="sidebar-avatar-icon"></i>
                     </div>
                     <div class="user-details">
                         <span class="username" id="username-display">User</span>
                         <span class="user-status">Active</span>
                     </div>
-                </div>
+                </a>
                 <div class="sidebar-actions">
                     <a class="nav-link theme-toggle" href="#" id="theme-toggle">
                         <i class="bi bi-moon"></i>
@@ -170,11 +171,33 @@
             });
         }
 
-        // Display username in sidebar
+        // Display username and avatar in sidebar
         const usernameDisplay = document.getElementById('username-display');
+        const sidebarAvatarImg = document.getElementById('sidebar-avatar-img');
+        const sidebarAvatarIcon = document.getElementById('sidebar-avatar-icon');
+        
         if (usernameDisplay) {
             userData = auth.getUserData();
-            usernameDisplay.textContent = userData.username;
+            if (userData) {
+                usernameDisplay.textContent = userData.username;
+                
+                // Handle avatar display
+                if (userData.avatar && sidebarAvatarImg && sidebarAvatarIcon) {
+                    sidebarAvatarImg.src = userData.avatar;
+                    sidebarAvatarImg.style.display = 'block';
+                    sidebarAvatarIcon.style.display = 'none';
+                    
+                    // If avatar fails to load, fall back to icon
+                    sidebarAvatarImg.onerror = function() {
+                        sidebarAvatarImg.style.display = 'none';
+                        sidebarAvatarIcon.style.display = 'block';
+                    };
+                } else if (sidebarAvatarIcon) {
+                    // No avatar, show default icon
+                    if (sidebarAvatarImg) sidebarAvatarImg.style.display = 'none';
+                    sidebarAvatarIcon.style.display = 'block';
+                }
+            }
         }
     });
 </script>
