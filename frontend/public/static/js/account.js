@@ -178,8 +178,8 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
 
         if (itemType === 'transaction') {
             date = new Date(item.date).toLocaleDateString();
-            descriptionText = item.description || `Transaction ${item.id}`; // Fallback description
-            statusText = item.status;
+            descriptionText = item.description || `No description`; // Fallback description
+            statusText = item.status === "completed" ? "Completed" : "Awaiting acceptance";
             categoryText = item.category || 'General';
             refId = item.id;
             if (item.sender_id === userData.id) { // Assuming userData.id is available
@@ -330,7 +330,16 @@ async function fetchTransactions() {
         }
 
         const data = await response.json();
-        const transactions = data.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        let transactions = data.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        let filteredTransactions = [];
+        transactions.forEach((t) => {
+            if (t.status === "awaiting_acceptance" || t.status === "completed") {
+                filteredTransactions.push(t)
+                console.log("Added transaction with status " + t.status)
+            }
+        })
+
+        transactions = filteredTransactions
 
         renderItems(
             transactions.slice(0, 12), // Show up to 12, JS handles 3 + more

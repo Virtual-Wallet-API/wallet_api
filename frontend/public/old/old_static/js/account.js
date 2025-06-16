@@ -55,10 +55,10 @@ function renderItems(items, initialListEl, additionalListEl, viewBtnContainerEl,
 
     const itemEntries = items.map(item => {
         let date, descriptionText, amountStr, amountFloat, amountClass, statusText, categoryText, refId;
-
+        console.log(item);
         if (itemType === 'transaction') {
             date = new Date(item.date).toLocaleDateString();
-            descriptionText = item.description || `Transaction ${item.id}`; // Fallback description
+            descriptionText = item.description || `No description`; // Fallback description
             statusText = item.status;
             categoryText = item.category || 'General';
             refId = item.id;
