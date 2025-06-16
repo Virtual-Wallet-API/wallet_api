@@ -280,6 +280,7 @@ function updateFormForSelection() {
     const cardIconEl = document.getElementById('selected-card-brand-icon');
     const newCardGroup = document.getElementById('stripe-card-element-group');
     const cardholderNameGroup = document.getElementById('cardholder-name-group');
+    const cardholderNameInput = document.getElementById("deposit-cardholder-name");
     const saveCardOption = document.getElementById('save-new-card-option');
 
     if (!selectEl || !cardIconEl) return;
@@ -287,10 +288,12 @@ function updateFormForSelection() {
     const selectedValue = selectEl.value;
     const selectedOption = selectEl.querySelector(`option[value="${selectedValue}"]`);
     const brand = selectedOption ? selectedOption.dataset.brand : 'default';
+    const cardholder_name = selectedOption ? selectedOption.dataset.cardholder : window.userData.username;
 
     cardIconEl.className = getCardBrandIcon(brand);
 
     if (selectedValue === 'new') {
+        cardholderNameInput.value = '';
         [newCardGroup, cardholderNameGroup, saveCardOption].forEach(el => {
             if (el) {
                 el.style.display = 'block';
@@ -303,6 +306,7 @@ function updateFormForSelection() {
         });
         if (stripeCardElement) setTimeout(() => stripeCardElement.focus(), 300);
     } else {
+        cardholderNameInput.value = cardholder_name;
         [newCardGroup, cardholderNameGroup, saveCardOption].forEach(el => {
             if (el) {
                 el.style.opacity = '0';
@@ -326,6 +330,7 @@ function populatePaymentMethodsDropdown(cards) {
         option.value = card.stripe_payment_method_id;
         option.textContent = `${card.brand ? card.brand.charAt(0).toUpperCase() + card.brand.slice(1) : 'Card'} **** ${card.last_four} (Exp: ${card.exp_month}/${String(card.exp_year).slice(2)})`;
         option.dataset.brand = card.brand;
+        option.dataset.cardholder = card.cardholder_name;
         selectEl.appendChild(option);
         if (card.is_default) defaultSelected = card.stripe_payment_method_id;
     });
@@ -610,6 +615,8 @@ async function loadRecentDeposits() {
     const viewMoreContainer = document.getElementById('view-more-deposits-btn-container');
 
     if (!listContainer || !loadingDiv) return;
+
+    loadingDiv.style.opacity = '1';
 
     const token = auth.getToken();
     if (!token) return;
@@ -967,9 +974,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Reset modal to show "Manage Cards" content
             const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
             const addCardFormContainer = document.getElementById('add-card-form-container');
+            const addCardButtonSubmit = document.getElementById('add-cards-add-button');
+            const addCardButtonShow = document.getElementById('manage-cards-add-button');
             if (savedCardsContainer && addCardFormContainer) {
                 savedCardsContainer.style.display = 'block';
+                addCardButtonShow.style.display = 'block';
                 addCardFormContainer.style.display = 'none';
+                addCardButtonSubmit.style.display = 'none';
                 savedCardsContainer.classList.remove('slide-up', 'slide-down');
                 addCardFormContainer.classList.remove('slide-up', 'slide-down');
             }
@@ -979,11 +990,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     function showAddCardForm() {
         const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
         const addCardFormContainer = document.getElementById('add-card-form-container');
+        const addCardButtonSubmit = document.getElementById('add-cards-add-button');
+        const addCardButtonShow = document.getElementById('manage-cards-add-button');
+        savedCardsContainer.classList.remove("slide-down")
         savedCardsContainer.classList.add('slide-up');
         savedCardsContainer.addEventListener('animationend', function handler() {
             savedCardsContainer.style.display = 'none';
+            addCardButtonShow.style.display = 'none';
             savedCardsContainer.classList.remove('slide-up');
             addCardFormContainer.style.display = 'block';
+            addCardButtonSubmit.style.display = 'block';
             addCardFormContainer.classList.add('slide-down');
             savedCardsContainer.removeEventListener('animationend', handler);
             document.getElementById('cardholder-name').value = '';
@@ -994,11 +1010,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     function showSavedCardsList() {
         const savedCardsContainer = document.getElementById('modal-saved-cards-list-container');
         const addCardFormContainer = document.getElementById('add-card-form-container');
+        const addCardButtonSubmit = document.getElementById('add-cards-add-button');
+        const addCardButtonShow = document.getElementById('manage-cards-add-button');
+        addCardFormContainer.classList.remove("slide-down");
         addCardFormContainer.classList.add('slide-up');
         addCardFormContainer.addEventListener('animationend', function handler() {
             addCardFormContainer.style.display = 'none';
+            addCardButtonSubmit.style.display = 'none';
             addCardFormContainer.classList.remove('slide-up');
             savedCardsContainer.style.display = 'block';
+            addCardButtonShow.style.display = 'block';
             savedCardsContainer.classList.add('slide-down');
             addCardFormContainer.removeEventListener('animationend', handler);
         }, {once: true});

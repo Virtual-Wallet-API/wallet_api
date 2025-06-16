@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -181,4 +182,4 @@ class StripeCardService:
 
             return card
         else:
-            return db.query(Card).filter(Card.stripe_card_fingerprint == card_fingerprint).first()
+            raise HTTPException(status_code=400, detail="Card is already saved in our system.")
