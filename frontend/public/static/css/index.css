@@ -40,14 +40,23 @@ body {
 }
 
 .btn-outline-light {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+section.hero-section .btn-outline-light {
     color: var(--outline-btn-text);
     border-color: var(--outline-btn-text);
+}
+
+.section.hero-section .btn-outline-light:active {
+    color: var(--outline-btn-text) !important;
 }
 
 .btn-outline-light:hover {
     background-color: var(--accent-color-hover);
     border-color: var(--accent-color-hover);
-    color: #ffffff;
+    color: #fff;
 }
 
 .feature-icon {
@@ -102,8 +111,8 @@ body {
 /* Light theme: use dark theme styles for the button */
 [data-theme="light"] #theme-toggle {
     background: #fff; /* Dark theme gradient */
-    border-color: #bb86fc; /* Dark theme outline color */
-    color: #3700b3; /* Dark theme text/icon color */
+    border-color: #bb86fc !important; /* Dark theme outline color */
+    color: #3700b3 !important; /* Dark theme text/icon color */
 }
 
 /* Dark theme: use light theme styles for the button */

@@ -35,10 +35,7 @@
                     <button class="btn btn-primary btn-login me-2" data-bs-target="#loginModal" data-bs-toggle="modal">
                         Login
                     </button>
-                    <button class="btn btn-outline-light btn-signup me-2" data-bs-target="#registerModal"
-                            data-bs-toggle="modal">
-                        Sign Up
-                    </button>
+                    <button class="btn btn-outline-light btn-signup" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
                 </div>
                 <div id="accountButtons" style="display: none">
                     <a href="/fe/account">
@@ -167,11 +164,11 @@
                 <form id="ajax-login" method="post">
                     <div class="mb-3">
                         <label class="form-label" for="username">Username</label>
-                        <input class="form-control" id="username" required type="text" value="test">
+                        <input class="form-control" id="username" required type="text" placeholder="Username">
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="password">Password</label>
-                        <input class="form-control" id="password" required type="password" value="test">
+                        <input class="form-control" id="password" required type="password" placeholder="Password">
                     </div>
                 </form>
             </div>
@@ -184,42 +181,45 @@
 </div>
 
 <!-- Register Modal -->
-<div aria-hidden="true" aria-labelledby="registerModalLabel" class="modal fade" id="registerModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="registerModalLabel">Sign Up</h5>
-                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label" for="registerUsername">Username</label>
-                        <input class="form-control" id="registerUsername" required type="text">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="registerEmail">Email</label>
-                        <input autocomplete="studying" class="form-control" id="registerEmail" required type="email">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="registerPassword">Password</label>
-                        <input autocomplete="studying" class="form-control" id="registerPassword" required
-                               type="password">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
-                        <input autocomplete="studying" class="form-control" id="registerConfirmPassword" required
-                               type="password">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-                <button class="btn btn-primary" type="button">Sign Up</button>
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signupModalLabel">Sign Up</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="signupMessage" class="alert d-none"></div>
+                    <form id="signupForm">
+                        <div class="mb-3">
+                            <label for="signupUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="signupUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="signupEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPhone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="signupPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="signupPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="signupConfirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="signupConfirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" form="signupForm">Sign Up</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Bootstrap JS and jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

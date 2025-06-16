@@ -50,7 +50,8 @@ class UserValidators:
         """
         try:
             return UserValidators.find_user_with_or_raise_exception(field, value, db)
-        except HTTPException:
+        except Exception:
+            db.rollback()
             return False
 
     @staticmethod
