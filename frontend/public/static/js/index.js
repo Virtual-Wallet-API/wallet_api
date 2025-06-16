@@ -59,6 +59,36 @@ async function register() {
     }
 }
 
+async function requestPasswordReset() {
+    const email = $('#resetEmail').val().trim();
+
+    if (!email) {
+        showMessage('resetPasswordMessage', 'Please enter your email address', false);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/v1/users/forgot-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        });
+
+        if (response.ok) {
+            showMessage('resetPasswordMessage', 'If the email exists, a reset link has been sent to your email address.', true);
+            // Clear the form
+            $('#resetEmail').val('');
+        } else {
+            const errorData = await response.json();
+            showMessage('resetPasswordMessage', errorData.detail || 'An error occurred. Please try again.', false);
+        }
+    } catch (error) {
+        showMessage('resetPasswordMessage', 'Network error. Please try again.', false);
+    }
+}
+
 const loginButtons = document.getElementById("loginButtons");
 const accountButtons = document.getElementById("accountButtons");
 if (auth.loggedIn()) {
@@ -81,6 +111,14 @@ if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         await register();
+    });
+}
+
+const resetPasswordForm = document.getElementById('resetPasswordForm');
+if (resetPasswordForm) {
+    resetPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await requestPasswordReset();
     });
 }
 

@@ -103,4 +103,22 @@ class ShortUserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+class PasswordResetRequest(BaseModel):
+    """
+    Request schema for initiating a password reset.
+    - email: The user's email address.
+    """
+    email: str
+
+
+class PasswordResetConfirm(BaseModel):
+    """
+    Request schema for confirming a password reset.
+    - token: The password reset token sent to the user's email.
+    - new_password: The new password to set.
+    """
+    token: str
+    new_password: str
+
 UserResponse.model_rebuild()

@@ -369,7 +369,7 @@ if (typeof preventAuth === 'undefined') {
 if (!preventAuth) {
     if (!auth.loggedIn()) {
         console.log("Not logged in.");
-        window.location.href = '/login';
+        window.location.href = '/fe/';
     } else {
         auth.refreshUserData(); // Call instance method
     }
@@ -395,6 +395,30 @@ async function uploadAvatar(file) {
         throw new Error(detail || 'Failed to upload avatar');
     }
     return (await response.json()).avatar_url;
+}
+
+// Function to update sidebar avatar
+function updateSidebarAvatar(avatarUrl) {
+    const sidebarAvatarImg = document.getElementById('sidebar-avatar-img');
+    const sidebarAvatarIcon = document.getElementById('sidebar-avatar-icon');
+    
+    if (sidebarAvatarImg && sidebarAvatarIcon) {
+        if (avatarUrl) {
+            sidebarAvatarImg.src = avatarUrl;
+            sidebarAvatarImg.style.display = 'block';
+            sidebarAvatarIcon.style.display = 'none';
+            
+            // If avatar fails to load, fall back to icon
+            sidebarAvatarImg.onerror = function() {
+                sidebarAvatarImg.style.display = 'none';
+                sidebarAvatarIcon.style.display = 'block';
+            };
+        } else {
+            // No avatar, show default icon
+            sidebarAvatarImg.style.display = 'none';
+            sidebarAvatarIcon.style.display = 'block';
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -426,9 +450,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 statusSpan.style.display = 'inline';
                 statusSpan.classList.remove('text-danger');
                 statusSpan.classList.add('text-success');
-                // Optionally update userData and localStorage
+                // Update userData and localStorage
                 userData.avatar = url;
                 localStorage.setItem('user_data', JSON.stringify(userData));
+                
+                // Update sidebar avatar if it exists
+                updateSidebarAvatar(url);
             } catch (err) {
                 statusSpan.textContent = err.message || 'Upload failed';
                 statusSpan.style.display = 'inline';

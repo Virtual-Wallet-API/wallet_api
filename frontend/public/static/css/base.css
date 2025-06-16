@@ -256,6 +256,15 @@ body {
     padding: 0.5rem 0.75rem;
     margin-bottom: 0.75rem;
     border-radius: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.sidebar-user:hover {
+    background-color: var(--sidebar-hover-bg);
+    transform: translateY(-1px);
+    text-decoration: none !important;
+    color: inherit !important;
 }
 
 .user-avatar {

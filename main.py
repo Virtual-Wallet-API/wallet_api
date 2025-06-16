@@ -8,10 +8,7 @@ from app import *
 from app.business.transaction.transactions_recurring import RecurringService
 from app.infrestructure.database import Base, engine
 from app.infrestructure.scheduler import init_scheduler
-
-# biun
-import frontend.frontend #noqa dont't remove this import, it is needed for frontend to work
-
+from frontend.routers import root_router
 
 # Ensure the database is not missing tables
 Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -66,6 +63,9 @@ app.include_router(categories_router, prefix=prefix + "/categories")
 app.include_router(deposits_router, prefix=prefix + "/deposits")
 app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 app.include_router(transactions_router, prefix=prefix + "/transactions")
+
+# Frontend routes
+app.include_router(root_router, tags=["Frontend"], prefix="/fe")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

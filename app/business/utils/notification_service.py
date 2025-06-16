@@ -20,7 +20,7 @@ class EmailTemplates(dict, Enum):
     """Email templates"""
     ACCOUNT_ACTIVATED = {"subject": "Welcome to VWallet",
                          "body": """Welcome to VWallet, {user.username}!\n\n 
-We’re pleased to inform you that your VWallet account has been reviewed and activated. You can now log in at http://vwallet.ninja
+We're pleased to inform you that your VWallet account has been reviewed and activated. You can now log in at http://vwallet.ninja
 
 If you have any questions, contact support at {support_email}.
 
@@ -78,7 +78,7 @@ The VWallet Team"""}
     FAILED_RECURRING_TRANSACTION = {"subject": "Failed recurring transaction",
                                     "body": """Dear {user.username},
 
-We couldn’t process your recurring transaction of {amount} {currency}. Verify your payment details at http://vwallet.ninja/account
+We couldn't process your recurring transaction of {amount} {currency}. Verify your payment details at http://vwallet.ninja/account
 
 Contact admin@vwallet.ninja for assistance.
 
@@ -108,6 +108,9 @@ Please follow this link to verify your email: http://vwallet.ninja/verify/{key}
 Best,
 The VWallet Team"""
                           }
+
+    PASSWORD_RESET = {"subject": "Reset your VWallet password",
+                     "body": """Dear {user.username},\n\nYou requested a password reset. Please follow this link to set a new password:\n{reset_link}\n\nIf you did not request this, please ignore this email.\n\nBest,\nThe VWallet Team"""}
 
     def format(self, user, **kwargs):
         return {k: v.format(user=user,support_email='admin@vwallet.ninja', **kwargs) for k, v in self.value.items()}

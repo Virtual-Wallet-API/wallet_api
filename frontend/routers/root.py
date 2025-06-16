@@ -24,6 +24,12 @@ def account_overview(request: Request):
     return templates.TemplateResponse("overview.html", data)
 
 
+@router.get("/reset-password", response_model=None)
+def reset_password_page(request: Request):
+    data = {"request": request, "page": "reset password"}
+    return templates.TemplateResponse("reset_password.html", data)
+
+
 @router.get("/cards", response_model=None)
 def cards(request: Request):
     data = {
