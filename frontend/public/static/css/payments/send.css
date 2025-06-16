@@ -42,52 +42,26 @@
 
 /* Animations (Copied from deposits.css) */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideRight {
-    from {
-        transform: translateX(-10px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 @keyframes shake {
-    0% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-5px);
-    }
-    50% {
-        transform: translateX(5px);
-    }
-    75% {
-        transform: translateX(-5px);
-    }
-    100% {
-        transform: translateX(0);
-    }
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
 }
 
 /* Page Container (Copied from deposits.css) */
@@ -817,6 +791,7 @@ select.form-control {
     padding-left: 0.75rem !important;
 }
 
+/* Category Entry Styles (Preserving the Old Style) */
 .category-entry {
     display: flex;
     justify-content: space-between;
@@ -834,28 +809,76 @@ select.form-control {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* Category Info: Stacking Name and Description Vertically */
 .category-info {
+    flex: 1;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
+/* Styling for Name and Description */
+.category-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.category-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Category Actions: Trash Icon and Confirm Button */
 .category-actions {
     display: flex;
     align-items: center;
 }
 
-.btn-remove-category {
-    background: transparent;
-    border: none;
-    padding: 0.25rem;
-    color: var(--bs-danger);
+.category-actions i {
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity var(--animation-timing);
+    color: var(--bs-danger);
+    transition: margin-right 0.3s ease;
+    font-size: 1.3rem;
 }
 
-.btn-remove-category:hover {
+.category-actions .confirm-delete {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--bs-danger);
+    color: #fff;
+    border: none;
+    border-radius: var(--card-radius);
+    cursor: pointer;
+    margin-left: 0.5rem;
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: left center;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Active State: Move Trash Icon and Show Confirm Button */
+.category-actions.confirm-active i {
+    margin-right: 0.5rem;
+}
+
+.category-actions.confirm-active .confirm-delete {
     opacity: 1;
+    transform: scale(1);
+}
+
+#manage-categories-error,
+#manage-categories-success {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+#manage-categories-error.visible,
+#manage-categories-success.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Responsive Adjustments (Copied from deposits.css) */

@@ -1,3 +1,4 @@
+```html
 {% extends "base.html" %}
 
 {% block styles %}
@@ -154,21 +155,21 @@
                             </div>
                         </div>
 
-                        <!-- Add to Category Checkbox -->
                         <div class="form-group">
                             <div class="save-card-option">
-                                <input id="add-category-checkbox" type="checkbox">
-                                <label for="add-category-checkbox">Add to category</label>
+                                <input id="add-to-category-checkbox" type="checkbox">
+                                <label for="add-to-category-checkbox">Add to category</label>
                             </div>
                         </div>
 
                         <!-- Category -->
-                        <div class="form-group" id="category-group" style="display: none;">
-                            <label for="category-select">Category</label>
+                        <div class="form-group" id="category-group">
+                            <label for="category-select">Category (Optional)</label>
                             <div class="input-group">
                                 <span class="input-group-text-custom"><i class="bi bi-archive"></i></span>
                                 <select class="form-control" id="category-select">
-                                    <option value="">Choose a category</option>
+                                    <option value="">Select a category</option>
+                                    <option value="add-category">Create new category</option>
                                 </select>
                             </div>
                         </div>
@@ -182,7 +183,7 @@
                         </div>
 
                         <!-- Interval -->
-                        <div class="form-group" id="interval-group" style="display: none;">
+                        <div class="form-group" id="interval-group">
                             <label for="interval-select">Interval</label>
                             <div class="input-group">
                                 <span class="input-group-text-custom"><i class="bi bi-calendar"></i></span>
@@ -243,30 +244,29 @@
                         <div class="tip-icon"><i class="bi bi-lock"></i></div>
                         <div class="tip-content">
                             <h6>Secure Your Account</h6>
-                            <p>Use strong passwords and dangble two-factor authentication.</p>
+                            <p>Use strong passwords and enable two-factor authentication.</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Awaiting Transactions -->
-            <div class="card transactions-card mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center"
-                     id="toggle-awaiting-transactions"
-                     aria-expanded="true">
-                    <h5 class="mb-0"><i class="bi bi-clock"></i> Awaiting Acceptance</h5>
-                    <i class="bi bi-chevron-down toggle-icon"></i>
+    <!-- Awaiting Transactions -->
+        <div class="card transactions-card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center" id="toggle-awaiting-transactions"
+                 aria-expanded="true">
+                <h5 class="mb-0"><i class="bi bi-clock"></i> Awaiting Acceptance</h5>
+                <i class="bi bi-chevron-down toggle-icon"></i>
+            </div>
+            <div class="card-body p-0" id="awaiting-transactions-list-content">
+                <div class="list-loading-container" id="awaiting-loading" style="display: none;">
+                    <i class="bi bi-arrow-repeat"></i>
                 </div>
-                <div class="card-body p-0" id="awaiting-transactions-list-content">
-                    <div class="list-loading-container" id="awaiting-loading" style="display: none;">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </div>
-                    <div class="transactions-list" id="initial-awaiting">
-                        <!-- Populated by JS -->
-                    </div>
-                    <div class="text-center py-3" id="view-more-awaiting-btn-container" style="display: none;">
-                        <button class="btn btn-sm btn-outline-primary" id="btn-view-more-awaiting">View More</button>
-                    </div>
+                <div class="transactions-list" id="initial-awaiting">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="text-center py-3" id="view-more-awaiting-btn-container" style="display: none;">
+                    <button class="btn btn-sm btn-outline-primary" id="btn-view-more-awaiting">View More</button>
                 </div>
             </div>
         </div>
@@ -284,8 +284,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        If you wish to confirm this transaction later, you can choose to accept or cancel your
-                        transaction anytime from the transaction history.
+                        If you wish to confirm this transaction later, you can choose to accept or cancel your transaction anytime from the transaction history.
                     </div>
                     <div class="transaction-detail-item">
                         <span class="detail-label">Receiver:</span>
@@ -339,12 +338,14 @@
                         <span class="detail-label">Status:</span>
                         <span class="detail-value" id="detail-modal-status"></span>
                     </div>
+                    <div class="transaction-detail-item">
+                        <span class="detail-label">Category:</span>
+                        <span class="detail-value" id="detail-modal-category"></span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="confirm-transaction-btn2">
-                        Confirm
-                    </button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="confirm-transaction-btn2">Confirm</button>
                     <button type="button" class="btn btn-danger" id="cancel-transaction-btn" style="display: none;">
                         Cancel Transaction
                     </button>
@@ -398,11 +399,16 @@
                     <div class="form-message alert alert-danger" id="manage-categories-error" style="display: none;"></div>
                     <div class="form-message alert alert-success" id="manage-categories-success" style="display: none;"></div>
                     <div id="categories-list-container">
+                        <div id="categories-loading" class="list-loading-container" style="display: none;">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <div id="categories-list" style="opacity: 0; max-height: 0; overflow: hidden;"></div>
                         <p id="no-categories-message" style="display:none;">You have no categories.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="open-add-category-modal">Add Category</button>
                 </div>
             </div>
         </div>
@@ -412,3 +418,4 @@
 {% block scripts %}
     <script type="text/javascript" src="/static/js/payments/send.js"></script>
 {% endblock %}
+```

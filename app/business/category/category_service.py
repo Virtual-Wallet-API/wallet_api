@@ -173,11 +173,7 @@ class CategoryService:
 
         # Check if category has transactions
         if category.total_transactions > 0:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Cannot delete category '{category.name}' because it has {category.total_transactions} associated transactions. "
-                       "Please reassign or delete the transactions first."
-            )
+            db.query(Transaction).filter(Transaction.category_id == category_id).update({Transaction.category_id: None})
 
         db.delete(category)
         db.commit()
