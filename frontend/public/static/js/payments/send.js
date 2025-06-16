@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const awaitingToggle = document.getElementById('toggle-awaiting-transactions');
     const awaitingContent = document.getElementById('awaiting-transactions-list-content');
     const formLoadingOverlay = document.getElementById('form-loading-overlay');
+    const addCategoryCheckbox = document.getElementById('add-category-checkbox');
+    const categoryGroup = document.getElementById('category-group');
 
     // Modals
     const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
@@ -29,20 +31,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     balanceAmount.style.opacity = '0';
     balanceAmountLoading.style.display = 'block';
     pendingContent.style.display = 'block';
-    // pendingContent.style.maxHeight = `${pendingContent.scrollHeight}px`;
     pendingContent.style.opacity = '1';
     pendingToggle.setAttribute('aria-expanded', 'true');
     pendingToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
-
     awaitingContent.style.display = 'block';
-    // awaitingContent.style.maxHeight = `${awaitingContent.scrollHeight}px`;
     awaitingContent.style.opacity = '1';
     awaitingToggle.setAttribute('aria-expanded', 'true');
     awaitingToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
+    categoryGroup.style.display = 'none'; // Initially hide category group
 
     // Event Listeners
     sendForm.addEventListener('submit', handleFormSubmit);
     recurringCheckbox.addEventListener('change', toggleIntervalGroup);
+    addCategoryCheckbox.addEventListener('change', toggleCategoryGroup);
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     awaitingToggle.addEventListener('click', () => toggleSection(awaitingToggle, awaitingContent));
     document.getElementById('confirm-transaction-btn').addEventListener('click', confirmTransaction);
@@ -95,18 +96,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const data = await response.json();
             if (data.categories && data.categories.length > 0) {
+                categorySelect.innerHTML = '<option value="">Choose a category</option>';
                 data.categories.forEach(category => {
                     const option = document.createElement('option');
                     option.value = category.id;
                     option.textContent = category.name;
                     categorySelect.appendChild(option);
                 });
+                categorySelect.disabled = false;
             } else {
-                document.getElementById('category-group').style.display = 'none';
+                categorySelect.innerHTML = '<option value="">You have no categories</option>';
+                categorySelect.disabled = true;
             }
         } catch (error) {
             console.error('Error loading categories:', error);
-            document.getElementById('category-group').style.display = 'none';
+            categorySelect.innerHTML = '<option value="">Error loading categories</option>';
+            categorySelect.disabled = true;
         }
     }
 
@@ -141,10 +146,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadSummaryData() {
         try {
-            // Calculate dates
-            const dateTo = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD
-            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
-
+            const dateTo = new Date().toISOString().split('T')[0];
+            const dateFrom = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             const response = await fetch(`/api/v1/transactions/?date_from=${dateFrom}&date_to=${dateTo}&direction=out`, {
                 headers: {'Authorization': `Bearer ${auth.getToken()}`}
             });
@@ -169,7 +172,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             total_without_pending: 0,
             total_awaiting: 0
         };
-
         transactions.forEach((t) => {
             if (t.status === "completed") {
                 data.total_completed++;
@@ -185,8 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         });
-
-        return data
+        return data;
     }
 
     function createTransactionElement(transaction, status) {
@@ -218,6 +219,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 intervalGroup.style.display = 'none';
             }, 300);
+        }
+    }
+
+    function toggleCategoryGroup() {
+        if (addCategoryCheckbox.checked) {
+            categoryGroup.style.display = 'block';
+            setTimeout(() => {
+                categoryGroup.style.maxHeight = `${categoryGroup.scrollHeight}px`;
+                categoryGroup.style.opacity = '1';
+                categoryGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            }, 10);
+        } else {
+            categoryGroup.style.maxHeight = '0';
+            categoryGroup.style.opacity = '0';
+            categoryGroup.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            setTimeout(() => {
+                categoryGroup.style.display = 'none';
+            }, 300);
+            categorySelect.value = '';
         }
     }
 
@@ -258,12 +278,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             identifier: receiverInput.value,
             amount: amount,
             description: descriptionInput.value,
-            category_id: categorySelect.value || null,
             recurring: recurringCheckbox.checked,
             interval: recurringCheckbox.checked ? intervalSelect.value : null
         };
 
-        console.log(transactionData)
+        if (addCategoryCheckbox.checked && categorySelect.value) {
+            transactionData.category_id = categorySelect.value;
+        }
+
+        console.log(transactionData);
 
         setLoading(true);
         try {
@@ -285,7 +308,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             showSuccess('Transaction created successfully');
             document.getElementById("confirm-transaction-btn2").style.display = 'block';
             transactionConfirmModal.show();
-            // Add to pending transactions
             const transactionElement = createTransactionElement({
                 id: data.id,
                 date: new Date().toISOString(),
@@ -309,8 +331,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('no-pending'),
             document.getElementById('no-awaiting'),
             document.getElementById('error-pending'),
-            document.getElementById('error-awaiting')]
-
+            document.getElementById('error-awaiting')
+        ];
         boxMessages.forEach(message => {
             if (message) {
                 message.remove();
@@ -337,28 +359,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             transactionConfirmModal.hide();
             showSuccess('Transaction confirmed successfully');
-
-            // // Move transaction to awaiting
-            // const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
-            // if (transactionElement) {
-            //     transactionElement.style.opacity = '0';
-            //     setTimeout(() => {
-            //         transactionElement.remove();
-            //         const awaitingElement = createTransactionElement({
-            //             id: transactionId,
-            //             date: new Date().toISOString(),
-            //             description: document.getElementById('modal-description').textContent,
-            //             status: 'awaiting_acceptance',
-            //             amount: parseFloat(document.getElementById('modal-amount').textContent.replace('$', ''))
-            //         });
-            //         document.getElementById('initial-awaiting').prepend(awaitingElement);
-            //     }, 300);
-            // }
             await auth.refreshOnEvent();
             await updateBalanceDisplay();
             sendForm.reset();
-            // toggleIntervalGroup();
-            // document.querySelectorAll('.quick-amount').forEach(btn => btn.classList.remove('selected'));
             setTimeout(() => {
                 location.reload();
             }, 100);
@@ -389,7 +392,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await auth.refreshOnEvent();
             transactionDetailsModal.hide();
             showSuccess('Transaction cancelled successfully');
-
             const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
             if (transactionElement) {
                 transactionElement.style.opacity = '0';
