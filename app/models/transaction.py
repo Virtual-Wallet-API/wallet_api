@@ -68,6 +68,12 @@ class Transaction(Base):
         return self.sender_id == user_id
 
     @property
+    def category_name(self):
+        if self.category_id:
+            return self.category.name
+        return None
+
+    @property
     def is_completed(self) -> bool:
         return self.status == TransactionStatus.COMPLETED
 

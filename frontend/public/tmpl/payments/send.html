@@ -45,8 +45,8 @@
                 </a>
             </div>
             <div class="action-card">
-                <a href="#" class="action-text" id="open-manage-cards-modal" aria-label="Manage Cards">
-                    <i class="bi bi-credit-card"></i> Cards
+                <a href="#" class="action-text" id="open-manage-categories-modal" aria-label="Manage Categories">
+                    <i class="bi bi-archive"></i> Categories
                 </a>
             </div>
         </div>
@@ -382,6 +382,27 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="submit-category-btn">Add Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="manageCategoriesModal" tabindex="-1" aria-labelledby="manageCategoriesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageCategoriesModalLabel"><i class="bi bi-archive"></i> Manage Categories</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-message alert alert-danger" id="manage-categories-error" style="display: none;"></div>
+                    <div class="form-message alert alert-success" id="manage-categories-success" style="display: none;"></div>
+                    <div id="categories-list-container">
+                        <p id="no-categories-message" style="display:none;">You have no categories.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

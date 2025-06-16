@@ -42,26 +42,52 @@
 
 /* Animations (Copied from deposits.css) */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideRight {
-    from { transform: translateX(-10px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
 
 /* Page Container (Copied from deposits.css) */
@@ -789,6 +815,47 @@ select.form-control {
 
 #category-name {
     padding-left: 0.75rem !important;
+}
+
+.category-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    margin-bottom: 0.75rem;
+    background-color: var(--card-bg);
+    transition: all var(--animation-timing);
+}
+
+.category-entry:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.category-info {
+    display: flex;
+    align-items: center;
+}
+
+.category-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-remove-category {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    color: var(--bs-danger);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity var(--animation-timing);
+}
+
+.btn-remove-category:hover {
+    opacity: 1;
 }
 
 /* Responsive Adjustments (Copied from deposits.css) */

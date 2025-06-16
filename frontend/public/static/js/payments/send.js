@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Modals
     const transactionConfirmModal = new bootstrap.Modal(document.getElementById('transactionConfirmModal'));
     const transactionDetailsModal = new bootstrap.Modal(document.getElementById('transactionDetailsModal'));
+    const manageCategoriesModal = new bootstrap.Modal(document.getElementById('manageCategoriesModal'));
 
     // Initial Setup
     balanceAmount.style.opacity = '0';
@@ -69,6 +70,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     submitCategoryBtn.addEventListener('click', handleAddCategory);
     document.getElementById('addCategoryModal').addEventListener('show.bs.modal', resetCategoryForm);
+    document.getElementById('open-manage-categories-modal').addEventListener('click', async () => {
+        await loadCategoriesForManagement();
+        manageCategoriesModal.show();
+    });
 
     // Load Data
     await Promise.all([
@@ -127,6 +132,124 @@ document.addEventListener('DOMContentLoaded', async () => {
             categorySelect.innerHTML = '<option value="">Select a category</option>' +
                                      '<option value="add_new">Add a new category</option>';
             categorySelect.disabled = false; // Keep enabled even on error
+        }
+    }
+
+    async function loadCategoriesForManagement() {
+        const listContainer = document.getElementById('categories-list-container');
+        const noCategoriesMsg = document.getElementById('no-categories-message');
+
+        if (!listContainer || !noCategoriesMsg) return;
+
+        listContainer.innerHTML = '';
+        noCategoriesMsg.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/v1/categories', {
+                headers: { 'Authorization': `Bearer ${auth.getToken()}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch categories');
+            const data = await response.json();
+            const categories = data.categories || [];
+
+            if (categories.length === 0) {
+                noCategoriesMsg.style.display = 'block';
+                return;
+            }
+
+            categories.forEach((category, index) => {
+                const item = document.createElement('div');
+                item.className = 'category-entry';
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                item.innerHTML = `
+                    <div class="category-info">
+                        <span>${category.name}</span>
+                    </div>
+                    <div class="category-actions">
+                        <button type="button" class="btn-remove-category" data-category-id="${category.id}" aria-label="Delete category">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+                setTimeout(() => {
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            listContainer.querySelectorAll('.btn-remove-category').forEach(btn => {
+                btn.addEventListener('click', handleDeleteCategory);
+            });
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            displayModalMessage('Could not load categories.', 'error', 'manageCategoriesModal');
+        }
+    }
+
+    async function handleDeleteCategory(event) {
+        const categoryId = event.currentTarget.dataset.categoryId;
+        if (!confirm('Are you sure you want to delete this category?')) return;
+
+        const token = auth.getToken();
+        if (!token) {
+            displayModalMessage('Authorization required. Please refresh the page.', 'error', 'manageCategoriesModal');
+            return;
+        }
+
+        const categoryItem = event.currentTarget.closest('.category-entry');
+        if (categoryItem) categoryItem.classList.add('removing');
+
+        try {
+            const response = await fetch(`/api/v1/categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to delete category.');
+            }
+
+            displayModalMessage('Category deleted successfully.', 'success', 'manageCategoriesModal');
+            if (categoryItem) {
+                categoryItem.style.height = `${categoryItem.offsetHeight}px`;
+                categoryItem.style.opacity = '0';
+                categoryItem.style.transform = 'translateX(50px)';
+                setTimeout(() => {
+                    categoryItem.style.height = '0';
+                    categoryItem.style.marginBottom = '0';
+                    categoryItem.style.padding = '0';
+                    setTimeout(() => {
+                        loadCategoriesForManagement();
+                        loadCategories();
+                    }, 300);
+                }, 300);
+            } else {
+                loadCategoriesForManagement();
+                loadCategories();
+            }
+        } catch (error) {
+            displayModalMessage(error.message || 'Could not delete category.', 'error', 'manageCategoriesModal');
+            if (categoryItem) categoryItem.classList.remove('removing');
+        }
+    }
+
+    function displayModalMessage(message, type = 'error', modalId = 'manageCategoriesModal') {
+        const messageId = type === 'success' ? 'manage-categories-success' : 'manage-categories-error';
+        const messageDiv = document.getElementById(messageId);
+        const otherMessageId = type === 'success' ? 'manage-categories-error' : 'manage-categories-success';
+        const otherMessageDiv = document.getElementById(otherMessageId);
+
+        if (otherMessageDiv) otherMessageDiv.style.display = 'none';
+        if (messageDiv) {
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            messageDiv.classList.add('visible');
+            setTimeout(() => {
+                messageDiv.classList.remove('visible');
+                setTimeout(() => messageDiv.style.display = 'none', 500);
+            }, 5000);
         }
     }
 
@@ -515,9 +638,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newCategoryOption = Array.from(categorySelect.options).find(option => option.textContent === name);
             if (newCategoryOption) {
                 categorySelect.value = newCategoryOption.value;
+            } else {
+                showCategoryError('Failed to select the new category');
             }
-
-            showSuccess('Category created successfully');
             addCategoryModal.hide();
         } catch (error) {
             showCategoryError(error.message);
