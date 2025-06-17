@@ -1,7 +1,7 @@
-from datetime import timedelta
-from typing import Optional, Annotated
+from typing import Optional
 
-from fastapi import HTTPException, Query
+from fastapi import HTTPException
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.models import User, Transaction, RecurringTransaction
@@ -295,84 +295,82 @@ class TransactionService:
     @classmethod
     def get_user_transaction_history(cls, db: Session, user: User,
                                      history_filter: TransactionHistoryFilter) -> TransactionHistoryResponse:
-        """
-        Get transaction history for a user with advanced filtering and sorting
-        :param db: Database session
-        :param user: User requesting transaction history
-        :param history_filter: Filter query parameters
-        :return: Transaction history response
-        """
-        # Start with base query for user transactions
-        query = user.get_transactions(db)
-        if history_filter.date_from:
-            date_from = history_filter.date_from
-        else:
-            date_from = None
-        if history_filter.date_to:
-            date_to = history_filter.date_to + timedelta(days=2)
-        else:
-            date_to = None
+        # Get base Select object from user.get_transactions
+        query = user.get_transactions(db, order_by=history_filter.order_by, legacy_query=False)
+
+        date_from = history_filter.date_from
+        date_to = history_filter.date_to
         sender_id = history_filter.sender_id
         receiver_id = history_filter.receiver_id
         direction = history_filter.direction
         status = history_filter.status
-        order_by = history_filter.order_by
+        # order_by = history_filter.order_by
         limit = history_filter.limit
         offset = (history_filter.page - 1) * limit
 
-        # Apply date range filters
+        # Apply additional filters
         if date_from:
             query = query.filter(Transaction.date >= date_from)
         if date_to:
             query = query.filter(Transaction.date <= date_to)
-
-        # Apply sender/receiver filters
         if sender_id:
             query = query.filter(Transaction.sender_id == sender_id)
         if receiver_id:
             query = query.filter(Transaction.receiver_id == receiver_id)
-
-        # Apply direction filter
         if direction == "in":
             query = query.filter(Transaction.receiver_id == user.id)
         elif direction == "out":
             query = query.filter(Transaction.sender_id == user.id)
-
-        # Apply status filter
         if status:
             query = query.filter(Transaction.status == status)
 
-        # Apply sorting
-        if order_by == "date_asc":
-            query = query.order_by(Transaction.date.asc())
-        elif order_by == "amount_desc":
-            query = query.order_by(Transaction.amount.desc())
-        elif order_by == "amount_asc":
-            query = query.order_by(Transaction.amount.asc())
-        else:  # default: "date_desc"
-            query = query.order_by(Transaction.date.desc())
+        # Calculate total_count before pagination
+        total_count_query = select(func.count()).select_from(Transaction).where(query.whereclause)
+        total_count = db.execute(total_count_query).scalar() or 0
+
+        # Calculate financial totals in a single query
+        completed_query = query.filter(
+            Transaction.status.in_([TransactionStatus.COMPLETED, TransactionStatus.AWAITING_ACCEPTANCE]))
+        totals_query = select(
+            func.sum(Transaction.amount).filter(Transaction.sender_id == user.id).label('outgoing_total'),
+            func.count(Transaction.id).filter(Transaction.sender_id == user.id).label('outgoing_count'),
+            func.sum(Transaction.amount).filter(Transaction.receiver_id == user.id).label('incoming_total'),
+            func.count(Transaction.id).filter(Transaction.receiver_id == user.id).label('incoming_count'),
+            func.count(Transaction.id).label('total_completed')
+        ).select_from(Transaction).where(completed_query.whereclause)
+
+        result = db.execute(totals_query).first()
+        outgoing_total = result.outgoing_total or 0
+        outgoing_count = result.outgoing_count or 0
+        incoming_total = result.incoming_total or 0
+        incoming_count = result.incoming_count or 0
+        total_completed = result.total_completed or 0
+
+        # Apply sorting (override get_transactions sorting)
+        # if order_by == "date_asc":
+        #     query = query.order_by(Transaction.date.asc())
+        # elif order_by == "amount_desc":
+        #     query = query.order_by(Transaction.amount.desc())
+        # elif order_by == "amount_asc":
+        #     query = query.order_by(Transaction.amount.asc())
+        # else:  # date_desc
+        #     query = query.order_by(Transaction.date.desc())
 
         # Apply pagination
-        if offset:
-            query = query.offset(offset)
-        if limit:
-            query = query.limit(limit)
+        query = query.offset(offset).limit(limit)
+        transactions = db.execute(query).scalars().all()
 
-        transactions = query.all()
-
-        # Calculate dynamic totals based on filtered results
-        total_count = len(transactions)
-
-        # For financial totals, only include COMPLETED transactions from filtered results
-        completed_filtered = [t for t in transactions if t.status == TransactionStatus.COMPLETED or t.status == TransactionStatus.AWAITING_ACCEPTANCE]
-        outgoing_total = sum([t.amount for t in completed_filtered if t.sender_id == user.id])
-        incoming_total = sum([t.amount for t in completed_filtered if t.receiver_id == user.id])
-
+        # Return response
         return TransactionHistoryResponse(
             transactions=transactions,
             total=total_count,
+            total_completed=total_completed,
+            pages=(total_count + limit - 1) // limit,
             outgoing_total=outgoing_total,
-            incoming_total=incoming_total
+            avg_outgoing_transaction=round(outgoing_total / outgoing_count, 2) if outgoing_count > 0 else 0,
+            incoming_total=incoming_total,
+            avg_incoming_transaction=round(incoming_total / incoming_count, 2) if incoming_count > 0 else 0,
+            net_total=round(outgoing_total - incoming_total, 2)
         )
 
     @classmethod
@@ -442,7 +440,8 @@ class TransactionService:
 
     @classmethod
     def cancel_recurring_transaction(cls, db, user, transaction):
-        if transaction.status not in (TransactionStatus.AWAITING_ACCEPTANCE, TransactionStatus.PENDING, TransactionStatus.ACCEPTED):
+        if transaction.status not in (TransactionStatus.AWAITING_ACCEPTANCE, TransactionStatus.PENDING,
+                                      TransactionStatus.ACCEPTED):
             raise HTTPException(
                 status_code=400,
                 detail=f"Cannot cancel transaction with status: {transaction.status.value}. Only pending and awaiting confirmation transactions can be cancelled."

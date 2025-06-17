@@ -42,6 +42,11 @@
                 <i class="bi bi-arrow-up-circle"></i> Withdraw
             </a>
         </div>
+        <div class="action-card">
+            <a href="/contacts" class="action-text" data-bs-toggle="tooltip" title="Contacts" aria-label="Contacts">
+                <i class="bi bi-arrow-up-circle"></i> Contacts
+            </a>
+        </div>
     </div>
 
     <!-- Summary Cards -->
@@ -52,9 +57,9 @@
                     <i class="bi bi-list-check summary-icon"></i>
                 </div>
                 <div class="summary-content">
-                    <h3 class="summary-title">Total Transactions</h3>
+                    <h3 class="summary-title">Completed Payments</h3>
                     <p class="summary-value" id="total-transactions">0</p>
-                    <p class="summary-details">Based on filters</p>
+                    <p class="summary-details">out of <span id="total-all-transactions">0</span> total</p>
                 </div>
             </div>
         </div>
@@ -64,9 +69,9 @@
                     <i class="bi bi-bar-chart summary-icon"></i>
                 </div>
                 <div class="summary-content">
-                    <h3 class="summary-title">Average Transaction</h3>
-                    <p class="summary-value" id="avg-amount">$0.00</p>
-                    <p class="summary-details">Based on filters</p>
+                    <h3 class="summary-title">Incoming Total</h3>
+                    <p class="summary-value" id="total-incoming">$0.00</p>
+                    <p class="summary-details">average of $<span id="avg-amount">0</span> / transaction</p>
                 </div>
             </div>
         </div>
@@ -76,9 +81,9 @@
                     <i class="bi bi-graph-up summary-icon"></i>
                 </div>
                 <div class="summary-content">
-                    <h3 class="summary-title">Net Movement</h3>
-                    <p class="summary-value" id="net-movement">$0.00</p>
-                    <p class="summary-details">Based on filters</p>
+                    <h3 class="summary-title">Outgoing Total</h3>
+                    <p class="summary-value" id="total-outgoing">$0.00</p>
+                    <p class="summary-details">average of $<span id="net-movement">0</span> / transaction</p>
                 </div>
             </div>
         </div>

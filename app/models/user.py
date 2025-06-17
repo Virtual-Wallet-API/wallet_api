@@ -2,9 +2,10 @@ from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import List
 
-from sqlalchemy import Integer, Column, String, Boolean, Float, or_, select, DateTime
+from sqlalchemy import Integer, Column, String, Boolean, Float, DateTime, select, union, or_, func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import validates, relationship, Session, Query
+from sqlalchemy.sql import Select
 from sqlalchemy.types import Enum as CEnum
 
 from app.infrestructure import Base, data_validators
@@ -61,37 +62,67 @@ class User(Base):
 
     @hybrid_property
     def transactions(self):
-        return self.sent_transactions.union(self.received_transactions).order_by(Transaction.date.desc()).all()
+        # For instance-level access, return list of transactions
+        query = select(Transaction).where(
+            or_(Transaction.sender_id == self.id, Transaction.receiver_id == self.id)
+        ).order_by(Transaction.date.desc())
+        return self._session.execute(query).scalars().all()
 
     @hybrid_property
     def transactions_query(self):
-        return self.sent_transactions.union(self.received_transactions)
+        # Return a Select object for 2.0 compatibility
+        return select(Transaction).where(
+            or_(Transaction.sender_id == self.id, Transaction.receiver_id == self.id)
+        )
 
     @property
     def pending_received_transactions(self):
-        return self.received_transactions.filter(Transaction.status == TransactionStatus.PENDING).all()
+        query = select(Transaction).where(
+            Transaction.receiver_id == self.id,
+            Transaction.status == TransactionStatus.PENDING
+        )
+        return self._session.execute(query).scalars().all()
 
     @property
     def pending_sent_transactions(self):
-        return self.sent_transactions.filter(Transaction.status == TransactionStatus.PENDING).all()
+        query = select(Transaction).where(
+            Transaction.sender_id == self.id,
+            Transaction.status == TransactionStatus.PENDING
+        )
+        return self._session.execute(query).scalars().all()
 
     @property
     def awaiting_acceptance_sent_transactions(self):
-        return self.sent_transactions.filter(Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE).all()
+        query = select(Transaction).where(
+            Transaction.sender_id == self.id,
+            Transaction.status == TransactionStatus.AWAITING_ACCEPTANCE
+        )
+        return self._session.execute(query).scalars().all()
 
     @transactions.expression
     def transactions(cls):
-        return (select(Transaction)
-                .where(or_(Transaction.sender_id == cls.id, Transaction.receiver_id == cls.id)))
+        return select(Transaction).where(
+            or_(Transaction.sender_id == cls.id, Transaction.receiver_id == cls.id)
+        )
 
-    def get_transactions(self, db: Session,
-                         date_from: date = None,
-                         date_to: date = None,
-                         order_by: str = "date_desc",
-                         offset=None,
-                         limit=None) -> Query:
-
+    def get_transactions(self, db: Session, date_from: date = None, date_to: date = None,
+                         order_by: str = "date_desc", offset=None, limit=None,
+                         legacy_query: bool = True) -> Select | Query:
+        """
+        Get transactions query with filtering, sorting, and pagination.
+        :param db: SQLAlchemy 2.0 Session
+        :param date_from: Start date filter
+        :param date_to: End date filter
+        :param order_by: Sort order ('date_asc', 'date_desc', 'amount_asc', 'amount_desc')
+        :param offset: Pagination offset
+        :param limit: Pagination limit
+        :param legacy_query: Return 1.x Query object for backward compatibility
+        :return: SQLAlchemy 2.0 Select or 1.x Query object
+        """
         query = self.transactions_query
+
+        if date_from and date_to:
+            query = query.filter(Transaction.date.between(date_from, date_to))
 
         if order_by == "date_asc":
             query = query.order_by(Transaction.date.asc())
@@ -99,14 +130,15 @@ class User(Base):
             query = query.order_by(Transaction.date.desc())
         elif order_by == "amount_asc":
             query = query.order_by(Transaction.amount.asc())
-        else:
+        else:  # amount_desc
             query = query.order_by(Transaction.amount.desc())
 
-        if offset and limit:
+        if offset is not None and limit is not None:
             query = query.offset(offset).limit(limit)
 
-        if date_from and date_to:
-            query = query.filter(Transaction.date.between(date_from, date_to))
+        if legacy_query:
+            # Convert to 1.x Query for backward compatibility
+            return db.query(Transaction).select_from(query.subquery())
 
         return query
 

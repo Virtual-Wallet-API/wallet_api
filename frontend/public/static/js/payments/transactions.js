@@ -4,11 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
         filters: {},
         sort: 'date_desc',
         page: 1,
-        limit: 30, // Matches API default
+        limit: 30,
         totalPages: 1,
-        userId: null, // Will be set dynamically after authentication
+        userId: null,
         transactions: [],
-        totalTransactions: 0,
+        total: 0,
+        total_completed: 0,
+        total_incoming: 0,
+        total_outgoing: 0,
+        average_incoming: 0,
+        average_outgoing: 0,
         showTransactions: true
     };
 
@@ -114,12 +119,19 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initTransactions() {
         elements.loading.show();
         const data = await fetchTransactions();
+        console.log(data);
         if (data) {
             state.transactions = data.transactions;
-            state.totalTransactions = data.total;
-            state.totalPages = Math.ceil(data.total / state.limit) || 1;
-            state.userId = state.userId || data.transactions[0]?.sender_id || data.transactions[0]?.receiver_id; // Infer user ID
-            elements.subtitle.text(`User ID: ${state.userId || 'Unknown'}`);
+            state.total = data.total;
+            state.total_completed = data.total_completed;
+            state.total_incoming = data.incoming_total;
+            state.total_outgoing = data.outgoing_total;
+            state.average_incoming = data.avg_incoming_transaction;
+            state.average_outgoing = data.avg_outgoing_transaction;
+            state.totalPages = data.pages;
+            // state.totalPages = Math.ceil(data.total_matching / state.limit) || 1;
+            state.userId = window.userData.id;
+            elements.subtitle.text(``);
             renderTransactions();
             updateSummary(data);
             updateBalance(); // Update balance display
@@ -169,12 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update summary cards with API aggregate data
     function updateSummary(data) {
-        elements.totalTransactions.text(data.total);
-        const avgAmount = data.total > 0 ? (data.incoming_total + data.outgoing_total) / data.total : 0;
-        elements.avgAmount.text(`$${avgAmount.toFixed(2)}`);
-        elements.netMovement.text(0).css({
-            color: 1 >= 0 ? 'var(--bs-success)' : 'var(--bs-danger)'
-        });
+        elements.totalTransactions.text(data.total_completed);
+        document.getElementById("total-all-transactions").textContent = data.total;
+        elements.avgAmount.text(`$${data.avg_incoming_transaction}`);
+        document.getElementById("total-incoming").textContent = data.incoming_total;
+        elements.netMovement.text(`$${data.avg_outgoing_transaction}`);
+        document.getElementById("total-outgoing").textContent = data.outgoing_total;
     }
 
     // Update pagination controls

@@ -98,6 +98,8 @@ class CategoryTransactionResponse(BaseModel):
 class TransactionHistoryResponse(BaseModel):
     transactions: List[TransactionResponse] = []
     total: int = 0
+    total_completed: int = 0
+    pages: int = 1
     outgoing_total: float = 0.0
     incoming_total: float = 0.0
     avg_outgoing_transaction: float = 0.0
