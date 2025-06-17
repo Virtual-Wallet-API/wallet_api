@@ -131,6 +131,13 @@ if (window.location.hash === '#login-email') {
 }
 
 // Check if the URL ends with #login
+if (window.location.hash === '#login-email-error') {
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
+    showMessage('loginMessage', "Invalid email verification key. If your address hasn't been confirmed yet, please contact support: admin@vwallet.ninja", false);
+}
+
+// Check if the URL ends with #login
 if (window.location.hash === '#login-error') {
     const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
     loginModal.show();

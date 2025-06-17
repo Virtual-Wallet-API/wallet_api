@@ -57,10 +57,14 @@ class UserPublicBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    email_verification_link: Optional[str] = "http://127.0.0.1/verify/"
 
     @field_validator('password')
     def validate_password(cls, v: str) -> str:
         return data_validators.validate_password(v)
+
+    class Config:
+        exclude = {"avatar"}
 
 
 class UserUpdate(BaseModel):

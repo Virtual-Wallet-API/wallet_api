@@ -49,7 +49,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return UAuth.register(user, db)
 
 
-@router.post("/email/{key}", response_model=Dict)
+@router.put("/email/{key}", response_model=Dict)
 def verify_email(key: str,
                  db: Session = Depends(get_db)):
     return UAuth.verifty_email(db, key)

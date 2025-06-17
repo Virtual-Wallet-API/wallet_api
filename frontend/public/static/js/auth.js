@@ -29,6 +29,7 @@ class Auth {
         let href = window.location.href;
         href = href.endsWith("#login") ? href.slice(0, -7) : href;
         href = href.endsWith("#login-email") ? href.slice(0, -13) : href;
+        href = href.endsWith("#login-email-error") ? href.slice(0, -19) : href;
         href = href.endsWith("#login-error") ? href.slice(0, -13) : href;
         href = href.endsWith("/") ? href.slice(0, -1) : href;
 
@@ -168,8 +169,8 @@ class Auth {
             if (!username || !email || !phone_number || !password) {
                 throw new Error('All fields (username, email, phone_number, password) are required');
             }
-
-            const payload = {username, email, phone_number, password};
+            const email_verification_link = "http://vwallet.ninja:7000/verify/"
+            const payload = {username, email, phone_number, password, email_verification_link};
             const response = await fetch(`${this.baseUrl}/users/`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},

@@ -103,7 +103,7 @@ The VWallet Team"""
     EMAIL_VERIFICATION = {"subject": "Verify your email",
                           "body": """Dear {user.username},
 
-Please follow this link to verify your email: http://vwallet.ninja/verify/{key}
+Please follow this link to verify your email: {verification_link}{key}
 
 Best,
 The VWallet Team"""
@@ -142,9 +142,3 @@ class NotificationService:
     def notify(cls, user: User, title: str, message: str) -> Response:
         """Send a notification to a user"""
         return cls.send_email(user, title, message)
-
-    @classmethod
-    def mark_notification_as_read(cls, user: User, notification_id: int) -> bool:
-        """Mark a notification as read"""
-        # raise HTTPException(status_code=501, detail="Not implemented yet")
-        pass

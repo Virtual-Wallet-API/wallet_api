@@ -1,12 +1,13 @@
 from typing import Dict
 
+import fastapi.responses
+import requests
 from fastapi import APIRouter, Request
 from fastapi.params import Depends
 from starlette.responses import RedirectResponse
 
 from frontend.jinja import templates
 from frontend.services.dependencies import get_valid_user_data
-from app.dependencies import get_active_user_except_blocked
 
 router = APIRouter()
 
@@ -34,25 +35,7 @@ def reset_password_page(request: Request):
 def cards(request: Request):
     data = {
         "request": request,
-        "page": "cards",
-        "debit_cards": [
-            {"id": 1, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple",
-             "status": "active"},
-            {"id": 2, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue",
-             "status": "active"},
-            {"id": 3, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "green",
-             "status": "active"},
-            {"id": 4, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "green",
-             "status": "terminated"},
-        ],
-        "credit_cards": [
-            {"id": 5, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "red", "status": "expired"},
-            {"id": 6, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "red",
-             "status": "terminated"},
-            {"id": 7, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "blue", "status": "lost"},
-            {"id": 8, "last_four": 1234, "expiry": "01/23", "balance": "1000.00$", "color": "purple",
-             "status": "frozen"},
-        ]
+        "page": "cards"
     }
     return templates.TemplateResponse("cards.html", data)
 
@@ -125,3 +108,12 @@ def profile_settings(request: Request):
 def security_settings(request: Request):
     data = {"request": request, "page": "security settings"}
     return templates.TemplateResponse("security.html", data)
+
+
+@router.get("/verify/{email_key}", response_model=None)
+def verify_email(request: Request, email_key=str):
+    response = requests.put(url=f"{request.base_url}/api/v1/users/email/{email_key}")
+    if response.status_code == 200:
+        return RedirectResponse(url="/#login-email")
+    else:
+        return RedirectResponse(url="/#login-email-error")
