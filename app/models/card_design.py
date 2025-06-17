@@ -12,6 +12,9 @@ class DesignPatterns(str, Enum):
     GRID = "grid"
     STRIPES = "stripes"
     DOTS = "dots"
+    WAVES = "waves"
+    TRIANGLES = "triangles"
+    HEXAGONS = "hexagons"
 
 
 class CardDesign(Base):

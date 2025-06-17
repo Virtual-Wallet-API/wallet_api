@@ -8,7 +8,6 @@ from app import *
 from app.business.transaction.transactions_recurring import RecurringService
 from app.infrestructure.database import Base, engine
 from app.infrestructure.scheduler import init_scheduler
-from frontend.routers import root_router
 
 # Ensure the database is not missing tables
 Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -48,9 +47,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# static files for frontend
-app.mount("/static", StaticFiles(directory="frontend/public/static", check_dir=True), name="static")
-
 # Router insertion
 prefix = "/api/v1"
 app.include_router(admin_router, prefix=prefix + "/admin")
@@ -61,8 +57,6 @@ app.include_router(deposits_router, prefix=prefix + "/deposits")
 app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 app.include_router(transactions_router, prefix=prefix + "/transactions")
 
-# Frontend routes
-app.include_router(root_router, tags=["Frontend"])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
