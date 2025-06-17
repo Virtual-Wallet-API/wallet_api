@@ -20,7 +20,7 @@ def get_env_var(name: str, required: bool = True) -> str:
     return value
 
 # Base URL
-BASE_URL = "/fe"
+BASE_URL = "/"
 
 # Connection
 DB_URL = get_env_var("DB_URL")

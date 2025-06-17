@@ -26,17 +26,17 @@
     <!-- Quick Action Bar with Icons -->
     <div class="quick-actions-bar">
         <div class="action-card">
-            <a href="/fe/transactions" class="action-text" aria-label="View Transaction History">
+            <a href="/transactions" class="action-text" aria-label="View Transaction History">
                 <i class="bi bi-clock-history"></i> History
             </a>
         </div>
         <div class="action-card">
-            <a href="/fe/withdrawals" class="action-text" aria-label="Withdraw Funds">
+            <a href="/withdrawals" class="action-text" aria-label="Withdraw Funds">
                 <i class="bi bi-arrow-up-circle"></i> Withdraw
             </a>
         </div>
         <div class="action-card">
-            <a href="/fe/send" class="action-text" aria-label="Send Money">
+            <a href="/send" class="action-text" aria-label="Send Money">
                 <i class="bi bi-send"></i> Send Money
             </a>
         </div>
@@ -277,16 +277,18 @@
                             <div class="stripe-element" id="modal-stripe-card-element"></div>
                             <div class="card-error-message-stripe" id="modal-stripe-card-error-message" style="display: none;"></div>
                         </div>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Save Card</button>
-                            <button type="button" class="btn btn-secondary" id="btn-cancel-add-card">Cancel</button>
-                        </div>
                     </form>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btn-add-new-card-modal">Add New Card</button>
+                <div id="manage-cards-add-button">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="btn-add-new-card-modal">Add New Card</button>
+                </div>
+                <div id="add-cards-add-button" style="display: none;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-add-card">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="add-card-form">Save Card</button>
+                </div>
             </div>
         </div>
     </div>
@@ -325,7 +327,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="btn-download-receipt">Download Receipt</button>
             </div>
         </div>
     </div>

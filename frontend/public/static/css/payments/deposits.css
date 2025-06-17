@@ -812,7 +812,15 @@ select.form-control:focus {
     animation: slideUp 0.3s ease forwards;
 }
 
+.slide-up {
+    animation: slideUp 0.3s ease forwards;
+}
+
 .modal-content .slide-down {
+    animation: slideDown 0.3s ease forwards;
+}
+
+.slide-down {
     animation: slideDown 0.3s ease forwards;
 }
 

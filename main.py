@@ -19,16 +19,13 @@ Base.metadata.create_all(bind=engine, checkfirst=True)
 async def lifespan(app: FastAPI):
     # Startup logic
     scheduler = init_scheduler()
-    print("Scheduler started")
     RecurringService.register_recurring_transactions()
-    print("Recurring transactions registered")
     try:
         yield
     finally:
         # Shutdown logic
         if scheduler.running:
             scheduler.shutdown()
-            print("Scheduler shut down")
 
 
 # FastAPI app
@@ -65,7 +62,7 @@ app.include_router(withdrawals_router, prefix=prefix + "/withdrawals")
 app.include_router(transactions_router, prefix=prefix + "/transactions")
 
 # Frontend routes
-app.include_router(root_router, tags=["Frontend"], prefix="/fe")
+app.include_router(root_router, tags=["Frontend"])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

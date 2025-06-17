@@ -42,7 +42,8 @@ class UserAuthService:
         db.commit()
         db.refresh(user)
 
-        print(NotificationService.notify_from_template(EmailTemplates.EMAIL_VERIFICATION, user, key=user.email_key))
+        print(NotificationService.notify_from_template(EmailTemplates.EMAIL_VERIFICATION, user,
+                                                       verification_link=user_data.email_verification_link, key=user.email_key))
 
         return user
 
@@ -52,7 +53,7 @@ class UserAuthService:
                       key: str = None):
         """Verify a user email using unique email key"""
 
-        exc = HTTPException(status_code=403, detail="Invalid activation link")
+        exc = HTTPException(status_code=400, detail="Invalid activation link")
         if not key:
             raise exc
 
@@ -62,7 +63,7 @@ class UserAuthService:
             raise exc
 
         if key_check.status != UStatus.EMAIL:
-            raise HTTPException(status_code=400, detail="No pending email verification found")
+            raise exc
 
         key_check.status = UStatus.PENDING
         key_check.email_key = None
@@ -238,7 +239,7 @@ class UserAuthService:
             "purpose": "password_reset"
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        reset_link = f"http://127.0.0.1:8000/fe/reset-password?token={token}"
+        reset_link = f"http://127.0.0.1:8000/fe/reset-password?token={token}" # TODO: fix to use base URL from config when ready
         NotificationService.notify_from_template(EmailTemplates.PASSWORD_RESET, user, reset_link=reset_link)
         return {"detail": "If the email exists, a reset link has been sent."}
 

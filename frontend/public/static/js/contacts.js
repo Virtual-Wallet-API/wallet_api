@@ -323,4 +323,12 @@ function removeContact(contactId) {
         console.error('Error removing contact:', error);
         alert('Error removing contact. Please try again later.');
     });
-} 
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const createTransactionModalButton = document.getElementById('create-transaction-btn');
+    createTransactionModalButton.addEventListener('click', () => {
+        const username = document.getElementById('modal-username').textContent
+        window.location.href = `/send#contact-${username}`
+    });
+});
