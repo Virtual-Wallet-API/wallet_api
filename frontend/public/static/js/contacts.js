@@ -14,20 +14,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const balanceAmountLoading = document.getElementById('balance-amount-loading');
     const formLoadingOverlay = document.getElementById('form-loading-overlay');
     const contactDetailsModal = new bootstrap.Modal(document.getElementById('contactDetailsModal'));
-    let addContactHeight = addContactBox.scrollHeight * 1.19;
-    console.log(addContactHeight);
 
     // Initial Setup
     balanceAmount.style.opacity = '0';
     balanceAmountLoading.style.display = 'block';
     contactsContent.style.display = 'block';
     contactsContent.style.opacity = '1';
-    contactsContent.style.maxHeight = `${contactsContent.scrollHeight}px`;
+    contactsContent.style.maxHeight = '1000px'; // Sufficiently large value for smooth transition
     contactsToggle.setAttribute('aria-expanded', 'true');
     contactsToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
     addContactBox.style.display = 'block';
     addContactBox.style.opacity = '1';
-    addContactBox.style.maxHeight = `${addContactHeight}px`;
+    addContactBox.style.maxHeight = '1000px'; // Sufficiently large value for smooth transition
 
     // Event Listeners
     addContactToggle.addEventListener('click', () => toggleSection(addContactToggle, addContactBox));
@@ -78,19 +76,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!isExpanded) {
             content.style.display = 'block';
             content.style.transition = 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out';
-            content.style.maxHeight = content.id === "add-contact-box" ? addContactHeight + 'px' : `${content.scrollHeight}px`;
+            content.style.maxHeight = '1000px'; // Large enough to accommodate content
             content.style.opacity = '1';
             icon.classList.replace('bi-chevron-down', 'bi-chevron-up');
         } else {
-            content.style.maxHeight = content.id === "add-contact-box" ? addContactHeight + 'px' : `${content.scrollHeight}px`;
+            content.style.transition = 'max-height 0.4s ease-in-out, opacity 0.4s ease-in-out';
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
             setTimeout(() => {
-                content.style.maxHeight = '0';
-                content.style.opacity = '0';
-                icon.classList.replace('bi-chevron-up', 'bi-chevron-down');
-                setTimeout(() => {
-                    content.style.display = 'none';
-                }, 400);
-            }, 10);
+                content.style.display = 'none';
+            }, 400);
         }
     }
 
@@ -143,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
             const container = document.getElementById('contacts-list-content');
-            container.style.maxHeight = `${container.scrollHeight}px`;
+            container.style.maxHeight = '1000px'; // Adjust dynamically if needed
         });
     }
 
@@ -170,10 +165,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     viewMoreContainer.style.display = 'block';
                     document.getElementById('view-contacts-btn').addEventListener('click', () => {
                         additionalContainer.style.display = 'block';
-                        additionalContainer.style.maxHeight = `${additionalContainer.scrollHeight}px`;
+                        additionalContainer.style.maxHeight = '1000px';
                         additionalContainer.style.opacity = '1';
                         viewMoreContainer.style.display = 'none';
-                        contactsContent.style.maxHeight = `${contactsContent.scrollHeight}px`;
+                        contactsContent.style.maxHeight = '1000px';
                     });
                 }
             } else {
@@ -184,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             initialContainer.innerHTML = '<p class="text-danger text-center">Error loading contacts.</p>';
         } finally {
             loadingContainer.style.display = 'none';
-            contactsContent.style.maxHeight = `${contactsContent.scrollHeight}px`;
+            contactsContent.style.maxHeight = '1000px';
         }
     }
 
@@ -205,7 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="username">${contact.contact_user.username}</div>
                     <div class="email">${contact.contact_user.email}</div>
                 </div>
-                <i class="bi bi-info-circle contact-info-icon"></i>
             </div>
         `).join('');
         document.querySelectorAll('.contact-item').forEach(item => {
@@ -240,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function createTransaction() {
         if (window.currentContactUsername) {
-            window.location.href = `/fe/send?receiver=${encodeURIComponent(window.currentContactUsername)}`;
+            window.location.href = `/send#contact-${window.currentContactUsername}`;
         }
         contactDetailsModal.hide();
     }
@@ -264,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             if (!document.querySelector('.contact-item')) {
                                 document.getElementById('initial-contacts').innerHTML = '<p class="text-muted text-center">No contacts found.</p>';
                             }
-                            contactsContent.style.maxHeight = `${contactsContent.scrollHeight}px`;
+                            contactsContent.style.maxHeight = '1000px';
                         }, 300);
                     }
                     contactDetailsModal.hide();
@@ -288,29 +282,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function showSuccess(message) {
-        addContactHeight += 135;
-        addContactBox.style.maxHeight = `${addContactHeight}px`;
         successMessage.textContent = message;
         successMessage.style.display = 'block';
         successMessage.classList.add('visible');
         setTimeout(() => {
             successMessage.classList.remove('visible');
             setTimeout(() => successMessage.style.display = 'none', 300);
-            addContactHeight -= 135;
-            addContactBox.style.maxHeight = `${addContactHeight}px`;
         }, 10000);
     }
 
     function showError(message) {
-        addContactHeight += 135;
-        addContactBox.style.maxHeight = `${addContactHeight}px`;
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
         errorMessage.classList.add('visible');
         setTimeout(() => {
             errorMessage.classList.remove('visible');
-            addContactHeight -= 135;
-            addContactBox.style.maxHeight = `${addContactHeight}px`;
             setTimeout(() => errorMessage.style.display = 'none', 300);
         }, 10000);
     }
