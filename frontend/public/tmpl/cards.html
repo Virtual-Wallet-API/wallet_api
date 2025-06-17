@@ -2,33 +2,504 @@
 
 {% block styles %}
 <link rel="stylesheet" href="/static/css/cards.css">
+<style>
+/* Revolut-like Card Swiper Styles */
+.cards-hero-section {
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-hover));
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.cards-swiper-container {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.cards-swiper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.card-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.card-slide.active {
+    opacity: 1;
+    transform: translateX(0%);
+    z-index: 3;
+}
+
+.card-slide.prev {
+    opacity: 0.7;
+    transform: translateX(-20%) scale(0.95);
+    z-index: 2;
+}
+
+.card-slide.next {
+    opacity: 0.7;
+    transform: translateX(20%) scale(0.95);
+    z-index: 2;
+}
+
+/* Card Color Themes */
+.card-slide.mastercard-red {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+.card-slide.visa-blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-slide.amex-green {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.card-slide.discover-orange {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.card-slide.custom-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-slide.custom-teal {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.card-slide.custom-sunset {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+.card-slide.custom-ocean {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-slide.custom-midnight {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+}
+
+/* Card Content */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.card-type-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.card-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    margin: 1rem 0;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-holder {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-expiry {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Swiper Navigation */
+.swiper-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.swiper-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.swiper-btn:hover {
+    background: var(--accent-color-hover);
+    transform: translateY(-2px);
+}
+
+.swiper-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.card-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(var(--accent-color-rgb), 0.3);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.indicator.active {
+    background: var(--accent-color);
+    transform: scale(1.2);
+}
+
+/* Card Actions */
+.card-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.card-action-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.btn-customize {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-hover));
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.btn-customize:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.4);
+}
+
+.btn-details {
+    background: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+}
+
+.btn-details:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Customization Panel */
+.customization-panel {
+    background: var(--bs-body-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.customization-panel.active {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.color-option {
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.color-option.selected {
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.color-option::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.color-option.selected::after {
+    opacity: 1;
+}
+
+/* Color Gradients */
+.color-mastercard { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); }
+.color-visa { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.color-amex { background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); }
+.color-discover { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.color-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.color-teal { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+.color-sunset { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+.color-ocean { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.color-midnight { background: linear-gradient(135deg, #232526 0%, #414345 100%); }
+
+/* Card List View */
+.cards-list-section {
+    margin: 2rem 1rem;
+}
+
+.section-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bs-body-bg);
+    border-radius: 15px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.section-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cards-swiper-container {
+        max-width: 300px;
+    }
+    
+    .card-slide {
+        height: 190px;
+        padding: 1.25rem;
+    }
+    
+    .card-number {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+    }
+    
+    .card-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .card-action-btn {
+        width: 200px;
+    }
+}
+
+/* Add Card Button */
+.add-card-floating {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-color-hover));
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(var(--accent-color-rgb), 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.add-card-floating:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--accent-color-rgb), 0.5);
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="cards-page-container">
-    <h2 class="cards-title-main">Cards</h2>
-
-    <!-- Cards List -->
-    <div class="section-toggle" id="cards-toggle" tabindex="0" aria-expanded="true" aria-controls="cards-list-content">
-        <h3>My Cards</h3>
-        <i class="bi bi-chevron-down"></i>
+    <!-- Hero Section -->
+    <div class="cards-hero-section">
+        <h1>My Cards</h1>
+        <p>Swipe to view your cards and customize their appearance</p>
     </div>
-    <div class="cards-list show" id="cards-list-content">
-        <div class="list-loading-container" id="cards-loading"><i class="bi bi-arrow-repeat"></i></div>
-        <div id="initial-cards">
-            <!-- Card items will be inserted here by JS -->
+
+    <!-- Card Swiper -->
+    <div class="cards-swiper-container">
+        <div class="cards-swiper" id="cardsSwiper">
+            <!-- Cards will be dynamically loaded here -->
         </div>
-        <div id="additional-cards" class="items-list-more" style="max-height: 0; opacity: 0; overflow: hidden;">
-            <!-- Additional card items -->
+        
+        <!-- Navigation -->
+        <div class="swiper-navigation">
+            <button class="swiper-btn" id="prevBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="card-indicators" id="cardIndicators">
+                <!-- Indicators will be generated dynamically -->
+            </div>
+            <button class="swiper-btn" id="nextBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
         </div>
-        <div class="view-more-button-container" id="view-more-cards-btn-container" style="display: none;">
-            <a class="btn btn-outline-primary btn-view-more" href="#" id="view-cards-btn">View More</a>
+    </div>
+
+    <!-- Card Actions -->
+    <div class="card-actions">
+        <button class="card-action-btn btn-customize" id="customizeBtn">
+            <i class="bi bi-palette"></i> Customize
+        </button>
+        <button class="card-action-btn btn-details" id="detailsBtn">
+            <i class="bi bi-info-circle"></i> Details
+        </button>
+    </div>
+
+    <!-- Customization Panel -->
+    <div class="customization-panel" id="customizationPanel">
+        <h3>Customize Card Appearance</h3>
+        <p>Choose a color theme for your card:</p>
+        
+        <div class="color-palette">
+            <div class="color-option color-mastercard" data-theme="mastercard-red" title="Mastercard Red"></div>
+            <div class="color-option color-visa" data-theme="visa-blue" title="Visa Blue"></div>
+            <div class="color-option color-amex" data-theme="amex-green" title="Amex Green"></div>
+            <div class="color-option color-discover" data-theme="discover-orange" title="Discover Orange"></div>
+            <div class="color-option color-purple" data-theme="custom-purple" title="Purple"></div>
+            <div class="color-option color-teal" data-theme="custom-teal" title="Teal"></div>
+            <div class="color-option color-sunset" data-theme="custom-sunset" title="Sunset"></div>
+            <div class="color-option color-ocean" data-theme="custom-ocean" title="Ocean"></div>
+            <div class="color-option color-midnight" data-theme="custom-midnight" title="Midnight"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="card-action-btn btn-customize" id="saveCustomization">
+                <i class="bi bi-check-circle"></i> Save Changes
+            </button>
+            <button class="card-action-btn btn-details" id="cancelCustomization">
+                <i class="bi bi-x-circle"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Cards List Section -->
+    <div class="cards-list-section">
+        <div class="section-toggle" id="cards-toggle" tabindex="0" aria-expanded="true" aria-controls="cards-list-content">
+            <h3><i class="bi bi-credit-card"></i> All Cards</h3>
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        
+        <div class="cards-list show" id="cards-list-content">
+            <div class="list-loading-container" id="cards-loading">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div id="initial-cards">
+                <!-- Card items will be inserted here by JS -->
+            </div>
+            <div id="additional-cards" class="items-list-more" style="max-height: 0; opacity: 0; overflow: hidden;">
+                <!-- Additional card items -->
+            </div>
+            <div class="view-more-button-container" id="view-more-cards-btn-container" style="display: none;">
+                <a class="btn btn-outline-primary btn-view-more" href="#" id="view-cards-btn">View More</a>
+            </div>
         </div>
     </div>
 
     <!-- Add padding to clear fixed footer -->
-    <div style="padding-bottom: 80px;"></div>
+    <div style="padding-bottom: 120px;"></div>
 </div>
+
+<!-- Floating Add Card Button -->
+<button class="add-card-floating" id="addCardBtn" title="Add New Card">
+    <i class="bi bi-plus"></i>
+</button>
 {% endblock %}
 
 {% block modals %}
@@ -49,6 +520,9 @@
                 <p><strong>Added:</strong> <span id="modal-added"></span></p>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="customize-card-btn">
+                    <i class="bi bi-palette"></i> Customize
+                </button>
                 <button type="button" class="btn btn-danger" id="remove-card-btn">Remove Card</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
             </div>

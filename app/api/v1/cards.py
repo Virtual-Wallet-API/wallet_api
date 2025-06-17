@@ -61,6 +61,41 @@ def get_user_cards(
     return CardService.get_user_cards(db, user)
 
 
+@router.get("/user-cards", response_model=None)
+def get_user_cards_with_design(db: Session = Depends(get_db),
+                               user: User = Depends(get_user_except_fpr)):
+    """
+    Get all cards belonging to the authenticated user with design information
+    """
+    cards_with_design = []
+    for card in user.cards:
+        card_data = {
+            "id": card.id,
+            "last_four": card.last_four,
+            "brand": card.brand,
+            "exp_month": card.exp_month,
+            "exp_year": card.exp_year,
+            "cardholder_name": card.cardholder_name,
+            "type": card.type,
+            "is_default": card.is_default,
+            "is_active": card.is_active,
+            "created_at": card.created_at,
+            "masked_number": card.masked_number,
+            "design": None
+        }
+        
+        if card.design:
+            card_data["design"] = {
+                "pattern": card.design.pattern,
+                "color": card.design.color,
+                "params": card.design.params
+            }
+        
+        cards_with_design.append(card_data)
+    
+    return cards_with_design
+
+
 @router.get("/{card_id}", response_model=CardResponse)
 def get_card(
         card_id: int,
@@ -81,6 +116,56 @@ def update_card(
     """Update card information - design only for now"""
     # TODO
     return CardService.update_card(db, user, card_id, card_update)
+
+
+@router.patch("/{card_id}/customize", response_model=None)
+def customize_card(card_id: int,
+                   customization_data: dict,
+                   db: Session = Depends(get_db),
+                   user: User = Depends(get_user_except_fpr)):
+    """
+    Customize card appearance (color, theme, pattern)
+    """
+    from app.models.card_design import CardDesign, DesignPatterns
+    from app.models.card import Card
+    import json
+    
+    # Find the card
+    card = db.query(Card).filter(
+        Card.id == card_id,
+        Card.user_id == user.id
+    ).first()
+    
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    
+    # Get or create card design
+    design = card.design
+    if not design:
+        design = CardDesign(
+            card_id=card.id,
+            pattern=DesignPatterns.GRID,
+            color=customization_data.get("color", "#667eea"),
+            params="{}"
+        )
+        db.add(design)
+    else:
+        # Update existing design
+        if "color" in customization_data:
+            design.color = customization_data["color"]
+        if "theme" in customization_data:
+            # Store theme information in params
+            params = json.loads(design.params) if design.params else {}
+            params["theme"] = customization_data["theme"]
+            design.params = json.dumps(params)
+    
+    try:
+        db.commit()
+        db.refresh(design)
+        return {"message": "Card customization updated successfully", "design": design}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to update card customization")
 
 
 @router.delete("/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
