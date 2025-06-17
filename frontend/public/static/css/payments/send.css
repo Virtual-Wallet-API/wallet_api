@@ -68,8 +68,8 @@
 .send-page-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1.5rem;
-    padding-top: 0.75rem;
+    padding: 2rem;
+    padding-top: 0.35rem;
     padding-bottom: 2rem;
     animation: fadeIn 0.4s ease-out;
     width: 100%;
@@ -77,20 +77,20 @@
 }
 
 /* Page Container */
-.send-page-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    padding-top: 0.75rem;
-    /*padding-bottom: 2rem;*/
-    animation: fadeIn 0.4s ease-out;
-    width: 100%;
-    box-sizing: border-box;
-}
+/*.send-page-container {*/
+/*    max-width: 1200px;*/
+/*    margin: 0 auto;*/
+/*    padding: 0 1.5rem;*/
+/*    padding-top: 0.75rem;*/
+/*    !*padding-bottom: 2rem;*!*/
+/*    animation: fadeIn 0.4s ease-out;*/
+/*    width: 100%;*/
+/*    box-sizing: border-box;*/
+/*}*/
 
 /* Page Header */
 .page-header {
-    padding: 1.25rem 0;
+    padding-bottom: 1.25rem;
     margin-bottom: calc(var(--section-spacing) * 0.7);
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -328,8 +328,8 @@
 .main-content-area .send-form-card,
 .main-content-area .transactions-card,
 .main-content-area .tips-card {
-    padding-left: calc(var(--bs-gutter-x) * 0.5);
-    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    /*padding-left: calc(var(--bs-gutter-x) * 0.5);*/
+    /*padding-right: calc(var(--bs-gutter-x) * 0.5);*/
     margin-left: 0;
     margin-right: 0;
 }

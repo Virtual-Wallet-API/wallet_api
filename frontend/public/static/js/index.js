@@ -123,29 +123,34 @@ if (resetPasswordForm) {
     });
 }
 
-// Check if the URL ends with #email-confirmed
-if (window.location.hash === '#login-email') {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-    showMessage('loginMessage', 'Your email has been successfully verified. You can now log in.', true);
+if (auth.loggedIn() && ['#login-email', '#login-email-error', '#login-error', '#login'].includes(window.location.hash)) {
+    window.location.href = '/account';
+} else {
+    // Check if the URL ends with #email-confirmed
+    if (window.location.hash === '#login-email') {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+        showMessage('loginMessage', 'Your email has been successfully verified. You can now log in.', true);
+    }
+
+    // Check if the URL ends with #login
+    if (window.location.hash === '#login-email-error') {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+        showMessage('loginMessage', "Invalid email verification key. If your address hasn't been confirmed yet, please contact support: admin@vwallet.ninja", false);
+    }
+
+    // Check if the URL ends with #login
+    if (window.location.hash === '#login-error') {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+        showMessage('loginMessage', 'Something went wrong, please log in again.', false);
+    }
+
+    // Check if the URL ends with #login
+    if (window.location.hash === '#login') {
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        loginModal.show();
+    }
 }
 
-// Check if the URL ends with #login
-if (window.location.hash === '#login-email-error') {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-    showMessage('loginMessage', "Invalid email verification key. If your address hasn't been confirmed yet, please contact support: admin@vwallet.ninja", false);
-}
-
-// Check if the URL ends with #login
-if (window.location.hash === '#login-error') {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-    showMessage('loginMessage', 'Something went wrong, please log in again.', false);
-}
-
-// Check if the URL ends with #login
-if (window.location.hash === '#login') {
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-}
