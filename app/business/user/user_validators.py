@@ -9,7 +9,7 @@ not_exist = HTTPException(status_code=400, detail="User with these details does 
 
 
 class UserValidators:
-    UniqueValidation: tuple = ("username", "email", "phone")
+    UniqueValidation: tuple = ("username", "email", "phone_number")
 
     @staticmethod
     def search_user_by_identifier(db: Session, identifier: str | int) -> User | None:
@@ -23,7 +23,7 @@ class UserValidators:
             "id": int,
             "username": str,
             "email": str,
-            "phone": str
+            "phone_number": str
         }
 
         user = None
@@ -67,7 +67,7 @@ class UserValidators:
         fields = {
             "username": User.username,
             "email": User.email,
-            "phone": User.phone_number,
+            "phone_number": User.phone_number,
             "id": User.id
         }
 
