@@ -164,7 +164,7 @@ class User(Base):
 
     @property
     def contacts_count(self) -> int:
-        return len(self.contacts)
+        return len(self.contacts.all())
 
     @property
     def categories_count(self) -> int:
