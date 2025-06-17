@@ -170,15 +170,15 @@ class StripeCardService:
             try:
                 db.commit()
                 db.refresh(card)
-                design = PatternGenerator.generate_pattern(int(card.last_four) + card.id)
-                design["card_id"] = card.id
-                design_db = CardDesign(**design)
-                db.add(design_db)
-                db.commit()
-                db.refresh(design_db)
-                card.design_id = design_db.id
-                db.commit()
-                db.refresh(card)
+                # design = PatternGenerator.generate_pattern(int(card.last_four) + card.id)
+                # design["card_id"] = card.id
+                # design_db = CardDesign(**design)
+                # db.add(design_db)
+                # db.commit()
+                # db.refresh(design_db)
+                # card.design_id = design_db.id
+                # db.commit()
+                # db.refresh(card)
             except Exception as e:
                 db.rollback()
                 logger.error(f"Failed to save card for user {user.id}: {e}")
