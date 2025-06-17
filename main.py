@@ -8,6 +8,7 @@ from app import *
 from app.business.transaction.transactions_recurring import RecurringService
 from app.infrestructure.database import Base, engine
 from app.infrestructure.scheduler import init_scheduler
+from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure the database is not missing tables
 Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -45,6 +46,14 @@ app = FastAPI(
     version="1.0.0",
     openapi_tags=[{"name": "Virtual Wallet API"}],
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://0.0.0.0:8080", "http://127.0.0.1:8080"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Router insertion
