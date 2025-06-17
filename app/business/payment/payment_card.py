@@ -95,7 +95,9 @@ class CardService:
             card.cardholder_name = card_update.cardholder_name
 
         if card_update.design is not None:
-            card.design = card_update.design
+            # card.design = card_update.design
+            # Designs can't be updated
+            pass
 
         if card_update.is_default is not None and card_update.is_default:
             # Remove default from other cards

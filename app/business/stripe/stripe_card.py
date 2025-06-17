@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from app.business.payment.payment_card import CardService
 from app.business.stripe import StripeService
 from app.business.user import UAuth
+from app.business.utils.pattern_generator import PatternGenerator
 from app.models import User, Card
+from app.models.card_design import CardDesign
 from app.schemas.card import PaymentIntentResponse, PaymentIntentCreate, SetupIntentResponse
 
 logger = logging.getLogger(__name__)
@@ -123,8 +125,7 @@ class StripeCardService:
             db: Session,
             user: User,
             payment_method_id: str,
-            cardholder_name: Optional[str] = None,
-            design: Optional[str] = None
+            cardholder_name: Optional[str] = None
     ) -> Card:
         """Save a card to database after successful Stripe payment method creation"""
         UAuth.verify_user_can_add_card(user)
@@ -161,13 +162,21 @@ class StripeCardService:
                 exp_year=card_data["exp_year"],
                 cardholder_name=cardholder_name or f"{user.username}",
                 type="unknown",  # Stripe doesn't provide funding type in all cases
-                design=design or '{"color": "purple"}',
                 is_default=is_default,
                 is_active=True
             )
 
             db.add(card)
             try:
+                db.commit()
+                db.refresh(card)
+                design = PatternGenerator.generate_pattern(int(card.last_four) + card.id)
+                design["card_id"] = card.id
+                design_db = CardDesign(**design)
+                db.add(design_db)
+                db.commit()
+                db.refresh(design_db)
+                card.design_id = design_db.id
                 db.commit()
                 db.refresh(card)
             except Exception as e:

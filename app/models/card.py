@@ -36,7 +36,6 @@ class Card(Base):
     # Card metadata
     type = Column(CEnum(CardType, name="card_type", values_callable=lambda obj: [e.value for e in obj]), nullable=False,
                   default=CardType.UNKNOWN)
-    design = Column(Text, nullable=False, default='{"color": "purple"}')  # JSON string for card design
     is_default = Column(Boolean, default=False)  # Whether this is the user's default card
     is_active = Column(Boolean, default=True)  # Whether the card is active
 
@@ -48,6 +47,7 @@ class Card(Base):
     user = relationship("User", back_populates="cards")
     deposits = relationship("Deposit", back_populates="card")
     withdrawals = relationship("Withdrawal", back_populates="card")
+    design = relationship("CardDesign", back_populates="card", uselist=False)
 
     @validates("last_four")
     def validate_last_four(self, key, v: str):

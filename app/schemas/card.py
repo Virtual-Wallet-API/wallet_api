@@ -27,7 +27,6 @@ class CardBrand(Enum):
 # Base schema for card information (safe fields only)
 class CardBase(BaseModel):
     cardholder_name: str
-    design: Optional[str] = '{"color": "purple"}'
 
 
 # Schema for adding a new card via Stripe
@@ -72,6 +71,16 @@ class SetupIntentResponse(BaseModel):
         from_attributes = True
 
 
+
+class CardDesignResponse(BaseModel):
+    id: int
+    color: str
+    pattern: str
+    params: str
+
+    class Config:
+        from_attributes = True
+
 # Withdrawal schemas moved to app/schemas/withdrawal.py
 
 # Schema for card response (safe information only)
@@ -84,7 +93,7 @@ class CardResponse(BaseModel):
     exp_year: int
     cardholder_name: str
     type: CardType
-    design: str
+    design: Optional[CardDesignResponse]
     is_default: bool
     is_active: bool
     created_at: datetime
@@ -111,7 +120,7 @@ class CardPublicResponse(BaseModel):
     exp_year: int
     cardholder_name: str
     type: CardType
-    design: str
+    design: CardDesignResponse
     is_default: bool
     is_active: bool
     masked_number: str
@@ -146,7 +155,7 @@ class CardListResponse(BaseModel):
 class AddCard(BaseModel):
     payment_method_id: str
     cardholder_name: str
-    design: Optional[str] = '{"color": "purple"}'
+
 
 
 CardPublicResponse.model_rebuild()
