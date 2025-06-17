@@ -629,13 +629,13 @@ select.form-control:focus {
     animation: spin 1s infinite linear;
 }
 
-.recent-deposits-list {
+.recent-deposits-list, #recent-deposits-list-content {
     max-height: 350px;
     overflow-y: auto;
     transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }
 
-.recent-deposits-list.collapsed {
+#recent-deposits-list-content.collapsed {
     max-height: 0;
     opacity: 0;
     overflow: hidden;

@@ -31,17 +31,17 @@
         <!-- Quick Action Bar -->
         <div class="quick-actions-bar">
             <div class="action-card">
-                <a href="/transactions" class="action-text" aria-label="View Transaction History">
+                <a href="/fe/transactions" class="action-text" aria-label="View Transaction History">
                     <i class="bi bi-clock-history"></i> History
                 </a>
             </div>
             <div class="action-card">
-                <a href="/withdrawals" class="action-text" aria-label="Withdraw Funds">
+                <a href="/fe/withdrawals" class="action-text" aria-label="Withdraw Funds">
                     <i class="bi bi-arrow-up-circle"></i> Withdraw
                 </a>
             </div>
             <div class="action-card">
-                <a href="/send" class="action-text" aria-label="Send Money">
+                <a href="/fe/send" class="action-text" aria-label="Send Money">
                     <i class="bi bi-send"></i> Send Money
                 </a>
             </div>
@@ -60,12 +60,8 @@
                         <i class="bi bi-arrow-down-circle summary-icon"></i>
                     </div>
                     <div class="summary-content">
-                        <h3 class="summary-title">Money Received (30 Days)</h3>
+                        <h3 class="summary-title">Total Received (30 Days)</h3>
                         <p class="summary-value" id="money-received-value">$0.00</p>
-                        <div class="trend-indicator">
-                            <i class="bi bi-arrow-right"></i>
-                            <span id="receive-trend-percentage">0%</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -75,21 +71,21 @@
                         <i class="bi bi-bar-chart summary-icon"></i>
                     </div>
                     <div class="summary-content">
-                        <h3 class="summary-title">Average Transaction</h3>
+                        <h3 class="summary-title">Average Transaction Amount</h3>
                         <p class="summary-value" id="avg-transaction-value">$0.00</p>
-                        <p class="summary-details"><span id="total-transactions-count">0</span> transactions this month</p>
+                        <p class="summary-details">Completed: <span id="total-completed-count">0</span></p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
                 <div class="summary-card">
                     <div class="summary-icon-wrapper">
-                        <i class="bi bi-graph-up summary-icon"></i>
+                        <i class="bi bi-hourglass-split summary-icon"></i>
                     </div>
                     <div class="summary-content">
-                        <h3 class="summary-title">Transaction Trend</h3>
-                        <p class="summary-value" id="transaction-trend-value">0%</p>
-                        <p class="summary-details">Last 30 days</p>
+                        <h3 class="summary-title">Pending Transactions</h3>
+                        <p class="summary-value" id="pending-transactions-count">0</p>
+                        <p class="summary-details">Awaiting action</p>
                     </div>
                 </div>
             </div>
@@ -101,11 +97,11 @@
         <!-- Left Column: Pending Transactions -->
         <div class="col-lg-7 mb-4">
             <div class="card transactions-card">
-                <div class="card-header d-flex justify-content-between align-items-center" id="toggle-pending-transactions" aria-expanded="false">
+                <div class="card-header d-flex justify-content-between align-items-center" id="toggle-pending-transactions" aria-expanded="true">
                     <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> Pending Transactions</h5>
-                    <i class="bi bi-chevron-down toggle-icon"></i>
+                    <i class="bi bi-chevron-up toggle-icon"></i>
                 </div>
-                <div class="card-body p-0" id="pending-transactions-list-content">
+                <div class="card-body p-0" id="pending-transactions-list-content" style="display: block; opacity: 1;">
                     <div class="list-loading-container" id="pending-loading" style="display: none;">
                         <i class="bi bi-arrow-repeat"></i>
                     </div>
@@ -145,12 +141,12 @@
         </div>
     </div>
 
-    <!-- Transaction Confirmation Modal -->
+    <!-- Transaction Review Modal -->
     <div class="modal fade modal-transaction-confirm" id="transactionConfirmModal" tabindex="-1" aria-labelledby="transactionConfirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="transactionConfirmModalLabel"><i class="bi bi-check-circle"></i> Confirm Transaction</h5>
+                    <h5 class="modal-title" id="transactionConfirmModalLabel"><i class="bi bi-check-circle"></i> Review Transaction</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

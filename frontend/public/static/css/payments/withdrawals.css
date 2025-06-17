@@ -539,13 +539,13 @@ select.form-control {
     animation: spin 1s infinite linear;
 }
 
-.recent-withdrawals-list {
-    max-height: 350px;
+.recent-withdrawals-list, #recent-withdrawals-list-content {
+    max-height: 450px;
     overflow-y: auto;
     transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
 }
 
-.recent-withdrawals-list.collapsed {
+#recent-withdrawals-list-content.collapsed {
     max-height: 0;
     opacity: 0;
     overflow: hidden;

@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Elements
@@ -59,14 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial Setup
     balanceAmount.style.opacity = '0';
     balanceAmountLoading.style.display = 'block';
-    pendingContent.style.maxHeight = '0';
-    pendingContent.style.opacity = '0';
+    pendingContent.style.display = 'block';
+    // pendingContent.style.maxHeight = `${pendingContent.scrollHeight}px`;
+    pendingContent.style.opacity = '1';
+    pendingToggle.setAttribute('aria-expanded', 'true');
+    pendingToggle.querySelector('.toggle-icon').classList.replace('bi-chevron-down', 'bi-chevron-up');
 
     // Event Listeners
     pendingToggle.addEventListener('click', () => toggleSection(pendingToggle, pendingContent));
     if (transactionConfirmModal) {
         document.getElementById('confirm-transaction-btn')?.addEventListener('click', confirmTransaction);
-        document.getElementById('decline-transaction-btn')?.addEventListener('click', declineTransaction);
         document.getElementById('decline-transaction-btn')?.addEventListener('click', declineTransaction);
     }
 
@@ -126,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 container.innerHTML = `<p class="text-muted text-center" id="no-${status}">No pending transactions</p>`;
             }
+            document.getElementById('pending-transactions-count').textContent = data.transactions.length;
         } catch (error) {
             console.error(`receive.js: Error loading ${status} transactions:`, error);
             container.innerHTML = `<p class="text-danger text-center" id="error-${status}">Error loading transactions</p>`;
@@ -143,22 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             document.getElementById('money-received-value').textContent = `$${data.incoming_total.toFixed(2)}`;
-            document.getElementById('avg-transaction-value').textContent = `$${data.avg_transaction.toFixed(2)}`;
-            document.getElementById('total-transactions-count').textContent = data.total;
-            const trend = calculateInTrend(data);
-            document.getElementById('receive-trend-percentage').textContent = `${trend.toFixed(1)}%`;
-            document.getElementById('transaction-trend-value').textContent = `NaN`;
+            document.getElementById('avg-transaction-value').textContent = `$${data.avg_incoming_transaction.toFixed(2)}`;
+            document.getElementById('total-completed-count').textContent = data.total_completed;
         } catch (error) {
             console.error('receive.js: Error loading summary data:', error);
+            showError('Failed to load summary data.');
         }
-    }
-
-    function calculateInTrend(data) {
-        if (data.total === 0) return 0;
-        if (data.total > 0 && data.incoming_total > 0) {
-            return ((data.incoming_total - data.avg_transaction) / data.avg_transaction) * 100;
-        }
-        return 0;
     }
 
     function createTransactionElement(transaction) {
@@ -170,15 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="sender">${transaction.sender_id || 'Unknown'}</span>
             <span class="status">${transaction.status.replace('_', ' ')}</span>
             <span class="amount">$${transaction.amount.toFixed(2)}</span>
-            <div class="transaction-actions">
-                <button class="btn btn-sm btn-primary btn-action btn-confirm" data-id="${transaction.id}">Accept</button>
-                <button class="btn btn-sm btn-danger btn-action btn-decline" data-id="${transaction.id}">Decline</button>
-            </div>
+            <button class="btn btn-sm btn-primary btn-action btn-review" data-id="${transaction.id}">Review</button>
             <i class="bi bi-info-circle info-icon"></i>
         `;
         div.querySelector('.info-icon').addEventListener('click', () => showTransactionDetails(transaction));
-        div.querySelector('.btn-confirm').addEventListener('click', () => prepareConfirmTransaction(transaction));
-        div.querySelector('.btn-decline').addEventListener('click', () => prepareDeclineTransaction(transaction));
+        div.querySelector('.btn-review').addEventListener('click', () => prepareReviewTransaction(transaction));
         return div;
     }
 
@@ -202,8 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function prepareConfirmTransaction(transaction) {
-        console.log('receive.js: Preparing confirm transaction:', transaction.id);
+    function prepareReviewTransaction(transaction) {
+        console.log('receive.js: Preparing review transaction:', transaction.id);
         window.currentTransactionId = transaction.id;
         document.getElementById('modal-sender').textContent = transaction.sender_id || 'Unknown';
         document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
@@ -212,20 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
             transactionConfirmModal.show();
         } else {
             console.error('receive.js: transactionConfirmModal not initialized');
-            showError('Confirmation modal unavailable.');
-        }
-    }
-
-    function prepareDeclineTransaction(transaction) {
-        window.currentTransactionId = transaction.id;
-        document.getElementById('modal-sender').textContent = transaction.sender_id || 'Unknown';
-        document.getElementById('modal-amount').textContent = `$${transaction.amount.toFixed(2)}`;
-        document.getElementById('modal-description').textContent = transaction.description || 'No description';
-        if (transactionConfirmModal) {
-            transactionConfirmModal.show();
-        } else {
-            console.error('receive.js: transactionConfirmModal not initialized');
-            showError('Confirmation modal unavailable.');
+            showError('Review modal unavailable.');
         }
     }
 
@@ -237,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            console.log('receive.js: Confirming transaction:', transactionId);
-            const response = await fetch(`/api/v1/transactions/${transactionId}/status`, {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -251,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (transactionConfirmModal) transactionConfirmModal.hide();
             showSuccess('Transaction confirmed successfully');
-            loadSummaryData()
+            await Promise.all([loadTransactions('pending'), loadSummaryData()]);
             const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
             if (transactionElement) {
                 transactionElement.style.opacity = '0';
@@ -259,6 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     transactionElement.remove();
                     if (!document.querySelector('#initial-pending .transaction-item')) {
                         document.getElementById('initial-pending').innerHTML = '<p class="text-muted text-center" id="no-pending">No pending transactions</p>';
+                        document.getElementById('pending-transactions-count').textContent = '0';
+                    } else {
+                        document.getElementById('pending-transactions-count').textContent = document.querySelectorAll('#initial-pending .transaction-item').length.toString();
                     }
                 }, 300);
             }
@@ -280,8 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            console.log('receive.js: Declining transaction:', transactionId);
-            const response = await fetch(`/api/v1/transactions/${transactionId}/status`, {
+            const response = await fetch(`/api/v1/transactions/status/${transactionId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -295,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (transactionConfirmModal) transactionConfirmModal.hide();
             if (transactionDetailsModal) transactionDetailsModal.hide();
             showSuccess('Transaction declined successfully');
-            loadSummaryData()
+            await Promise.all([loadTransactions('pending'), loadSummaryData()]);
             const transactionElement = document.querySelector(`#initial-pending .transaction-item[data-id="${transactionId}"]`);
             if (transactionElement) {
                 transactionElement.style.opacity = '0';
@@ -303,6 +279,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     transactionElement.remove();
                     if (!document.querySelector('#initial-pending .transaction-item')) {
                         document.getElementById('initial-pending').innerHTML = '<p class="text-muted text-center" id="no-pending">No pending transactions</p>';
+                        document.getElementById('pending-transactions-count').textContent = '0';
+                    } else {
+                        document.getElementById('pending-transactions-count').textContent = document.querySelectorAll('#initial-pending .transaction-item').length.toString();
                     }
                 }, 300);
             }
