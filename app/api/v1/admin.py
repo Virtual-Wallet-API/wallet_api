@@ -134,3 +134,57 @@ def promote_user_to_admin(user_id: int,
                           db: Session = Depends(get_db)):
     """Promote a user to admin"""
     return AdminService.promote_user_to_admin(db, admin, user_id)
+
+#
+# from pydantic import BaseModel, EmailStr
+# from typing import Optional
+#
+# class EmailTestRequest(BaseModel):
+#     email: EmailStr
+#     subject: Optional[str] = "Test Email from VWallet"
+#     message: Optional[str] = "This is a test email to verify the email notification system is working correctly."
+#
+# @router.post("/test-email")
+# def test_email_notification(
+#     email_data: EmailTestRequest,
+#     admin: User = Depends(get_current_admin),
+#     db: Session = Depends(get_db)
+# ):
+#     """
+#     Test email notification system (Admin only)
+#
+#     This endpoint allows administrators to test the email notification system
+#     by sending a test email to any email address. Useful for:
+#     - Verifying Mailgun configuration
+#     - Testing email delivery in new environments
+#     - Debugging email issues
+#     """
+#     from app.business.utils import NotificationService
+#     from app.models.user import User
+#
+#     # Create a temporary user object for testing
+#     test_user = User()
+#     test_user.email = email_data.email
+#     test_user.username = email_data.email.split('@')[0]
+#
+#     try:
+#         # Send test email
+#         result = NotificationService.send_email(test_user, email_data.subject, email_data.message)
+#
+#         if result.status_code == 200:
+#             return {
+#                 "success": True,
+#                 "message": f"Test email sent successfully to {email_data.email}",
+#                 "status_code": result.status_code
+#             }
+#         else:
+#             return {
+#                 "success": False,
+#                 "message": f"Failed to send email. Status code: {result.status_code}",
+#                 "error": result.text
+#             }
+#     except Exception as e:
+#         return {
+#             "success": False,
+#             "message": f"Error sending email: {str(e)}"
+#         }
