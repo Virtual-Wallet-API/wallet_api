@@ -4,17 +4,13 @@ from sqlalchemy.orm import Session
 
 from app.infrestructure import invalid_credentials, verify_token, SessionLocal, forbidden_access, pending_user, \
     deactivated_user, blocked_user, forced_password_reset, email_verification_user
+from app.infrestructure.database import get_connection
 from app.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+get_db = get_connection
 
 
 def getValidUser(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:

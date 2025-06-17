@@ -19,16 +19,13 @@ Base.metadata.create_all(bind=engine, checkfirst=True)
 async def lifespan(app: FastAPI):
     # Startup logic
     scheduler = init_scheduler()
-    print("Scheduler started")
     RecurringService.register_recurring_transactions()
-    print("Recurring transactions registered")
     try:
         yield
     finally:
         # Shutdown logic
         if scheduler.running:
             scheduler.shutdown()
-            print("Scheduler shut down")
 
 
 # FastAPI app
