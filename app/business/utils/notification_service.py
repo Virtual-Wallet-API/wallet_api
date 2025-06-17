@@ -112,6 +112,185 @@ The VWallet Team"""
     PASSWORD_RESET = {"subject": "Reset your VWallet password",
                      "body": """Dear {user.username},\n\nYou requested a password reset. Please follow this link to set a new password:\n{reset_link}\n\nIf you did not request this, please ignore this email.\n\nBest,\nThe VWallet Team"""}
 
+    # Transaction Email Templates
+    TRANSACTION_CREATED = {"subject": "Transaction Created - Confirmation Required",
+                          "body": """Dear {user.username},
+
+Your transaction has been created successfully! 
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+
+⚠️ Action Required: Please log in to confirm this transaction and reserve the funds.
+Until confirmed, this transaction is pending and no money has been transferred.
+
+Confirm your transaction at: http://vwallet.ninja/send
+
+Thank you,
+The VWallet Team"""}
+
+    TRANSACTION_RECEIVED = {"subject": "New Transaction Request Received",
+                           "body": """Dear {user.username},
+
+You have received a new transaction request!
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• From: {sender_username}
+• Description: {description}
+• Status: Waiting for sender confirmation
+
+The sender needs to confirm this transaction before you can accept it.
+You will receive another notification when it's ready for your action.
+
+View your transactions at: http://vwallet.ninja/receive
+
+Best regards,
+The VWallet Team"""}
+
+    TRANSACTION_CONFIRMED = {"subject": "Transaction Confirmed - Funds Reserved",
+                            "body": """Dear {user.username},
+
+Your transaction has been confirmed and funds have been reserved!
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+• Status: Awaiting recipient acceptance
+
+The funds are now reserved from your account and waiting for {recipient_username} to accept.
+If they decline, the funds will be returned to your available balance.
+
+Track your transaction at: http://vwallet.ninja/send
+
+Best regards,
+The VWallet Team"""}
+
+    TRANSACTION_AWAITING_ACCEPTANCE = {"subject": "Transaction Ready - Action Required",
+                                      "body": """Dear {user.username},
+
+A transaction is ready for your acceptance!
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• From: {sender_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+
+🎯 Action Required: The sender has confirmed and reserved the funds.
+You can now accept or decline this transaction.
+
+✅ Accept to receive the funds
+❌ Decline to reject the transaction
+
+Take action at: http://vwallet.ninja/receive
+
+Best regards,
+The VWallet Team"""}
+
+    TRANSACTION_COMPLETED_SENDER = {"subject": "Transaction Completed Successfully",
+                                   "body": """Dear {user.username},
+
+Your transaction has been completed successfully! 🎉
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+• Status: Completed
+
+The funds have been transferred from your account to {recipient_username}.
+Your account balance has been updated.
+
+View transaction history at: http://vwallet.ninja/transactions
+
+Thank you for using VWallet!
+The VWallet Team"""}
+
+    TRANSACTION_COMPLETED_RECEIVER = {"subject": "Payment Received Successfully",
+                                     "body": """Dear {user.username},
+
+You have received a payment! 💰
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• From: {sender_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+• Status: Completed
+
+The funds have been added to your account balance.
+
+View your updated balance at: http://vwallet.ninja/account
+
+Thank you for using VWallet!
+The VWallet Team"""}
+
+    TRANSACTION_DECLINED = {"subject": "Transaction Declined",
+                           "body": """Dear {user.username},
+
+Your transaction has been declined by the recipient.
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+• Reason: {reason}
+
+The reserved funds have been returned to your available balance.
+No money was transferred.
+
+View your account at: http://vwallet.ninja/account
+
+Best regards,
+The VWallet Team"""}
+
+    TRANSACTION_CANCELLED = {"subject": "Transaction Cancelled",
+                            "body": """Dear {user.username},
+
+Your transaction has been cancelled.
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+
+Any reserved funds have been returned to your available balance.
+No money was transferred.
+
+View your account at: http://vwallet.ninja/account
+
+Best regards,
+The VWallet Team"""}
+
+    TRANSACTION_FAILED = {"subject": "Transaction Failed",
+                         "body": """Dear {user.username},
+
+Unfortunately, your transaction has failed.
+
+Transaction Details:
+• Amount: ${amount:.2f}
+• Recipient: {recipient_username}
+• Description: {description}
+• Transaction ID: {transaction_id}
+• Error: {error_message}
+
+Any reserved funds have been returned to your available balance.
+No money was transferred.
+
+If this continues to happen, please contact support at admin@vwallet.ninja
+
+Best regards,
+The VWallet Team"""}
+
     def format(self, user, **kwargs):
         return {k: v.format(user=user,support_email='admin@vwallet.ninja', **kwargs) for k, v in self.value.items()}
 
