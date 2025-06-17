@@ -1,252 +1,304 @@
 from app.models.transaction import Transaction
 from typing import Dict, Optional
 from app.business.utils import NotificationService, NotificationType
+from app.business.utils.notification_service import EmailTemplates
+import logging
+
+# Set up logging for email notifications
+logger = logging.getLogger(__name__)
 
 
 class TransactionNotificationService:
-    """Service for handling transaction notifications"""
+    """Service for handling transaction email notifications"""
 
     @staticmethod
     def notify_sender_transaction_created(transaction: Transaction):
         """Notify sender that transaction was created and needs confirmation"""
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(
-            f"   💰 Transaction Created - Please confirm to reserve ${transaction.amount:.2f} for {transaction.receiver_info.username}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
-        print(f"   📝 Description: {transaction.description or 'No description'}")
-        print(f"   ⚠️  Funds will be reserved until receiver accepts/declines")
+        try:
+            # Send email to sender
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_CREATED,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction created email sent to {transaction.sender.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Created - Confirmation Required")
+            print(f"   💰 Transaction ${transaction.amount:.2f} to {transaction.receiver.username}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction created email to {transaction.sender.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_received(transaction: Transaction):
         """Notify receiver that a new transaction was created for them"""
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   💸 New Transaction Request from {transaction.sender_info.username}")
-        print(f"   💰 Amount: ${transaction.amount:.2f}")
-        print(f"   📝 Description: {transaction.description or 'No description'}")
-        print(f"   ⏳ Waiting for sender to confirm...")
+        try:
+            # Send email to receiver
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_RECEIVED,
+                user=transaction.receiver,
+                amount=transaction.amount,
+                sender_username=transaction.sender.username,
+                description=transaction.description or 'No description'
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction received email sent to {transaction.receiver.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: New Transaction Request Received")
+            print(f"   💸 ${transaction.amount:.2f} from {transaction.sender.username}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction received email to {transaction.receiver.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_sender_transaction_confirmed(transaction: Transaction):
         """Notify sender that transaction was confirmed and funds are reserved"""
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(f"   ✅ Transaction Confirmed - ${transaction.amount:.2f} reserved")
-        print(f"   🔗 Transaction ID: {transaction.id}")
-        print(f"   ⏳ Waiting for {transaction.receiver_info.username} to accept...")
-        print(f"   💡 Funds are reserved but not transferred yet")
+        try:
+            # Send email to sender
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_CONFIRMED,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction confirmed email sent to {transaction.sender.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Confirmed - Funds Reserved")
+            print(f"   ✅ ${transaction.amount:.2f} reserved for {transaction.receiver.username}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction confirmed email to {transaction.sender.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_awaiting_acceptance(transaction: Transaction):
         """Notify receiver that transaction is confirmed and awaiting their acceptance"""
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   🎯 Transaction Ready for Acceptance!")
-        print(f"   💰 ${transaction.amount:.2f} from {transaction.sender_info.username}")
-        print(f"   📝 Description: {transaction.description or 'No description'}")
-        print(f"   ✅ Accept to receive funds or ❌ Decline to reject")
-        print(f"   💡 Sender's funds are already reserved")
+        try:
+            # Send email to receiver
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_AWAITING_ACCEPTANCE,
+                user=transaction.receiver,
+                amount=transaction.amount,
+                sender_username=transaction.sender.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction awaiting acceptance email sent to {transaction.receiver.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: Transaction Ready - Action Required")
+            print(f"   🎯 ${transaction.amount:.2f} from {transaction.sender.username} awaiting acceptance")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction awaiting acceptance email to {transaction.receiver.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_sender_transaction_completed(transaction: Transaction):
         """Notify sender that receiver accepted and transaction is completed"""
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(f"   🎉 Transaction Completed Successfully!")
-        print(f"   ✅ ${transaction.amount:.2f} sent to {transaction.receiver_info.username}")
-        print(f"   💳 Funds transferred from your account")
-        print(f"   🔗 Transaction ID: {transaction.id}")
+        try:
+            # Send email to sender
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_COMPLETED_SENDER,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction completed email sent to sender {transaction.sender.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Completed Successfully")
+            print(f"   🎉 ${transaction.amount:.2f} sent to {transaction.receiver.username}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction completed email to sender {transaction.sender.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_completed(transaction: Transaction):
         """Notify receiver that transaction was completed and funds received"""
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   🎉 Payment Received!")
-        print(f"   💰 +${transaction.amount:.2f} from {transaction.sender_info.username}")
-        print(f"   📝 Description: {transaction.description or 'No description'}")
-        print(f"   💳 Funds added to your account")
+        try:
+            # Send email to receiver
+            result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_COMPLETED_RECEIVER,
+                user=transaction.receiver,
+                amount=transaction.amount,
+                sender_username=transaction.sender.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Log the notification
+            logger.info(f"Transaction completed email sent to receiver {transaction.receiver.email} for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: Payment Received Successfully")
+            print(f"   💰 +${transaction.amount:.2f} from {transaction.sender.username}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction completed email to receiver {transaction.receiver.email}: {str(e)}")
+            print(f"❌ Failed to send email notification: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_declined(transaction: Transaction, reason: Optional[str] = None):
         """Notify all parties about transaction decline"""
-        # Notify sender about decline
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(f"   ❌ Transaction Declined by {transaction.receiver_info.username}")
-        print(f"   💰 ${transaction.amount:.2f} returned to your available balance")
-        print(f"   🔗 Transaction ID: {transaction.id}")
-        if reason:
-            print(f"   📝 Reason: {reason}")
-
-        # Notify receiver about their action
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   ❌ You declined the transaction from {transaction.sender_info.username}")
-        print(f"   💰 Amount: ${transaction.amount:.2f}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
+        try:
+            # Send email to sender about decline
+            sender_result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_DECLINED,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id,
+                reason=reason or 'No reason provided'
+            )
+            
+            # Send email to receiver confirming their action
+            receiver_result = NotificationService.notify(
+                user=transaction.receiver,
+                title="Transaction Declined - Confirmation",
+                message=f"You have successfully declined the transaction of ${transaction.amount:.2f} from {transaction.sender.username}. Transaction ID: {transaction.id}"
+            )
+            
+            # Log the notifications
+            logger.info(f"Transaction declined emails sent for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Declined")
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: Transaction Declined - Confirmation")
+            print(f"   ❌ ${transaction.amount:.2f} transaction declined")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return sender_result.status_code == 200 and receiver_result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction declined emails for transaction {transaction.id}: {str(e)}")
+            print(f"❌ Failed to send email notifications: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_cancelled(transaction: Transaction):
         """Notify all parties about transaction cancellation"""
-        # Notify sender
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(f"   🚫 Transaction Cancelled")
-        print(f"   💰 ${transaction.amount:.2f} to {transaction.receiver_info.username}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
-
-        # Notify receiver
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   🚫 Transaction from {transaction.sender_info.username} was cancelled")
-        print(f"   💰 Amount: ${transaction.amount:.2f}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
+        try:
+            # Send email to sender
+            sender_result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_CANCELLED,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id
+            )
+            
+            # Send email to receiver
+            receiver_result = NotificationService.notify(
+                user=transaction.receiver,
+                title="Transaction Cancelled",
+                message=f"The transaction of ${transaction.amount:.2f} from {transaction.sender.username} has been cancelled. Transaction ID: {transaction.id}"
+            )
+            
+            # Log the notifications
+            logger.info(f"Transaction cancelled emails sent for transaction {transaction.id}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Cancelled")
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: Transaction Cancelled - Notification")
+            print(f"   🚫 ${transaction.amount:.2f} transaction cancelled")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return sender_result.status_code == 200 and receiver_result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction cancelled emails for transaction {transaction.id}: {str(e)}")
+            print(f"❌ Failed to send email notifications: {str(e)}")
+            return False
 
     @staticmethod
     def notify_transaction_failed(transaction: Transaction, error_message: str):
         """Notify all parties about transaction failure"""
-        # Notify sender
-        print(f"📱 NOTIFICATION for {transaction.sender_info.username}:")
-        print(f"   ❌ Transaction Failed")
-        print(f"   💰 ${transaction.amount:.2f} to {transaction.receiver_info.username}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
-        print(f"   ⚠️  Error: {error_message}")
-        print(f"   💡 Any reserved funds have been released")
-
-        # Notify receiver
-        print(f"📱 NOTIFICATION for {transaction.receiver_info.username}:")
-        print(f"   ❌ Transaction from {transaction.sender_info.username} failed")
-        print(f"   💰 Amount: ${transaction.amount:.2f}")
-        print(f"   🔗 Transaction ID: {transaction.id}")
+        try:
+            # Send email to sender
+            sender_result = NotificationService.notify_from_template(
+                template=EmailTemplates.TRANSACTION_FAILED,
+                user=transaction.sender,
+                amount=transaction.amount,
+                recipient_username=transaction.receiver.username,
+                description=transaction.description or 'No description',
+                transaction_id=transaction.id,
+                error_message=error_message
+            )
+            
+            # Send email to receiver
+            receiver_result = NotificationService.notify(
+                user=transaction.receiver,
+                title="Transaction Failed",
+                message=f"The transaction of ${transaction.amount:.2f} from {transaction.sender.username} has failed due to: {error_message}. Transaction ID: {transaction.id}"
+            )
+            
+            # Log the notifications
+            logger.error(f"Transaction failed emails sent for transaction {transaction.id}: {error_message}")
+            
+            # Also print to console for development/debugging
+            print(f"📧 EMAIL SENT to {transaction.sender.email}: Transaction Failed")
+            print(f"📧 EMAIL SENT to {transaction.receiver.email}: Transaction Failed - Notification")
+            print(f"   ❌ ${transaction.amount:.2f} transaction failed: {error_message}")
+            print(f"   🔗 Transaction ID: {transaction.id}")
+            
+            return sender_result.status_code == 200 and receiver_result.status_code == 200
+            
+        except Exception as e:
+            logger.error(f"Failed to send transaction failed emails for transaction {transaction.id}: {str(e)}")
+            print(f"❌ Failed to send email notifications: {str(e)}")
+            return False
 
     # Legacy method for backward compatibility
-    @staticmethod
-    def notify_transaction_confirmed(transaction: Transaction):
-        """Legacy method - now redirects to notify_transaction_completed for compatibility"""
-        TransactionNotificatioNotificationService.notify_transaction_completed(transaction)
-
-    @classmethod
-    def notify_transaction_received(cls, transaction: Transaction) -> bool:
-        """
-        Notify receiver when they receive a new pending transaction
-        :param transaction: The pending transaction
-        :return: Success status
-        """
-        receiver = transaction.receiver
-        sender = transaction.sender
-
-        message = {
-            "title": "New Transaction Received",
-            "body": f"You have received a pending transaction of ${transaction.amount:.2f} from {sender.username}. "
-                    f"Description: {transaction.description or 'No description'}",
-            "type": NotificationType.IMPORTANT,
-            "transaction_id": transaction.id,
-            "action_required": True
-        }
-
-        # For now, just log the notification (since email service is commented out)
-        print(f"📧 NOTIFICATION to {receiver.email}: {message['title']} - {message['body']}")
-
-        # TODO: When email service is implemented, uncomment:
-        # return NotificationService.notify(receiver, message)
-        return True
-
     @classmethod
     def notify_transaction_confirmed(cls, transaction: Transaction) -> bool:
-        """
-        Notify receiver when transaction is confirmed and money is transferred
-        :param transaction: The confirmed transaction
-        :return: Success status
-        """
-        receiver = transaction.receiver
-        sender = transaction.sender
-
-        message = {
-            "title": "Transaction Completed",
-            "body": f"You have received ${transaction.amount:.2f} from {sender.username}. "
-                    f"Your new balance has been updated.",
-            "type": NotificationType.IMPORTANT,
-            "transaction_id": transaction.id
-        }
-
-        print(f"📧 NOTIFICATION to {receiver.email}: {message['title']} - {message['body']}")
-        return True
-
-    @classmethod
-    def notify_transaction_cancelled(cls, transaction: Transaction) -> bool:
-        """
-        Notify receiver when a pending transaction is cancelled
-        :param transaction: The cancelled transaction
-        :return: Success status
-        """
-        receiver = transaction.receiver
-        sender = transaction.sender
-
-        message = {
-            "title": "Transaction Cancelled",
-            "body": f"The pending transaction of ${transaction.amount:.2f} from {sender.username} has been cancelled.",
-            "type": NotificationType.UNIMPORTANT,
-            "transaction_id": transaction.id
-        }
-
-        print(f"📧 NOTIFICATION to {receiver.email}: {message['title']} - {message['body']}")
-        return True
-
-    @classmethod
-    def notify_sender_transaction_created(cls, transaction: Transaction) -> bool:
-        """
-        Notify sender when their transaction is created and pending confirmation
-        :param transaction: The pending transaction
-        :return: Success status
-        """
-        sender = transaction.sender
-        receiver = transaction.receiver
-
-        message = {
-            "title": "Transaction Created",
-            "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has been created and is pending confirmation. "
-                    f"Please confirm to complete the transfer.",
-            "type": NotificationType.IMPORTANT,
-            "transaction_id": transaction.id,
-            "action_required": True
-        }
-
-        print(f"📧 NOTIFICATION to {sender.email}: {message['title']} - {message['body']}")
-        return True
-
-    @classmethod
-    def notify_sender_transaction_confirmed(cls, transaction: Transaction) -> bool:
-        """
-        Notify sender when their transaction is successfully confirmed
-        :param transaction: The confirmed transaction
-        :return: Success status
-        """
-        sender = transaction.sender
-        receiver = transaction.receiver
-
-        message = {
-            "title": "Transaction Confirmed",
-            "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has been successfully completed. "
-                    f"Your balance has been updated.",
-            "type": NotificationType.IMPORTANT,
-            "transaction_id": transaction.id
-        }
-
-        print(f"📧 NOTIFICATION to {sender.email}: {message['title']} - {message['body']}")
-        return True
-
-    @classmethod
-    def notify_transaction_failed(cls, transaction: Transaction, reason: str = None) -> bool:
-        """
-        Notify sender when their transaction fails
-        :param transaction: The failed transaction
-        :param reason: Optional reason for failure
-        :return: Success status
-        """
-        sender = transaction.sender
-        receiver = transaction.receiver
-
-        failure_reason = f" Reason: {reason}" if reason else ""
-
-        message = {
-            "title": "Transaction Failed",
-            "body": f"Your transaction of ${transaction.amount:.2f} to {receiver.username} has failed.{failure_reason} "
-                    f"No money has been transferred.",
-            "type": NotificationType.ALERT,
-            "transaction_id": transaction.id
-        }
-
-        print(f"📧 NOTIFICATION to {sender.email}: {message['title']} - {message['body']}")
-        return True
+        """Legacy method - now redirects to notify_transaction_completed for compatibility"""
+        return cls.notify_transaction_completed(transaction)
