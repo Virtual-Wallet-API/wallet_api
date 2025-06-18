@@ -74,7 +74,7 @@ Virtual Wallet is a modern web application that enables users to manage their bu
 
 - **Backend Framework:** FastAPI
 - **Database:** SQLAlchemy ORM (supports PostgreSQL, MySQL, SQLite)
-- **Migrations:** Alembic
+- **Retry Logic:** Tenacity
 - **Authentication:** JWT, OAuth2
 - **Email:** Mailgun (via `requests`)
 - **Payments:** Stripe
