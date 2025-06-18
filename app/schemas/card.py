@@ -93,7 +93,7 @@ class CardResponse(BaseModel):
     exp_year: int
     cardholder_name: str
     type: CardType
-    design: Optional[CardDesignResponse]
+    design: Optional[CardDesignResponse] = []
     is_default: bool
     is_active: bool
     created_at: datetime
@@ -120,7 +120,7 @@ class CardPublicResponse(BaseModel):
     exp_year: int
     cardholder_name: str
     type: CardType
-    design: CardDesignResponse
+    design: CardDesignResponse = None
     is_default: bool
     is_active: bool
     masked_number: str
