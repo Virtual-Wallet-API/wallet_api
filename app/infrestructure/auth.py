@@ -83,7 +83,10 @@ def check_hashed_password(plain_password: str, hashed_password: str) -> bool:
     """
         Checks if a plain password matches a hashed password.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
 
 def verify_token(token: str):
