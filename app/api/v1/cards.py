@@ -114,7 +114,6 @@ def update_card(
         db: Session = Depends(get_db)
 ):
     """Update card information - design only for now"""
-    # TODO
     return CardService.update_card(db, user, card_id, card_update)
 
 

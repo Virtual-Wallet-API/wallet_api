@@ -63,27 +63,27 @@ forced_password_reset = HTTPException(
 )
 
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 def hash_password(password: str) -> str:
     """
         Hashes a password using bcrypt.
     """
-    # return hash_context.hash(password, rounds=12, salt_size=22)
-    return password  # TODO disable dev testing
+    return pwd_context.hash(password)
 
 
 def hash_email(email: str) -> str:
     """
         Hashes a password using bcrypt.
     """
-    return hash_context.hash(email, rounds=12, salt_size=22)
+    return pwd_context.hash(email)
 
 
 def check_hashed_password(plain_password: str, hashed_password: str) -> bool:
     """
         Checks if a plain password matches a hashed password.
     """
-    # return pwd_context.verify(plain_password, hashed_password)
-    return plain_password == hashed_password  # TODO disable dev testing
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def verify_token(token: str):

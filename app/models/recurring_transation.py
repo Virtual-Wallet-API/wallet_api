@@ -27,8 +27,6 @@ class RecurringTransaction(Base):
     transaction = relationship("Transaction", back_populates="recurring_transaction")
     history = relationship("RecurringTransactionHistory", back_populates="recurring_transaction", lazy='dynamic')
 
-    # TODO add recurring transaction history table to track how many times and when the transaction goes through
-
     @property
     def executions(self) -> int:
         return self.history.count()
@@ -52,7 +50,6 @@ class RecurringTransaction(Base):
         try:
             self.transaction.sender.balance -= self.transaction.amount
             self.transaction.receiver.balance += self.transaction.amount
-            # TODO log executions
             self.transaction.sender.save()
             self.transaction.receiver.save()
         except Exception as e:

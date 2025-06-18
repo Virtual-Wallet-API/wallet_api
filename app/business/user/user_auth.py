@@ -9,7 +9,8 @@ from app.business.utils import NotificationService
 from app.business.user.user_validators import UserValidators as UVal
 from app.business.utils.notification_service import EmailTemplates
 from app.dependencies import get_db
-from app.infrestructure import generate_token, data_validators, auth, DataValidators, hash_email
+from app.infrestructure import generate_token, data_validators, auth, DataValidators, hash_email, hash_password, \
+    check_hashed_password
 from app.models import User, UStatus
 from app.models.user import UserStatus
 from app.schemas.user import UserCreate, UserUpdate
@@ -19,7 +20,6 @@ from app.config import SECRET_KEY, ALGORITHM
 class UserAuthService:
     """Business logic for user authentication and authorization"""
 
-    # TODO hash passwords
     @classmethod
     def register(cls, user_data: UserCreate, db: Session) -> User:
         """
@@ -33,7 +33,7 @@ class UserAuthService:
             raise HTTPException(status_code=400, detail="Username, email or phone number is already in use")
 
         user = User(username=user_data.username,
-                    hashed_password=user_data.password,  # TODO: hash passwords
+                    hashed_password=hash_password(user_data.password),
                     email=user_data.email,
                     phone_number=user_data.phone_number,
                     email_key=hash_email(user_data.email).replace("/", "").replace(".", ""))
@@ -88,8 +88,7 @@ class UserAuthService:
         if not user:
             raise exc
 
-        # TODO: Hash password
-        if not user.hashed_password == user_data.password:
+        if not check_hashed_password(user_data.password, user.hashed_password):
             raise exc
 
         if user.status == UserStatus.EMAIL:
@@ -239,7 +238,7 @@ class UserAuthService:
             "purpose": "password_reset"
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        reset_link = f"http://127.0.0.1:8000/reset-password?token={token}"
+        reset_link = f"http://vwallet.ninja/reset-password?token={token}"
         NotificationService.notify_from_template(EmailTemplates.PASSWORD_RESET, user, reset_link=reset_link)
         return {"detail": "If the email exists, a reset link has been sent."}
 

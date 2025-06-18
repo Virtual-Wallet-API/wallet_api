@@ -51,7 +51,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1", "http://127.0.0.1:80", "http://127.0.0.1:3000", "http://127.0.0.1:8000",
+    allow_origins=["http://127.0.0.1", "http://127.0.0.1:80", "http://127.0.0.1:8080", "http://127.0.0.1:8000",
                    "http://localhost:80", "http://localhost:3000", "http://localhost:8000",
                    "http://vwallet.ninja", "http://vwallet.ninja:80", "http://vwallet.ninja:8000",
                    "http://172.245.56.116", "http://172.245.56.116:80", "http://172.245.56.116:8000"],
