@@ -309,7 +309,7 @@ class NotificationService:
     @classmethod
     def send_email(cls, to: User, subject: str, body: str) -> Response:
         sent = requests.post(url="https://api.mailgun.net/v3/vwallet.ninja/messages",
-                             auth=("api", os.getenv(MAILGUN_API_KEY, MAILGUN_API_KEY)),
+                             auth=("api", os.getenv(MAILGUN_API_KEY, "Key_not_defined")),
                              data=cls.email_factory(to, subject, body))
         return sent
 
